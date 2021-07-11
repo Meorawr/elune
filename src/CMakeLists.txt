@@ -6,6 +6,10 @@ add_library(lua-core OBJECT)
 
 set_target_properties(lua-core
     PROPERTIES
+        C_EXTENSIONS OFF
+        C_STANDARD 90
+        C_STANDARD_REQUIRED OFF
+        CXX_EXTENSIONS OFF
         DEFINE_SYMBOL ""
         OUTPUT_NAME $<IF:$<BOOL:${BUILD_VERSIONED_NAMES}>,lua5.1,lua>
         RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin"
