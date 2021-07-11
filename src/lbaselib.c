@@ -498,6 +498,7 @@ static int luaB_issecurevariable (lua_State *L) {
 static int luaB_securecall (lua_State *L) {
   const lua_TaintInfo *entrytaint;
   int status;
+  int st;
 
   entrytaint = lua_gettaint(L);
 
@@ -519,8 +520,8 @@ static int luaB_securecall (lua_State *L) {
   /* Values returned to a secure caller should be cleared of taint. */
 
   if (!entrytaint) {
-    for (int i = 1; i <= lua_gettop(L); ++i) {
-      lua_setvaluetaint(L, i, NULL);
+    for (st = 1; st <= lua_gettop(L); ++st) {
+      lua_setvaluetaint(L, st, NULL);
     }
   }
 
