@@ -650,3 +650,18 @@ LUALIB_API lua_State *luaL_newstate (void) {
   return L;
 }
 
+/*
+** {======================================================================
+** Security API
+** =======================================================================
+*/
+
+LUALIB_API void luaL_seterrorhandler (lua_State *L) {
+  lua_setfield(L, LUA_REGISTRYINDEX, "_ERRORHANDLER");
+}
+
+LUALIB_API void luaL_pusherrorhandler (lua_State *L) {
+  lua_getfield(L, LUA_REGISTRYINDEX, "_ERRORHANDLER");
+}
+
+/* }====================================================================== */

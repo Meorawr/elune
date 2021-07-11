@@ -175,6 +175,9 @@ LUALIB_API void (luaL_pushresult) (luaL_Buffer *B);
 ** =======================================================================
 */
 
+LUALIB_API void luaL_seterrorhandler (lua_State *L);
+LUALIB_API void luaL_pusherrorhandler (lua_State *L);
+
 #define luaL_issecure(L) (lua_gettaint(L) == NULL)
 #define luaL_issecurevalue(L, o) (lua_getvaluetaint(L, o) == NULL)
 #define luaL_issecureobject(L, o) (lua_getobjecttaint(L, o) == NULL)

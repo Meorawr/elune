@@ -443,17 +443,119 @@ static int luaB_newproxy (lua_State *L) {
   return 1;
 }
 
+static int luaB_forceinsecure (lua_State *L) {
+  static const lua_TaintInfo taint = {"*** TaintForced ***"};
+  lua_settop(L, 0);
+  lua_settaint(L, &taint);
+  return 0;
+}
+
+static int luaB_issecure (lua_State *L) {
+  lua_settop(L, 0);
+  lua_pushboolean(L, luaL_issecure(L));
+  return 1;
+}
+
+static int luaB_issecurevariable (lua_State *L) {
+  const lua_TaintInfo* entrytaint;
+  const lua_TaintInfo* valuetaint;
+  int nargs;
+  int tbl;
+
+  if (lua_tostring(L, 1)) {
+    nargs = 1;
+    tbl = LUA_GLOBALSINDEX;
+  } else if (lua_tostring(L, 2)) {
+    nargs = 2;
+    tbl = 1;
+  } else {
+    return luaL_error(L, "Usage: issecurevariable([table,] \"variable\")");
+  }
+
+  entrytaint = lua_gettaint(L);
+
+  /* --- BEGIN TAINT BOUNDARY --- */
+
+  lua_settop(L, nargs);
+  lua_gettable(L, tbl);
+  valuetaint = lua_getvaluetaint(L, -1);
+
+  /* --- END TAINT BOUNDARY --- */
+
+  lua_settaint(L, entrytaint);
+
+  if (valuetaint) {
+    lua_pushboolean(L, 0);
+    lua_pushstring(L, valuetaint->source);
+  } else {
+    lua_pushboolean(L, 1);
+    lua_pushnil(L);
+  }
+
+  return 2;
+}
+
+static int luaB_securecall (lua_State *L) {
+  const lua_TaintInfo *entrytaint;
+  int status;
+
+  entrytaint = lua_gettaint(L);
+
+  /* --- BEGIN TAINT BOUNDARY --- */
+
+  lua_pushvalue(L, 1);                                         /* Copy first parameter to top of stack */
+  if (lua_tostring(L, -1)) lua_gettable(L, LUA_GLOBALSINDEX);  /* Global lookup if given a string/number */
+  lua_replace(L, 1);                                           /* Move and replace function at bottom of stack */
+  luaL_pusherrorhandler(L);                                    /* Push error handler to top of stack */
+  lua_insert(L, 1);                                            /* Move and insert error handler at bottom of stack */
+  status = lua_pcall(L, lua_gettop(L) - 2, LUA_MULTRET, 1);    /* Invoke function */
+  if (status != 0) lua_pop(L, 1);                              /* On failure, discard error message */
+  lua_remove(L, 1);                                            /* Remove error handler from bottom of stack */
+
+  /* --- END TAINT BOUNDARY --- */
+
+  lua_settaint(L, entrytaint);
+
+  /* Values returned to a secure caller should be cleared of taint. */
+
+  if (!entrytaint) {
+    for (int i = 1; i <= lua_gettop(L); ++i) {
+      lua_setvaluetaint(L, i, NULL);
+    }
+  }
+
+  return lua_gettop(L);
+}
+
+static int luaB_geterrorhandler (lua_State *L) {
+  lua_settop(L, 0);
+  luaL_pusherrorhandler(L);
+  return 1;
+}
+
+static int luaB_seterrorhandler (lua_State *L) {
+  if (!lua_isfunction(L, 1))
+    return luaL_error(L, "Usage: seterrorhandler(errfunc)");
+
+  lua_settop(L, 1);
+  luaL_seterrorhandler(L);
+  return 0;
+}
 
 static const luaL_Reg base_funcs[] = {
   {"assert", luaB_assert},
   {"collectgarbage", luaB_collectgarbage},
   {"dofile", luaB_dofile},
   {"error", luaB_error},
+  {"forceinsecure", luaB_forceinsecure},
   {"gcinfo", luaB_gcinfo},
+  {"geterrorhandler", luaB_geterrorhandler},
   {"getfenv", luaB_getfenv},
   {"getmetatable", luaB_getmetatable},
-  {"loadfile", luaB_loadfile},
+  {"issecure", luaB_issecure},
+  {"issecurevariable", luaB_issecurevariable},
   {"load", luaB_load},
+  {"loadfile", luaB_loadfile},
   {"loadstring", luaB_loadstring},
   {"next", luaB_next},
   {"pcall", luaB_pcall},
@@ -461,7 +563,9 @@ static const luaL_Reg base_funcs[] = {
   {"rawequal", luaB_rawequal},
   {"rawget", luaB_rawget},
   {"rawset", luaB_rawset},
+  {"securecall", luaB_securecall},
   {"select", luaB_select},
+  {"seterrorhandler", luaB_seterrorhandler},
   {"setfenv", luaB_setfenv},
   {"setmetatable", luaB_setmetatable},
   {"tonumber", luaB_tonumber},

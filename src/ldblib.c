@@ -371,9 +371,14 @@ static int db_errorfb (lua_State *L) {
   return 1;
 }
 
+static int db_forcesecure (lua_State* L) {
+  lua_settaint(L, NULL);
+  return 0;
+}
 
 static const luaL_Reg dblib[] = {
   {"debug", db_debug},
+  {"forcesecure", db_forcesecure},
   {"getfenv", db_getfenv},
   {"gethook", db_gethook},
   {"getinfo", db_getinfo},
