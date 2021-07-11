@@ -1085,3 +1085,70 @@ LUA_API const char *lua_setupvalue (lua_State *L, int funcindex, int n) {
   return name;
 }
 
+/*
+** {======================================================================
+** Security API
+** =======================================================================
+*/
+
+LUA_API lua_TaintInfo *lua_gettaint (lua_State *L) {
+  lua_TaintInfo *t;
+
+  lua_lock(L);
+  t = (lua_TaintInfo *) L->taint;
+  lua_unlock(L);
+
+  return t;
+}
+
+LUA_API void lua_settaint (lua_State *L, const lua_TaintInfo *t) {
+  lua_lock(L);
+  L->taint = t;
+  lua_unlock(L);
+}
+
+LUA_API lua_TaintInfo *lua_getvaluetaint (lua_State *L, int idx) {
+  const lua_TaintInfo *t;
+  StkId v;
+
+  lua_lock(L);
+  v = index2adr(L, idx);
+  api_checkvalidindex(L, v);
+  t = gettaint(v);
+  lua_unlock(L);
+
+  return (lua_TaintInfo *) t;
+}
+
+LUA_API void lua_setvaluetaint (lua_State *L, int idx, const lua_TaintInfo *t) {
+  StkId v;
+
+  lua_lock(L);
+  v = index2adr(L, idx);
+  api_checkvalidindex(L, v);
+  settaint(v, t);
+  lua_unlock(L);
+}
+
+LUA_API lua_TaintInfo *lua_getobjecttaint (lua_State *L, int idx) {
+  const lua_TaintInfo *t;
+  GCObject *gco;
+
+  lua_lock(L);
+  gco = gcvalue(index2adr(L, idx));
+  t = gco->gch.taint;
+  lua_unlock(L);
+
+  return (lua_TaintInfo *) t;
+}
+
+LUA_API void lua_setobjecttaint (lua_State *L, int idx, const lua_TaintInfo *t) {
+  GCObject *gco;
+
+  lua_lock(L);
+  gco = gcvalue(index2adr(L, idx));
+  gco->gch.taint = t;
+  lua_unlock(L);
+}
+
+/* }====================================================================== */

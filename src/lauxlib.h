@@ -169,6 +169,18 @@ LUALIB_API void (luaL_pushresult) (luaL_Buffer *B);
 
 #define luaL_reg	luaL_Reg
 
+/*
+** {======================================================================
+** Security API
+** =======================================================================
+*/
+
+#define luaL_issecure(L) (lua_gettaint(L) == NULL)
+#define luaL_issecurevalue(L, o) (lua_getvaluetaint(L, o) == NULL)
+#define luaL_issecureobject(L, o) (lua_getobjecttaint(L, o) == NULL)
+
+/* }====================================================================== */
+
 #endif
 
 
