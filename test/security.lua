@@ -1,18 +1,31 @@
-local function insecurecall(func, ...)
-  forceinsecure();
-  local ok, err = pcall(func, ...);
-  debug.forcesecure();
+local function pack(...)
+  return { n = select("#", ...), ... };
+end
 
-  if not ok then
+local function securecall_checked(func, ...)
+  local err;
+  local errorhandler = function(e) err = e; end;
+
+  seterrorhandler(errorhandler);
+
+  local results = pack(securecall(func, ...));
+
+  if err ~= nil then
     error(err, 0);
+  else
+    return unpack(results, 1, results.n);
   end
 end
 
-local function errorhandler(err)
-  print(err);
+local function insecurecall_checked(func, ...)
+  local wrapper = function(...)
+    forceinsecure();
+    return func(...);
+  end
+
+  return securecall_checked(wrapper, ...);
 end
 
-seterrorhandler(errorhandler);
 
 --[[
 
@@ -67,10 +80,10 @@ local function TestConstantFieldAssignments(constant)
   -- parsed and loaded. It doesn't reflect on what we're expecting in the
   -- results.
 
-  local InsecureConstantTest = securecall(function() forceinsecure(); return assert(loadstring("(...).InsecureConstantTest = " .. constant)); end);
-  local InsecureVariableTest = securecall(function() forceinsecure(); return assert(loadstring("(...).InsecureVariableTest = {}")); end);
-  local SecureConstantTest = securecall(function() return assert(loadstring("forceinsecure(); (...).SecureConstantTest = " .. constant)); end);
-  local SecureVariableTest = securecall(function() return assert(loadstring("forceinsecure(); (...).SecureVariableTest = {}")); end);
+  local InsecureConstantTest = insecurecall_checked(function() return assert(loadstring("(...).InsecureConstantTest = " .. constant)); end);
+  local InsecureVariableTest = insecurecall_checked(function() return assert(loadstring("(...).InsecureVariableTest = {}")); end);
+  local SecureConstantTest = securecall_checked(function() return assert(loadstring("forceinsecure(); (...).SecureConstantTest = " .. constant)); end);
+  local SecureVariableTest = securecall_checked(function() return assert(loadstring("forceinsecure(); (...).SecureVariableTest = {}")); end);
 
   assert(issecure(), "expected initial state to be secure");
   assert(type(InsecureConstantTest) == "function", "failed to load required function: InsecureConstantTest");
@@ -89,10 +102,10 @@ local function TestConstantFieldAssignments(constant)
     SecureVariableTest = nil,
   };
 
-  securecall(InsecureConstantTest, target);
-  securecall(InsecureVariableTest, target);
-  securecall(SecureConstantTest, target);
-  securecall(SecureVariableTest, target);
+  securecall_checked(InsecureConstantTest, target);
+  securecall_checked(InsecureVariableTest, target);
+  securecall_checked(SecureConstantTest, target);
+  securecall_checked(SecureVariableTest, target);
 
   assert(issecure(), "expected state to remain secure");
 
@@ -135,19 +148,18 @@ local function TestFunctionArguments(initial)
   local temp = {};
 
   temp.Bar1 = function(value) temp.baz1 = value; end
-  temp.Bar2 = securecall(function() forceinsecure() return function(value) temp.baz2 = value; end; end);
+  temp.Bar2 = insecurecall_checked(function() return function(value) temp.baz2 = value; end; end);
 
   assert(issecure(), "expected initial state to be secure");
   assert(issecurevariable(temp, "Bar1"), "expected 'temp.Bar1' to be securely assigned");
   assert(issecurevariable(temp, "Bar2"), "expected 'temp.Bar2' to be securely assigned");
 
-  insecurecall(function()
-    forceinsecure();
+  insecurecall_checked(function()
     temp.Bar1(initial);
     assert(not issecurevariable(temp, "baz1"), "expected 'temp.baz1' to be insecurely assigned");
   end);
 
-  insecurecall(function()
+  insecurecall_checked(function()
     temp.Bar2(initial);
     assert(not issecurevariable(temp, "baz2"), "expected 'temp.baz2' to be insecurely assigned");
   end);
@@ -194,7 +206,7 @@ local function TestFunctionReturns(initial)
 
   assert(issecure(), "expected initial state to be secure");
 
-  insecurecall(function()
+  insecurecall_checked(function()
     temp.initial = GetInitialValue();
     assert(not issecurevariable(temp, "initial"), "expected 'temp.initial' to be insecurely assigned");
   end);
