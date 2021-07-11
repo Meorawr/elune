@@ -486,7 +486,7 @@ static int luaB_issecurevariable (lua_State *L) {
 
   if (valuetaint) {
     lua_pushboolean(L, 0);
-    lua_pushstring(L, valuetaint->source);
+    lua_pushstring(L, valuetaint->source ? valuetaint->source : "");
   } else {
     lua_pushboolean(L, 1);
     lua_pushnil(L);
