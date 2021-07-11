@@ -1,3 +1,19 @@
+local function insecurecall(func, ...)
+  forceinsecure();
+  local ok, err = pcall(func, ...);
+  debug.forcesecure();
+
+  if not ok then
+    error(err, 0);
+  end
+end
+
+local function errorhandler(err)
+  print(err);
+end
+
+seterrorhandler(errorhandler);
+
 --[[
 
   Constant Field Assignments
@@ -45,6 +61,11 @@ local function TestConstantFieldAssignments(constant)
   else
     constant = tostring(constant);
   end
+
+  -- Note that "Insecure" versus "Secure" below refers to the initial state
+  -- of the context at the point when the string passed into loadstring was
+  -- parsed and loaded. It doesn't reflect on what we're expecting in the
+  -- results.
 
   local InsecureConstantTest = securecall(function() forceinsecure(); return assert(loadstring("(...).InsecureConstantTest = " .. constant)); end);
   local InsecureVariableTest = securecall(function() forceinsecure(); return assert(loadstring("(...).InsecureVariableTest = {}")); end);
@@ -110,7 +131,7 @@ TestConstantFieldAssignments(nil);
 
 --]]
 
-local function TestFunctionArguments(constant)
+local function TestFunctionArguments(initial)
   local temp = {};
 
   temp.Bar1 = function(value) temp.baz1 = value; end
@@ -120,14 +141,14 @@ local function TestFunctionArguments(constant)
   assert(issecurevariable(temp, "Bar1"), "expected 'temp.Bar1' to be securely assigned");
   assert(issecurevariable(temp, "Bar2"), "expected 'temp.Bar2' to be securely assigned");
 
-  securecall(function()
+  insecurecall(function()
     forceinsecure();
-    temp.Bar1(constant);
+    temp.Bar1(initial);
     assert(not issecurevariable(temp, "baz1"), "expected 'temp.baz1' to be insecurely assigned");
   end);
 
-  securecall(function()
-    temp.Bar2(constant);
+  insecurecall(function()
+    temp.Bar2(initial);
     assert(not issecurevariable(temp, "baz2"), "expected 'temp.baz2' to be insecurely assigned");
   end);
 end
