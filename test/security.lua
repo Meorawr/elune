@@ -159,3 +159,50 @@ TestFunctionArguments(true);
 TestFunctionArguments(nil);
 TestFunctionArguments({});
 TestFunctionArguments(print);
+
+--[[
+
+  Tainting Function Returns
+
+  As with the Tainting Function Arguments test, we expect that a secure
+  closure returning a secure constant if invoked insecurely shouldn't allow
+  the values returned by the function to keep their security.
+
+    function Foo()
+      return 100;
+    end
+
+  Assuming Foo was loaded securely the constant "100" will itself also be
+  secure, however calling Foo insecurely _should_ taint the value returned
+  from the function irrespective of it being a constant.
+
+  This can be verified ingame through the following:
+
+    A = ScrollBoxLinearBaseViewMixin.GetStride();
+    assert(A == 1, "expected 'A' to be 1");
+    assert(not issecurevariable("A"), "expected 'A' to be insecure");
+
+--]]
+
+
+local function TestFunctionReturns(initial)
+  local temp = {};
+
+  local function GetInitialValue()
+    return initial;
+  end
+
+  assert(issecure(), "expected initial state to be secure");
+
+  insecurecall(function()
+    temp.initial = GetInitialValue();
+    assert(not issecurevariable(temp, "initial"), "expected 'temp.initial' to be insecurely assigned");
+  end);
+end
+
+TestFunctionReturns("constant");
+TestFunctionReturns(12345);
+TestFunctionReturns(true);
+TestFunctionReturns(nil);
+TestFunctionReturns({});
+TestFunctionReturns(print);

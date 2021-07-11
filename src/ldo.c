@@ -359,8 +359,10 @@ int luaD_poscall (lua_State *L, StkId firstResult) {
   L->base = (ci - 1)->base;  /* restore base */
   L->savedpc = (ci - 1)->savedpc;  /* restore savedpc */
   /* move results to correct place */
-  for (i = wanted; i != 0 && firstResult < L->top; i--)
+  for (i = wanted; i != 0 && firstResult < L->top; i--) {
+    settaint(firstResult, L->taint);
     setobjs2s(L, res++, firstResult++);
+  }
   while (i-- > 0)
     setnilvalue(L, res++);
   L->top = res;
