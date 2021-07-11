@@ -166,7 +166,7 @@ LUA_API void lua_settop (lua_State *L, int idx) {
   if (idx >= 0) {
     api_check(L, idx <= L->stack_last - L->base);
     while (L->top < L->base + idx)
-      setnilvalue(L->top++);
+      setnilvalue(L, L->top++);
     L->top = L->base + idx;
   }
   else {
@@ -260,7 +260,7 @@ LUA_API int lua_iscfunction (lua_State *L, int idx) {
 LUA_API int lua_isnumber (lua_State *L, int idx) {
   TValue n;
   const TValue *o = index2adr(L, idx);
-  return tonumber(o, &n);
+  return tonumber(L, o, &n);
 }
 
 
@@ -313,7 +313,7 @@ LUA_API int lua_lessthan (lua_State *L, int index1, int index2) {
 LUA_API lua_Number lua_tonumber (lua_State *L, int idx) {
   TValue n;
   const TValue *o = index2adr(L, idx);
-  if (tonumber(o, &n))
+  if (tonumber(L, o, &n))
     return nvalue(o);
   else
     return 0;
@@ -323,7 +323,7 @@ LUA_API lua_Number lua_tonumber (lua_State *L, int idx) {
 LUA_API lua_Integer lua_tointeger (lua_State *L, int idx) {
   TValue n;
   const TValue *o = index2adr(L, idx);
-  if (tonumber(o, &n)) {
+  if (tonumber(L, o, &n)) {
     lua_Integer res;
     lua_Number num = nvalue(o);
     lua_number2integer(res, num);
@@ -420,7 +420,7 @@ LUA_API const void *lua_topointer (lua_State *L, int idx) {
 
 LUA_API void lua_pushnil (lua_State *L) {
   lua_lock(L);
-  setnilvalue(L->top);
+  setnilvalue(L, L->top);
   api_incr_top(L);
   lua_unlock(L);
 }
@@ -428,7 +428,7 @@ LUA_API void lua_pushnil (lua_State *L) {
 
 LUA_API void lua_pushnumber (lua_State *L, lua_Number n) {
   lua_lock(L);
-  setnvalue(L->top, n);
+  setnvalue(L, L->top, n);
   api_incr_top(L);
   lua_unlock(L);
 }
@@ -436,7 +436,7 @@ LUA_API void lua_pushnumber (lua_State *L, lua_Number n) {
 
 LUA_API void lua_pushinteger (lua_State *L, lua_Integer n) {
   lua_lock(L);
-  setnvalue(L->top, cast_num(n));
+  setnvalue(L, L->top, cast_num(n));
   api_incr_top(L);
   lua_unlock(L);
 }
@@ -502,7 +502,7 @@ LUA_API void lua_pushcclosure (lua_State *L, lua_CFunction fn, int n) {
 
 LUA_API void lua_pushboolean (lua_State *L, int b) {
   lua_lock(L);
-  setbvalue(L->top, (b != 0));  /* ensure that true is 1 */
+  setbvalue(L, L->top, (b != 0));  /* ensure that true is 1 */
   api_incr_top(L);
   lua_unlock(L);
 }
@@ -510,7 +510,7 @@ LUA_API void lua_pushboolean (lua_State *L, int b) {
 
 LUA_API void lua_pushlightuserdata (lua_State *L, void *p) {
   lua_lock(L);
-  setpvalue(L->top, p);
+  setpvalue(L, L->top, p);
   api_incr_top(L);
   lua_unlock(L);
 }
@@ -629,7 +629,7 @@ LUA_API void lua_getfenv (lua_State *L, int idx) {
       setobj2s(L, L->top,  gt(thvalue(o)));
       break;
     default:
-      setnilvalue(L->top);
+      setnilvalue(L, L->top);
       break;
   }
   api_incr_top(L);
@@ -841,7 +841,7 @@ static void f_Ccall (lua_State *L, void *ud) {
   cl->c.f = c->func;
   setclvalue(L, L->top, cl);  /* push function */
   api_incr_top(L);
-  setpvalue(L->top, c->ud);  /* push only argument */
+  setpvalue(L, L->top, c->ud);  /* push only argument */
   api_incr_top(L);
   luaD_call(L, L->top - 2, 0);
 }

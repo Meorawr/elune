@@ -265,7 +265,7 @@ static void traversestack (global_State *g, lua_State *l) {
   for (o = l->stack; o < l->top; o++)
     markvalue(g, o);
   for (; o <= lim; o++)
-    setnilvalue(o);
+    setnilvalue(l, o);
   checkstacksizes(l, lim);
 }
 
@@ -348,7 +348,7 @@ static int iscleared (const TValue *o, int iskey) {
 /*
 ** clear collected entries from weaktables
 */
-static void cleartable (GCObject *l) {
+static void cleartable (lua_State *L, GCObject *l) {
   while (l) {
     Table *h = gco2h(l);
     int i = h->sizearray;
@@ -358,7 +358,7 @@ static void cleartable (GCObject *l) {
       while (i--) {
         TValue *o = &h->array[i];
         if (iscleared(o, 0))  /* value was collected? */
-          setnilvalue(o);  /* remove value */
+          setnilvalue(L, o);  /* remove value */
       }
     }
     i = sizenode(h);
@@ -366,7 +366,7 @@ static void cleartable (GCObject *l) {
       Node *n = gnode(h, i);
       if (!ttisnil(gval(n)) &&  /* non-empty entry? */
           (iscleared(key2tval(n), 1) || iscleared(gval(n), 0))) {
-        setnilvalue(gval(n));  /* remove value ... */
+        setnilvalue(L, gval(n));  /* remove value ... */
         removeentry(n);  /* remove entry from table */
       }
     }
@@ -543,7 +543,7 @@ static void atomic (lua_State *L) {
   udsize = luaC_separateudata(L, 0);  /* separate userdata to be finalized */
   marktmu(g);  /* mark `preserved' userdata */
   udsize += propagateall(g);  /* remark, to propagate `preserveness' */
-  cleartable(g->weak);  /* remove collected objects from weak tables */
+  cleartable(L, g->weak);  /* remove collected objects from weak tables */
   /* flip current white */
   g->currentwhite = cast_byte(otherwhite(g));
   g->sweepstrgc = 0;

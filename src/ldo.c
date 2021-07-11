@@ -211,7 +211,7 @@ static StkId adjust_varargs (lua_State *L, Proto *p, int actual) {
   Table *htab = NULL;
   StkId base, fixed;
   for (; actual < nfixargs; ++actual)
-    setnilvalue(L->top++);
+    setnilvalue(L, L->top++);
 #if defined(LUA_COMPAT_VARARG)
   if (p->is_vararg & VARARG_NEEDSARG) { /* compat. with old-style vararg? */
     int nvar = actual - nfixargs;  /* number of extra arguments */
@@ -230,7 +230,7 @@ static StkId adjust_varargs (lua_State *L, Proto *p, int actual) {
   base = L->top;  /* final position of first argument */
   for (i=0; i<nfixargs; i++) {
     setobjs2s(L, L->top++, fixed+i);
-    setnilvalue(fixed+i);
+    setnilvalue(L, fixed+i);
   }
   /* add `arg' parameter */
   if (htab) {
@@ -289,13 +289,16 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
     ci = inc_ci(L);  /* now `enter' new function */
     ci->func = func;
     L->base = ci->base = base;
+    L->taint = cl->taint ? cl->taint : L->taint;
     ci->top = L->base + p->maxstacksize;
     lua_assert(ci->top <= L->stack_last);
     L->savedpc = p->code;  /* starting point */
     ci->tailcalls = 0;
     ci->nresults = nresults;
     for (st = L->top; st < ci->top; st++)
-      setnilvalue(st);
+      setnilvalue(L, st);
+    for (st = ci->base; st < ci->top; st++)
+      settaint(st, L->taint);
     L->top = ci->top;
     if (L->hookmask & LUA_MASKCALL) {
       L->savedpc++;  /* hooks assume 'pc' is already incremented */
@@ -306,14 +309,18 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
   }
   else {  /* if is a C function, call it */
     CallInfo *ci;
+    StkId st;
     int n;
     luaD_checkstack(L, LUA_MINSTACK);  /* ensure minimum stack size */
     ci = inc_ci(L);  /* now `enter' new function */
     ci->func = restorestack(L, funcr);
     L->base = ci->base = ci->func + 1;
+    L->taint = cl->taint ? cl->taint : L->taint;
     ci->top = L->top + LUA_MINSTACK;
     lua_assert(ci->top <= L->stack_last);
     ci->nresults = nresults;
+    for (st = ci->base; st < ci->top; st++)
+      settaint(st, L->taint);
     if (L->hookmask & LUA_MASKCALL)
       luaD_callhook(L, LUA_HOOKCALL, -1);
     lua_unlock(L);
@@ -355,7 +362,7 @@ int luaD_poscall (lua_State *L, StkId firstResult) {
   for (i = wanted; i != 0 && firstResult < L->top; i--)
     setobjs2s(L, res++, firstResult++);
   while (i-- > 0)
-    setnilvalue(res++);
+    setnilvalue(L, res++);
   L->top = res;
   return (wanted - LUA_MULTRET);  /* 0 iff wanted == LUA_MULTRET */
 }

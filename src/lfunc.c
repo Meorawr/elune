@@ -26,6 +26,7 @@ Closure *luaF_newCclosure (lua_State *L, int nelems, Table *e) {
   c->c.isC = 1;
   c->c.env = e;
   c->c.nupvalues = cast_byte(nelems);
+  c->c.taint = L->taint;
   return c;
 }
 
@@ -37,6 +38,7 @@ Closure *luaF_newLclosure (lua_State *L, int nelems, Table *e) {
   c->l.env = e;
   c->l.nupvalues = cast_byte(nelems);
   while (nelems--) c->l.upvals[nelems] = NULL;
+  c->l.taint = L->taint;
   return c;
 }
 
@@ -45,7 +47,7 @@ UpVal *luaF_newupval (lua_State *L) {
   UpVal *uv = luaM_new(L, UpVal);
   luaC_link(L, obj2gco(uv), LUA_TUPVAL);
   uv->v = &uv->u.value;
-  setnilvalue(uv->v);
+  setnilvalue(L, uv->v);
   return uv;
 }
 

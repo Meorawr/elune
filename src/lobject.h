@@ -40,7 +40,7 @@ typedef union GCObject GCObject;
 ** Common Header for all collectable objects (in macro form, to be
 ** included in other objects)
 */
-#define CommonHeader	GCObject *next; lu_byte tt; lu_byte marked
+#define CommonHeader	GCObject *next; lu_byte tt; lu_byte marked; const lua_TaintInfo *taint
 
 
 /*
@@ -63,12 +63,11 @@ typedef union {
   int b;
 } Value;
 
-
 /*
 ** Tagged Values
 */
 
-#define TValuefields	Value value; int tt
+#define TValuefields	Value value; int tt; const lua_TaintInfo *taint
 
 typedef struct lua_TValue {
   TValuefields;
@@ -88,6 +87,7 @@ typedef struct lua_TValue {
 
 /* Macros to access values */
 #define ttype(o)	((o)->tt)
+#define gettaint(obj) ((obj)->taint)
 #define gcvalue(o)	check_exp(iscollectable(o), (o)->value.gc)
 #define pvalue(o)	check_exp(ttislightuserdata(o), (o)->value.p)
 #define nvalue(o)	check_exp(ttisnumber(o), (o)->value.n)
@@ -101,6 +101,7 @@ typedef struct lua_TValue {
 #define thvalue(o)	check_exp(ttisthread(o), &(o)->value.gc->th)
 
 #define l_isfalse(o)	(ttisnil(o) || (ttisboolean(o) && bvalue(o) == 0))
+#define l_issecure(o) (!gettaint(o))
 
 /*
 ** for internal debug only
@@ -114,54 +115,54 @@ typedef struct lua_TValue {
 
 
 /* Macros to set values */
-#define setnilvalue(obj) ((obj)->tt=LUA_TNIL)
 
-#define setnvalue(obj,x) \
-  { TValue *i_o=(obj); i_o->value.n=(x); i_o->tt=LUA_TNUMBER; }
+#define setnilvalue(L,obj) \
+  do { TValue *i_o=(obj); i_o->tt=LUA_TNIL; i_o->taint=L->taint; } while(0)
 
-#define setpvalue(obj,x) \
-  { TValue *i_o=(obj); i_o->value.p=(x); i_o->tt=LUA_TLIGHTUSERDATA; }
+#define setnvalue(L,obj,x) \
+  do { TValue *i_o=(obj); i_o->value.n=(x); i_o->tt=LUA_TNUMBER; i_o->taint=L->taint; } while(0)
 
-#define setbvalue(obj,x) \
-  { TValue *i_o=(obj); i_o->value.b=(x); i_o->tt=LUA_TBOOLEAN; }
+#define setpvalue(L,obj,x) \
+  do { TValue *i_o=(obj); i_o->value.p=(x); i_o->tt=LUA_TLIGHTUSERDATA; i_o->taint=L->taint; } while(0)
+
+#define setbvalue(L,obj,x) \
+  do { TValue *i_o=(obj); i_o->value.b=(x); i_o->tt=LUA_TBOOLEAN; i_o->taint=L->taint; } while(0)
 
 #define setsvalue(L,obj,x) \
-  { TValue *i_o=(obj); \
-    i_o->value.gc=cast(GCObject *, (x)); i_o->tt=LUA_TSTRING; \
-    checkliveness(G(L),i_o); }
+  do { TValue *i_o=(obj); \
+    i_o->value.gc=cast(GCObject *, (x)); i_o->tt=LUA_TSTRING; i_o->taint=L->taint; \
+    checkliveness(G(L),i_o); } while(0)
 
 #define setuvalue(L,obj,x) \
-  { TValue *i_o=(obj); \
-    i_o->value.gc=cast(GCObject *, (x)); i_o->tt=LUA_TUSERDATA; \
-    checkliveness(G(L),i_o); }
+  do { TValue *i_o=(obj); \
+    i_o->value.gc=cast(GCObject *, (x)); i_o->tt=LUA_TUSERDATA; i_o->taint=L->taint; \
+    checkliveness(G(L),i_o); } while(0)
 
 #define setthvalue(L,obj,x) \
-  { TValue *i_o=(obj); \
-    i_o->value.gc=cast(GCObject *, (x)); i_o->tt=LUA_TTHREAD; \
-    checkliveness(G(L),i_o); }
+  do { TValue *i_o=(obj); \
+    i_o->value.gc=cast(GCObject *, (x)); i_o->tt=LUA_TTHREAD; i_o->taint=L->taint; \
+    checkliveness(G(L),i_o); } while(0)
 
 #define setclvalue(L,obj,x) \
-  { TValue *i_o=(obj); \
-    i_o->value.gc=cast(GCObject *, (x)); i_o->tt=LUA_TFUNCTION; \
-    checkliveness(G(L),i_o); }
+  do { TValue *i_o=(obj); \
+    i_o->value.gc=cast(GCObject *, (x)); i_o->tt=LUA_TFUNCTION; i_o->taint=L->taint; \
+    checkliveness(G(L),i_o); } while(0)
 
 #define sethvalue(L,obj,x) \
-  { TValue *i_o=(obj); \
-    i_o->value.gc=cast(GCObject *, (x)); i_o->tt=LUA_TTABLE; \
-    checkliveness(G(L),i_o); }
+  do { TValue *i_o=(obj); \
+    i_o->value.gc=cast(GCObject *, (x)); i_o->tt=LUA_TTABLE; i_o->taint=L->taint; \
+    checkliveness(G(L),i_o); } while(0)
 
 #define setptvalue(L,obj,x) \
-  { TValue *i_o=(obj); \
-    i_o->value.gc=cast(GCObject *, (x)); i_o->tt=LUA_TPROTO; \
-    checkliveness(G(L),i_o); }
-
-
-
+  do { TValue *i_o=(obj); \
+    i_o->value.gc=cast(GCObject *, (x)); i_o->tt=LUA_TPROTO; i_o->taint=L->taint; \
+    checkliveness(G(L),i_o); } while(0)
 
 #define setobj(L,obj1,obj2) \
-  { const TValue *o2=(obj2); TValue *o1=(obj1); \
-    o1->value = o2->value; o1->tt=o2->tt; \
-    checkliveness(G(L),o1); }
+  do { const TValue *o2=(obj2); TValue *o1=(obj1); \
+    o1->value = o2->value; o1->tt=o2->tt; o1->taint = o2->taint; \
+    L->taint = o1->taint ? o1->taint : L->taint; \
+    checkliveness(G(L),o1); } while(0)
 
 
 /*
@@ -184,6 +185,7 @@ typedef struct lua_TValue {
 #define setsvalue2n	setsvalue
 
 #define setttype(obj, tt) (ttype(obj) = (tt))
+#define settaint(obj, t) (gettaint(obj) = (t))
 
 
 #define iscollectable(o)	(ttype(o) >= LUA_TSTRING)
