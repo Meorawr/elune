@@ -740,11 +740,15 @@ union luai_Cast { double l_d; long l_l; };
 
 #define LUA_INTFRMLEN		"ll"
 #define LUA_INTFRM_T		long long
+#define LUA_INTFRM_MIN	LLONG_MIN
+#define LUA_INTFRM_MAX	LLONG_MAX
 
 #else
 
 #define LUA_INTFRMLEN		"l"
 #define LUA_INTFRM_T		long
+#define LUA_INTFRM_MIN	LONG_MIN
+#define LUA_INTFRM_MAX	LONG_MAX
 
 #endif
 

@@ -778,13 +778,19 @@ static int str_format (lua_State *L) {
           break;
         }
         case 'd':  case 'i': {
+          const lua_Number num = luaL_checknumber(L, arg);
+          if (!((num >= LUA_INTFRM_MIN) == (num <= LUA_INTFRM_MAX)))
+            luaL_error(L, "integer overflow attempting to store %f", num);
           addintlen(form);
-          sprintf(buff, form, (LUA_INTFRM_T)luaL_checknumber(L, arg));
+          sprintf(buff, form, (LUA_INTFRM_T)num);
           break;
         }
         case 'o':  case 'u':  case 'x':  case 'X': {
+          const lua_Number num = luaL_checknumber(L, arg);
+          if (!((num >= LUA_INTFRM_MIN) == (num <= LUA_INTFRM_MAX)))
+            luaL_error(L, "integer overflow attempting to store %f", num);
           addintlen(form);
-          sprintf(buff, form, (unsigned LUA_INTFRM_T)luaL_checknumber(L, arg));
+          sprintf(buff, form, (unsigned LUA_INTFRM_T)num);
           break;
         }
         case 'e':  case 'E': case 'f':
