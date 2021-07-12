@@ -40,7 +40,7 @@ typedef union GCObject GCObject;
 ** Common Header for all collectable objects (in macro form, to be
 ** included in other objects)
 */
-#define CommonHeader	GCObject *next; lu_byte tt; lu_byte marked; const lua_TaintInfo *taint
+#define CommonHeader	GCObject *next; const lua_TaintInfo *taint; lu_byte tt; lu_byte marked
 
 
 /*
@@ -67,7 +67,7 @@ typedef union {
 ** Tagged Values
 */
 
-#define TValuefields	Value value; int tt; const lua_TaintInfo *taint
+#define TValuefields	Value value; const lua_TaintInfo *taint; int tt
 
 typedef struct lua_TValue {
   TValuefields;
@@ -87,7 +87,7 @@ typedef struct lua_TValue {
 
 /* Macros to access values */
 #define ttype(o)	((o)->tt)
-#define gettaint(obj) ((obj)->taint)
+#define gettaint(o)	((o)->taint)
 #define gcvalue(o)	check_exp(iscollectable(o), (o)->value.gc)
 #define pvalue(o)	check_exp(ttislightuserdata(o), (o)->value.p)
 #define nvalue(o)	check_exp(ttisnumber(o), (o)->value.n)
@@ -185,7 +185,7 @@ typedef struct lua_TValue {
 #define setsvalue2n	setsvalue
 
 #define setttype(obj, tt) (ttype(obj) = (tt))
-#define settaint(obj, t) (gettaint(obj) = (t))
+#define settaint(obj, ta) (gettaint(obj) = (ta))
 
 
 #define iscollectable(o)	(ttype(o) >= LUA_TSTRING)
