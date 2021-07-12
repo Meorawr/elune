@@ -367,8 +367,8 @@ struct lua_Debug {
 */
 
 typedef struct lua_TaintInfo {
-  const char *source;
-  void *data;
+  const char *source;  /* string name for the tainting source */
+  void *data;          /* custom userdata field */
 } lua_TaintInfo;
 
 LUA_API lua_TaintInfo *lua_gettaint (lua_State *L);

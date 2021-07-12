@@ -1092,13 +1092,13 @@ LUA_API const char *lua_setupvalue (lua_State *L, int funcindex, int n) {
 */
 
 LUA_API lua_TaintInfo *lua_gettaint (lua_State *L) {
-  lua_TaintInfo *t;
+  const lua_TaintInfo *t;
 
   lua_lock(L);
-  t = (lua_TaintInfo *) L->taint;
+  t = L->taint;
   lua_unlock(L);
 
-  return t;
+  return cast(lua_TaintInfo *, t);
 }
 
 LUA_API void lua_settaint (lua_State *L, const lua_TaintInfo *t) {
@@ -1117,7 +1117,7 @@ LUA_API lua_TaintInfo *lua_getvaluetaint (lua_State *L, int idx) {
   t = gettaint(v);
   lua_unlock(L);
 
-  return (lua_TaintInfo *) t;
+  return cast(lua_TaintInfo *, t);
 }
 
 LUA_API void lua_setvaluetaint (lua_State *L, int idx, const lua_TaintInfo *t) {
@@ -1139,7 +1139,7 @@ LUA_API lua_TaintInfo *lua_getobjecttaint (lua_State *L, int idx) {
   t = gco->gch.taint;
   lua_unlock(L);
 
-  return (lua_TaintInfo *) t;
+  return cast(lua_TaintInfo *, t);
 }
 
 LUA_API void lua_setobjecttaint (lua_State *L, int idx, const lua_TaintInfo *t) {
