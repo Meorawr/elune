@@ -56,6 +56,7 @@ target_sources(liblua
 
     "lauxlib.c"
     "lbaselib.c"
+    "lbitlib.c"
     "ldblib.c"
     "liolib.c"
     "lmathlib.c"
