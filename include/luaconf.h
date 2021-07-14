@@ -383,6 +383,20 @@
 
 
 /*
+@@ lua_assert is the assertion macro used by the implementation.
+** CHANGE lua_assert if you want Lua to perform internal assertions as part
+** of its operation. This may significantly slow down the interpreter
+** a bit. A useful redefinition is to use assert.h.
+*/
+#if defined(LUA_USE_ASSERT)
+#include <assert.h>
+#define lua_assert(x) assert(x)
+#else
+#define lua_assert(x) ((void) sizeof((x)))
+#endif
+
+
+/*
 @@ LUAI_BITSINT defines the number of bits in an int.
 ** CHANGE here if Lua cannot automatically detect the number of bits of
 ** your machine. Probably you do not need to change this.

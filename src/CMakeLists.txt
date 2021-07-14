@@ -68,6 +68,9 @@ set(liblua_COMPILE_DEFINITIONS
     # builds instead of LUA_USE_MACOSX which is supposedly intended for OSX
     # versions 10.3 or older.
     $<$<PLATFORM_ID:Darwin,Linux>:LUA_USE_LINUX>
+  PRIVATE
+    # Enable internal assertions on debug builds.
+    $<$<CONFIG:Debug>:LUA_USE_ASSERT>
 )
 
 set(liblua_INCLUDE_DIRECTORIES
