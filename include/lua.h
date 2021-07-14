@@ -333,6 +333,7 @@ LUA_API void           lua_setobjecttaint (lua_State *L, int idx, const lua_Tain
 #define LUA_HOOKLINE	2
 #define LUA_HOOKCOUNT	3
 #define LUA_HOOKTAILRET 4
+#define LUA_HOOKSECURITY 5
 
 
 /*
@@ -342,6 +343,7 @@ LUA_API void           lua_setobjecttaint (lua_State *L, int idx, const lua_Tain
 #define LUA_MASKRET	(1 << LUA_HOOKRET)
 #define LUA_MASKLINE	(1 << LUA_HOOKLINE)
 #define LUA_MASKCOUNT	(1 << LUA_HOOKCOUNT)
+#define LUA_MASKSECURITY (1 << LUA_HOOKSECURITY)
 
 typedef struct lua_Debug lua_Debug;  /* activation record */
 
@@ -374,6 +376,7 @@ struct lua_Debug {
   int linedefined;	/* (S) */
   int lastlinedefined;	/* (S) */
   char short_src[LUA_IDSIZE]; /* (S) */
+  const lua_TaintInfo *taint; /* (s) */
   /* private part */
   int i_ci;  /* active function */
 };

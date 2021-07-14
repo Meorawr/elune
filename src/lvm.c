@@ -77,6 +77,16 @@ static void traceexec (lua_State *L, const Instruction *pc) {
 }
 
 
+static void tracesecurity(lua_State *L, const Instruction *pc) {
+  const Proto *proto = ci_func(L->ci)->l.p;
+  int relpc = pcRel(pc, proto);
+  int line = getline(proto, relpc);
+
+  L->savedpc = pc;
+  luaD_callhook(L, LUA_HOOKSECURITY, line);
+}
+
+
 static void callTMres (lua_State *L, StkId res, const TValue *f,
                         const TValue *p1, const TValue *p2) {
   ptrdiff_t result = savestack(L, res);
@@ -379,6 +389,7 @@ void luaV_execute (lua_State *L, int nexeccalls) {
   StkId base;
   TValue *k;
   const Instruction *pc;
+  int secure = l_issecure(L);  /* only set on initial entry */
  reentry:  /* entry point */
   lua_assert(isLua(L->ci));
   pc = L->savedpc;
@@ -389,15 +400,26 @@ void luaV_execute (lua_State *L, int nexeccalls) {
   for (;;) {
     const Instruction i = *pc++;
     StkId ra;
-    if ((L->hookmask & (LUA_MASKLINE | LUA_MASKCOUNT)) &&
-        (--L->hookcount == 0 || L->hookmask & LUA_MASKLINE)) {
-      traceexec(L, pc);
-      if (L->status == LUA_YIELD) {  /* did hook yield? */
+
+    if (L->hookmask & (LUA_MASKLINE | LUA_MASKCOUNT | LUA_MASKSECURITY)) {
+      if (secure != l_issecure(L)) {  /* did security state of VM toggle? */
+        tracesecurity(L, pc - 1);
+      }
+
+      if (--L->hookcount == 0 || L->hookmask & LUA_MASKLINE) {
+        traceexec(L, pc);
+      }
+
+      if (L->status == LUA_YIELD) {  /* did any hook yield? */
         L->savedpc = pc - 1;
         return;
       }
+
       base = L->base;
     }
+
+    secure = l_issecure(L);  /* record security state for hooks */
+
     /* warning!! several calls may realloc the stack and invalidate `ra' */
     ra = RA(i);
     lua_assert(base == L->base && L->base == L->ci->base);

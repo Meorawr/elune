@@ -164,13 +164,14 @@ static void funcinfo (lua_Debug *ar, Closure *cl) {
 }
 
 
-static void info_tailcall (lua_Debug *ar) {
+static void info_tailcall (lua_State *L, lua_Debug *ar) {
   ar->name = ar->namewhat = "";
   ar->what = "tail";
   ar->lastlinedefined = ar->linedefined = ar->currentline = -1;
   ar->source = "=(tail call)";
   luaO_chunkid(ar->short_src, ar->source, LUA_IDSIZE);
   ar->nups = 0;
+  ar->taint = gettaint(L);
 }
 
 
@@ -194,13 +195,17 @@ static int auxgetinfo (lua_State *L, const char *what, lua_Debug *ar,
                     Closure *f, CallInfo *ci) {
   int status = 1;
   if (f == NULL) {
-    info_tailcall(ar);
+    info_tailcall(L, ar);
     return status;
   }
   for (; *what; what++) {
     switch (*what) {
       case 'S': {
         funcinfo(ar, f);
+        break;
+      }
+      case 's': {
+        ar->taint = gettaint(L);
         break;
       }
       case 'l': {
