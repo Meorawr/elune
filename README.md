@@ -23,12 +23,22 @@ To assist with parity with the ingame environment, a custom `bit` library implem
 
 ## Building
 
-The original Makefiles have been replaced with a CMake-based build. Note that only builds on Linux (via GCC and Clang) and Windows (via MSVC) are supported. Mac OSX shouldn't be too hard to add, but anything beyond this is left intentionally unsupported as it wouldn't be a relevant host environment that the game could actually support to begin with.
+The original Makefiles have been replaced with a CMake-based build. Note that only builds on Linux (via GCC and Clang) and Windows (via MSVC) are supported. Mac OS X is as yet untested.
 
 The default build configuration differs from a stock Lua 5.1 build in the following ways:
 
 - tainted-lua is built with C++ by default. This means that exception handling is used in place of setjmp/longjmp for protected calls.
 - tainted-lua will build with math optimizations by default. This will cause differences with regards to the handling of NaN values, which are observable in an ingame environment.
+
+The following commands should work to set up a CMake build of the project.
+
+```sh
+cmake -S <path to checkout> -B build/ -DCMAKE_BUILD_TYPE=Release
+cmake --build build/
+
+# To install the generated binaries and libraries run the following.
+cmake --install build/ --prefix <path to install prefix>
+```
 
 ## License
 

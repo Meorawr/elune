@@ -297,6 +297,26 @@ LUA_API void lua_setallocf (lua_State *L, lua_Alloc f, void *ud);
 /* hack */
 LUA_API void lua_setlevel	(lua_State *from, lua_State *to);
 
+/*
+** {======================================================================
+** Security API
+** =======================================================================
+*/
+
+typedef struct lua_TaintInfo {
+  const char *source;  /* string name for the tainting source */
+  void *data;          /* custom userdata field */
+} lua_TaintInfo;
+
+LUA_API lua_TaintInfo *lua_gettaint (lua_State *L);
+LUA_API void           lua_settaint (lua_State *L, const lua_TaintInfo *t);
+LUA_API lua_TaintInfo *lua_getvaluetaint (lua_State *L, int idx);
+LUA_API void           lua_setvaluetaint (lua_State *L, int idx, const lua_TaintInfo *t);
+LUA_API lua_TaintInfo *lua_getobjecttaint (lua_State *L, int idx);
+LUA_API void           lua_setobjecttaint (lua_State *L, int idx, const lua_TaintInfo *t);
+
+/* }====================================================================== */
+
 
 /*
 ** {======================================================================
@@ -357,26 +377,6 @@ struct lua_Debug {
   /* private part */
   int i_ci;  /* active function */
 };
-
-/* }====================================================================== */
-
-/*
-** {======================================================================
-** Security API
-** =======================================================================
-*/
-
-typedef struct lua_TaintInfo {
-  const char *source;  /* string name for the tainting source */
-  void *data;          /* custom userdata field */
-} lua_TaintInfo;
-
-LUA_API lua_TaintInfo *lua_gettaint (lua_State *L);
-LUA_API void           lua_settaint (lua_State *L, const lua_TaintInfo *t);
-LUA_API lua_TaintInfo *lua_getvaluetaint (lua_State *L, int idx);
-LUA_API void           lua_setvaluetaint (lua_State *L, int idx, const lua_TaintInfo *t);
-LUA_API lua_TaintInfo *lua_getobjecttaint (lua_State *L, int idx);
-LUA_API void           lua_setobjecttaint (lua_State *L, int idx, const lua_TaintInfo *t);
 
 /* }====================================================================== */
 
