@@ -26,7 +26,7 @@ Closure *luaF_newCclosure (lua_State *L, int nelems, Table *e) {
   c->c.isC = 1;
   c->c.env = e;
   c->c.nupvalues = cast_byte(nelems);
-  c->c.taint = L->taint;
+  c->c.taint = gettaint(L);  /* mark closure as internally tainted */
   return c;
 }
 
@@ -38,7 +38,7 @@ Closure *luaF_newLclosure (lua_State *L, int nelems, Table *e) {
   c->l.env = e;
   c->l.nupvalues = cast_byte(nelems);
   while (nelems--) c->l.upvals[nelems] = NULL;
-  c->l.taint = L->taint;
+  c->l.taint = gettaint(L);  /* mark closure as internally tainted */
   return c;
 }
 

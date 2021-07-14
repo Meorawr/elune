@@ -1095,7 +1095,7 @@ LUA_API lua_TaintInfo *lua_gettaint (lua_State *L) {
   const lua_TaintInfo *t;
 
   lua_lock(L);
-  t = L->taint;
+  t = gettaint(L);
   lua_unlock(L);
 
   return cast(lua_TaintInfo *, t);
@@ -1103,7 +1103,7 @@ LUA_API lua_TaintInfo *lua_gettaint (lua_State *L) {
 
 LUA_API void lua_settaint (lua_State *L, const lua_TaintInfo *t) {
   lua_lock(L);
-  L->taint = t;
+  settaint(L, t);
   lua_unlock(L);
 }
 

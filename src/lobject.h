@@ -161,7 +161,7 @@ typedef struct lua_TValue {
 #define setobj(L,obj1,obj2) \
   do { const TValue *o2=(obj2); TValue *o1=(obj1); \
     o1->value = o2->value; o1->tt=o2->tt; o1->taint = o2->taint; \
-    L->taint = o1->taint ? o1->taint : L->taint; \
+    if (o1->taint) L->taint = o1->taint; \
     checkliveness(G(L),o1); } while(0)
 
 
@@ -186,6 +186,11 @@ typedef struct lua_TValue {
 
 #define setttype(obj, tt) (ttype(obj) = (tt))
 #define settaint(obj, ta) (gettaint(obj) = (ta))
+#define propagatetaint(obj1, obj2) \
+  do { \
+    const lua_TaintInfo *obj2taint = (obj2)->taint; \
+    if (obj2taint) (obj1)->taint = obj2taint; \
+  } while(0)
 
 
 #define iscollectable(o)	(ttype(o) >= LUA_TSTRING)
