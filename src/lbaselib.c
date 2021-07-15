@@ -682,6 +682,23 @@ static int luaB_hooksecurefunc (lua_State *L) {
   return 0;
 }
 
+static int luaB_scrub (lua_State *L) {
+  const int argc = lua_gettop(L);
+  int argi;
+  int type;
+
+  for (argi = 1; argi <= argc; ++argi) {
+    type = lua_type(L, argi);
+
+    if (type != LUA_TNUMBER && type != LUA_TSTRING && type != LUA_TBOOLEAN) {
+      lua_pushnil(L);
+      lua_replace(L, argi);
+    }
+  }
+
+  return argc;
+}
+
 static const luaL_Reg base_funcs[] = {
   {"assert", luaB_assert},
   {"collectgarbage", luaB_collectgarbage},
@@ -704,6 +721,7 @@ static const luaL_Reg base_funcs[] = {
   {"rawequal", luaB_rawequal},
   {"rawget", luaB_rawget},
   {"rawset", luaB_rawset},
+  {"scrub", luaB_scrub},
   {"securecall", luaB_securecall},
   {"select", luaB_select},
   {"seterrorhandler", luaB_seterrorhandler},
