@@ -71,6 +71,7 @@ set(liblua_COMPILE_DEFINITIONS
   PRIVATE
     # Enable internal assertions on debug builds.
     $<$<CONFIG:Debug>:LUA_USE_ASSERT>
+    $<$<CONFIG:Debug>:LUA_USE_APICHECK>
 )
 
 set(liblua_INCLUDE_DIRECTORIES
