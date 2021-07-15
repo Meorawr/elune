@@ -263,6 +263,22 @@ static int sort (lua_State *L) {
   return 0;
 }
 
+static int wipe (lua_State *L) {
+  lua_settop(L, 1);
+  luaL_checktype(L, 1, LUA_TTABLE);
+
+  lua_pushnil(L);  /* initial key for iteration */
+
+  while (lua_next(L, 1) != 0) {
+    lua_pop(L, 1);
+    lua_pushvalue(L, -1);
+    lua_pushnil(L);
+    lua_settable(L, 1);
+  }
+
+  return 1;
+}
+
 /* }====================================================== */
 
 
@@ -276,6 +292,7 @@ static const luaL_Reg tab_funcs[] = {
   {"remove", tremove},
   {"setn", setn},
   {"sort", sort},
+  {"wipe", wipe},
   {NULL, NULL}
 };
 
