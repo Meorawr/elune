@@ -1151,4 +1151,22 @@ LUA_API void lua_setobjecttaint (lua_State *L, int idx, const lua_TaintInfo *t) 
   lua_unlock(L);
 }
 
+LUA_API void lua_taintvalues (lua_State *L, int from, int to, const lua_TaintInfo *taint) {
+  StkId cur;
+  StkId end;
+
+  lua_lock(L);
+
+  cur = index2adr(L, from);
+  end = index2adr(L, to);
+  api_checkvalidindex(L, cur);
+  api_checkvalidindex(L, end);
+
+  for (; cur <= end; ++cur) {
+    settaint(cur, taint);
+  }
+
+  lua_unlock(L);
+}
+
 /* }====================================================================== */

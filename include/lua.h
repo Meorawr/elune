@@ -315,6 +315,17 @@ LUA_API void           lua_setvaluetaint (lua_State *L, int idx, const lua_Taint
 LUA_API lua_TaintInfo *lua_getobjecttaint (lua_State *L, int idx);
 LUA_API void           lua_setobjecttaint (lua_State *L, int idx, const lua_TaintInfo *t);
 
+/* TODO: Rework above APIs. */
+
+/**
+ * Applies the given taint to a range of values on the stack.
+ *
+ * The `from` and `to` parameters must be either absolute (positive) or
+ * relative (negative) stack indices. Setting either of these to a
+ * pseudo-index will have undefined behaviour.
+ */
+LUA_API void lua_taintvalues (lua_State *L, int from, int to, const lua_TaintInfo *taint);
+
 /* }====================================================================== */
 
 

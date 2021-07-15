@@ -543,6 +543,145 @@ static int luaB_seterrorhandler (lua_State *L) {
   return 0;
 }
 
+static int securehook (lua_State *L) {
+  /**
+   * This function is exposed as a C closure for any post-hooks installed
+   * via hooksecurefunc and has three upvalues bound;
+   *
+   *  - The post function to call
+   *  - The original function to call
+   *  - The taint to apply to the post function
+   *
+   * These are given constants for our reading pleasure.
+   */
+
+  static const int POSTFUNC_INDEX = lua_upvalueindex(1);
+  static const int ORIGFUNC_INDEX = lua_upvalueindex(2);
+  static const int TAINT_INDEX = lua_upvalueindex(3);
+
+  const int argc = lua_gettop(L);
+  int argi;
+  int retc;
+  const lua_TaintInfo *entry_taint = lua_gettaint(L);
+  const lua_TaintInfo *posthook_taint = (const lua_TaintInfo *) lua_touserdata(L, TAINT_INDEX);
+  int status;
+
+  /**
+   * Invoke the original function, this is straightforward - all errors
+   * should propagate back to the caller and no taint manipulation is
+   * required.
+   */
+
+  lua_pushvalue(L, ORIGFUNC_INDEX);       /* Push original function */
+  for (argi = 1; argi <= argc; ++argi) {  /* Push copy of arguments */
+    lua_pushvalue(L, argi);
+  }
+
+  lua_call(L, argc, LUA_MULTRET);         /* Invoke original function */
+  retc = lua_gettop(L) - argc;
+
+  /**
+   * Invoke the post function. This should be encapsulated in a taint barrier
+   * to not disturb the calling context. Returns should be discarded.
+   *
+   * For security, the taint on the state is only modified if we're being
+   * called from securely. This matches the implementation whereby a secure
+   * hook installed by secure code will be invoked insecurely if the closure
+   * is invoked by insecure code.
+   */
+
+  if (!(entry_taint = lua_gettaint(L))) {
+    lua_settaint(L, posthook_taint);
+  }
+
+  /* --- BEGIN TAINTED EXECUTION --- */
+
+  luaL_pusherrorhandler(L);               /* Push error handling function */
+  lua_pushvalue(L, POSTFUNC_INDEX);       /* Push post function */
+  for (argi = 1; argi <= argc; ++argi) {  /* Push copy of arguments */
+    lua_pushvalue(L, argi);
+  }
+
+  /* luaD_precall will apply taint from the closure or state to all arguments. */
+  status = lua_pcall(L, argc, 0, -(argc + 2));
+
+  if (status != 0) {
+    lua_pop(L, 2);                        /* Error; pop message and error function. */
+  } else {
+    lua_pop(L, 1);                        /* Success; pop error function. */
+  }
+
+  /* Should only have original arguments and returns on stack. */
+  lua_assert(lua_gettop(L) == retc + argc);
+
+  /* --- END TAINTED EXECUTION --- */
+
+  lua_settaint(L, entry_taint);
+  return retc;
+}
+
+static int luaB_hooksecurefunc (lua_State *L) {
+  const lua_TaintInfo *entry_taint;
+
+  /**
+   * The signature of the function allows an optional table as the first
+   * parameter; if not supplied we'll push _G to the base of the stack and
+   * proceed as if the function was invoked with all parameters supplied.
+   */
+
+  if (lua_tostring(L, 1)) {
+    lua_pushvalue(L, LUA_GLOBALSINDEX);
+    lua_insert(L, 1);
+  }
+
+  if (!lua_istable(L, 1) || !lua_tostring(L, 2) || !lua_isfunction(L, 3)) {
+    return luaL_error(L, "Usage: hooksecurefunc([table,] \"function\", hookfunc)");
+  }
+
+  lua_settop(L, 3);
+
+  /**
+   * The lookup for table["function"] is permitted to touch metatables so
+   * rawget is avoided here; this has error and security implications so we
+   * remain in (possibly insecure) mode while doing this lookup.
+   */
+
+  lua_pushvalue(L, 2);  /* Push key. */
+  lua_gettable(L, 1);   /* Exchange key for value. */
+
+  if (!lua_isfunction(L, 4)) {
+    return luaL_error(L, "hooksecurefunc(): %s is not a function", lua_tostring(L, 2));
+  }
+
+  /**
+   * Set up a C closure with the posthook and original functions bound as well
+   * as our current taint source. The closure will invoke the "securehook"
+   * function when called. This closure then needs placing back in the source
+   * table, however unlike the lookup phase this should be done with rawset
+   * and avoid metatables.
+   *
+   * This needs to be done securely as the closure and resulting assignment
+   * shouldn't inherit the taint of our own caller.
+   */
+
+  entry_taint = lua_gettaint(L);
+  lua_settaint(L, NULL);
+  lua_taintvalues(L, 1, -1, NULL);
+
+  /* --- BEGIN SECURE EXECUTION --- */
+
+  luai_apicheck(L, lua_gettop(L) == 4);  /* Following operations will push one and pop four. */
+  lua_pushlightuserdata(L, (void *) entry_taint);
+  lua_pushcclosure(L, &securehook, 3);
+  lua_rawset(L, 1);
+  luai_apicheck(L, lua_gettop(L) == 1);  /* Should only have the table left on the stack. */
+
+  /* --- END SECURE EXECUTION --- */
+
+  lua_settaint(L, entry_taint);
+  return 0;
+}
+
 static const luaL_Reg base_funcs[] = {
   {"assert", luaB_assert},
   {"collectgarbage", luaB_collectgarbage},
@@ -553,6 +692,7 @@ static const luaL_Reg base_funcs[] = {
   {"geterrorhandler", luaB_geterrorhandler},
   {"getfenv", luaB_getfenv},
   {"getmetatable", luaB_getmetatable},
+  {"hooksecurefunc", luaB_hooksecurefunc},
   {"issecure", luaB_issecure},
   {"issecurevariable", luaB_issecurevariable},
   {"load", luaB_load},
