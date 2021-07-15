@@ -1,19 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
-#
-# The defaults set below are set up to match the WoW-provided Lua environment
-# as closely as possible, as a result the following will occur:
-#
-#   - Lua will be compiled with C++ instead of C, which uses exceptions
-#     instead of setjmp/longjmp to handle protected call jumps.
-#
-#   - The compilation flags will enable fast math (-ffast-math or /fp:fast)
-#     operations to match the compiled game client. This can result in odd
-#     behaviours around handling of NaN values.
-#
-
 option(BUILD_SHARED_LIBS "Build lua as a shared library?" ON)
-option(BUILD_LUA_WITH_CXX "Build with a C++ compiler instead of C?" ON)
+option(BUILD_LUA_WITH_CXX "Build with a C++ compiler instead of C?" OFF)
 option(BUILD_LUA_WITH_FAST_MATH "Build with fast math compiler flags?" ON)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin" CACHE STRING "Directory to place runtime artifacts")
