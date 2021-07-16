@@ -1,0 +1,68 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 16,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "ninja",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/install/${presetName}"
+      }
+    },
+    {
+      "name": "debug",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "release",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "msvc",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "cl.exe"
+      },
+      "toolset": {
+        "strategy": "external",
+        "value": "host=x64"
+      },
+      "architecture": {
+        "strategy": "external",
+        "value": "x64"
+      }
+    },
+    {
+      "name": "windows-debug",
+      "displayName": "Windows (Debug)",
+      "description": "Debug build for Windows (64-bit)",
+      "inherits": [
+        "ninja",
+        "msvc",
+        "debug"
+      ]
+    },
+    {
+      "name": "windows",
+      "displayName": "Windows (Release)",
+      "description": "Release build for Windows (64-bit)",
+      "inherits": [
+        "ninja",
+        "msvc",
+        "release"
+      ]
+    }
+  ]
+}
