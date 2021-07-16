@@ -1,4 +1,18 @@
+include(CheckCCompilerFlag)
 include(GNUInstallDirs)
+
+# Enable fast math flags for all targets in this subdirectory. This makes the
+# handling of NaN values consistent both ingame and out of game, which may
+# be significant in a few niche cases.
+
+check_c_compiler_flag("-ffast-math" LUA_COMPILER_HAS_FFAST_MATH)
+check_c_compiler_flag("/fp:fast" LUA_COMPILER_HAS_FP_FAST)
+
+if(LUA_COMPILER_HAS_FFAST_MATH)
+  add_compile_options(-ffast-math)
+elseif(LUA_COMPILER_HAS_FP_FAST)
+  add_compile_options(/fp:fast)
+endif()
 
 # The source and header listings are defined as variables as several part of
 # the build need to refer to these for project generation tweaks later on.
@@ -53,15 +67,6 @@ set(liblua_SOURCES
   "linit.c"
 )
 
-set(lua_SOURCES
-  "lua.c"
-)
-
-set(luac_SOURCES
-  "luac.c"
-  "print.c"
-)
-
 set(liblua_COMPILE_DEFINITIONS
   PUBLIC
     # Note that the original Makefile build defines LUA_USE_LINUX for Mac
@@ -98,14 +103,15 @@ add_library(liblua)
 
 set_target_properties(liblua
   PROPERTIES
-    OUTPUT_NAME           $<IF:$<PLATFORM_ID:Windows>,lua51,lua5.1>
-    C_EXTENSIONS          OFF
-    C_STANDARD            17
-    C_STANDARD_REQUIRED   OFF
-    CXX_EXTENSIONS        OFF
-    CXX_STANDARD          17
-    CXX_STANDARD_REQUIRED OFF
-    PUBLIC_HEADER         "${liblua_HEADERS}"  # Must be a string representation of a list.
+    OUTPUT_NAME              $<IF:$<PLATFORM_ID:Windows>,lua51,lua5.1>
+    C_EXTENSIONS             OFF
+    C_STANDARD               17
+    C_STANDARD_REQUIRED      OFF
+    PUBLIC_HEADER            "${liblua_HEADERS}"  # Must be a string representation of a list.
+    ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib"
+    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib"
+    PDB_OUTPUT_DIRECTORY     "${PROJECT_BINARY_DIR}/bin"
+    RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin"
 )
 
 # Define LUA_BUILD_AS_DLL if liblua was build as a shared library target
@@ -130,15 +136,14 @@ add_executable(lua)
 
 set_target_properties(lua
   PROPERTIES
-    OUTPUT_NAME             $<IF:$<PLATFORM_ID:Windows>,lua,lua5.1>
-    C_EXTENSIONS            OFF
-    C_STANDARD              17
-    C_STANDARD_REQUIRED     OFF
-    CXX_EXTENSIONS          OFF
-    CXX_STANDARD            17
-    CXX_STANDARD_REQUIRED   OFF
-    BUILD_RPATH_USE_ORIGIN  ON
-    INSTALL_RPATH           "\$ORIGIN/../${CMAKE_INSTALL_LIBDIR}"
+    OUTPUT_NAME              $<IF:$<PLATFORM_ID:Windows>,lua,lua5.1>
+    C_EXTENSIONS             OFF
+    C_STANDARD               17
+    C_STANDARD_REQUIRED      OFF
+    BUILD_RPATH_USE_ORIGIN   ON
+    INSTALL_RPATH            "\$ORIGIN/../${CMAKE_INSTALL_LIBDIR}"
+    PDB_OUTPUT_DIRECTORY     "${PROJECT_BINARY_DIR}/bin"
+    RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin"
 )
 
 target_link_libraries(lua
@@ -149,7 +154,7 @@ target_link_libraries(lua
 
 target_sources(lua
   PRIVATE
-    ${lua_SOURCES}
+    "lua.c"
 )
 
 #
@@ -164,13 +169,12 @@ add_executable(luac)
 
 set_target_properties(luac
   PROPERTIES
-    OUTPUT_NAME           $<IF:$<PLATFORM_ID:Windows>,luac,luac5.1>
-    C_EXTENSIONS          OFF
-    C_STANDARD            17
-    C_STANDARD_REQUIRED   OFF
-    CXX_EXTENSIONS        OFF
-    CXX_STANDARD          17
-    CXX_STANDARD_REQUIRED OFF
+    OUTPUT_NAME              $<IF:$<PLATFORM_ID:Windows>,luac,luac5.1>
+    C_EXTENSIONS             OFF
+    C_STANDARD               17
+    C_STANDARD_REQUIRED      OFF
+    PDB_OUTPUT_DIRECTORY     "${PROJECT_BINARY_DIR}/bin"
+    RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin"
 )
 
 target_compile_definitions(luac ${liblua_COMPILE_DEFINITIONS})
@@ -180,7 +184,8 @@ target_link_libraries(luac ${liblua_LINK_LIBRARIES})
 target_sources(luac
   PRIVATE
     ${liblua_SOURCES}
-    ${luac_SOURCES}
+    "luac.c"
+    "print.c"
 )
 
 #
@@ -194,19 +199,6 @@ source_group(
   PREFIX  "Header Files"
   FILES   ${liblua_HEADERS}
 )
-
-# Fix up sources to compile explicitly as either C or CXX instead of relying
-# on CMake to infer it from the file extension. This resolves CMake issues
-# like "can not determine linker language for target" errors if the project
-# is configured to build as CXX but CMake only sees "*.c" sources.
-
-foreach(source IN LISTS liblua_HEADERS liblua_SOURCES lua_SOURCES luac_SOURCES)
-  if(source MATCHES "\\.c$")
-    set_source_files_properties(${source} PROPERTIES LANGUAGE ${LUA_BUILD_LANGUAGE})
-  elseif(source MATCHES "\\.hp?p?$")
-    set_source_files_properties(${source} PROPERTIES HEADER_FILE_ONLY ON)
-  endif()
-endforeach()
 
 # Add `make install` support that'll populate an install prefix with a
 # standard distribution of bin/, lib/, and include/ directories.
