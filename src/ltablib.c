@@ -279,6 +279,37 @@ static int wipe (lua_State *L) {
   return 1;
 }
 
+static int tremovemulti (lua_State *L) {
+  luaL_checktype(L, 1, LUA_TTABLE);
+
+  const int length = lua_objlen(L, 1);
+  const int index = luaL_optinteger(L, 2, length);
+  const int count = luaL_optinteger(L, 3, 1);
+
+  if (length == 0) {
+    return 0;  // Accurate to reference. ¯\_(ツ)_/¯
+  } else if (index <= 0 || count < 0 || (index + count - 1) > length) {
+    return luaL_error(L, "parameters out of bounds");
+  }
+
+  lua_settop(L, 1);  // Keep the table as the only thing on the stack.
+
+  for (int dsti = index; dsti <= length; ++dsti) {
+    const int srci = dsti + count;
+
+    if (srci <= length) {
+      lua_rawgeti(L, 1, srci);  // Push a copy of the value(s) we're removing for our returns.
+      lua_rawgeti(L, 1, srci);
+    } else {
+      lua_pushnil(L);
+    }
+
+    lua_rawseti(L, 1, dsti);
+  }
+
+  return count;
+}
+
 /* }====================================================== */
 
 
@@ -290,6 +321,7 @@ static const luaL_Reg tab_funcs[] = {
   {"maxn", maxn},
   {"insert", tinsert},
   {"remove", tremove},
+  {"removemulti", tremovemulti},
   {"setn", setn},
   {"sort", sort},
   {"wipe", wipe},
@@ -316,8 +348,6 @@ LUALIB_API int luaopen_table (lua_State *L) {
   lua_setglobal(L, "sort");
   lua_pushcclosure(L, wipe, 0);
   lua_setglobal(L, "wipe");
-
-  // TODO: Implement table.removemulti.
 
   return 1;
 }
