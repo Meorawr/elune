@@ -299,6 +299,26 @@ static const luaL_Reg tab_funcs[] = {
 
 LUALIB_API int luaopen_table (lua_State *L) {
   luaL_register(L, LUA_TABLIBNAME, tab_funcs);
+
+  // Add global compatibility aliases.
+
+  lua_pushcclosure(L, foreach, 0);
+  lua_setglobal(L, "foreach");
+  lua_pushcclosure(L, foreachi, 0);
+  lua_setglobal(L, "foreachi");
+  lua_pushcclosure(L, getn, 0);
+  lua_setglobal(L, "getn");
+  lua_pushcclosure(L, tinsert, 0);
+  lua_setglobal(L, "tinsert");
+  lua_pushcclosure(L, tremove, 0);
+  lua_setglobal(L, "tremove");
+  lua_pushcclosure(L, sort, 0);
+  lua_setglobal(L, "sort");
+  lua_pushcclosure(L, wipe, 0);
+  lua_setglobal(L, "wipe");
+
+  // TODO: Implement table.removemulti.
+
   return 1;
 }
 

@@ -238,6 +238,18 @@ static const luaL_Reg syslib[] = {
 
 LUALIB_API int luaopen_os (lua_State *L) {
   luaL_register(L, LUA_OSLIBNAME, syslib);
+
+  // WoW shifts some global time related functions from the OS library to the
+  // global table; we'll implement this here and keep existing ones in the
+  // OS library.
+
+  lua_pushcclosure(L, os_date, 0);
+  lua_setglobal(L, "date");
+  lua_pushcclosure(L, os_difftime, 0);
+  lua_setglobal(L, "difftime");
+  lua_pushcclosure(L, os_time, 0);
+  lua_setglobal(L, "time");
+
   return 1;
 }
 

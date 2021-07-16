@@ -872,6 +872,47 @@ LUALIB_API int luaopen_string (lua_State *L) {
   lua_setfield(L, -2, "gfind");
 #endif
   createmetatable(L);
+
+  // Add global compatibility aliases.
+
+  lua_pushcclosure(L, str_byte, 0);
+  lua_setglobal(L, "strbyte");
+  lua_pushcclosure(L, str_char, 0);
+  lua_setglobal(L, "strchar");
+  lua_pushcclosure(L, str_find, 0);
+  lua_setglobal(L, "strfind");
+  lua_pushcclosure(L, str_format, 0);
+  lua_setglobal(L, "format");
+  lua_pushcclosure(L, gmatch, 0);
+  lua_setglobal(L, "gmatch");
+  lua_pushcclosure(L, str_gsub, 0);
+  lua_setglobal(L, "gsub");
+  lua_pushcclosure(L, str_len, 0);
+  lua_setglobal(L, "strlen");
+  lua_pushcclosure(L, str_lower, 0);
+  lua_setglobal(L, "strlower");
+  lua_pushcclosure(L, str_match, 0);
+  lua_setglobal(L, "strmatch");
+  lua_pushcclosure(L, str_rep, 0);
+  lua_setglobal(L, "strrep");
+  lua_pushcclosure(L, str_reverse, 0);
+  lua_setglobal(L, "strrev");
+  lua_pushcclosure(L, str_sub, 0);
+  lua_setglobal(L, "strsub");
+  lua_pushcclosure(L, str_upper, 0);
+  lua_setglobal(L, "strupper");
+
+  /**
+   * TODO: Implement the following:
+   *
+   *  strtrim/string.trim
+   *  strsplit/string.split
+   *  strjoin/string.join
+   *  strconcat
+   *  strcmputf8i
+   *  strlenutf8
+   */
+
   return 1;
 }
 

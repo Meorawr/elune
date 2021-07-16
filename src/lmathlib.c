@@ -258,6 +258,71 @@ LUALIB_API int luaopen_math (lua_State *L) {
   lua_getfield(L, -1, "fmod");
   lua_setfield(L, -2, "mod");
 #endif
+
+  // Add global compatibility aliases.
+
+  lua_pushcclosure(L, math_abs, 0);
+  lua_setglobal(L, "abs");
+  lua_pushcclosure(L, math_ceil, 0);
+  lua_setglobal(L, "ceil");
+  lua_pushcclosure(L, math_deg, 0);
+  lua_setglobal(L, "deg");
+  lua_pushcclosure(L, math_exp, 0);
+  lua_setglobal(L, "exp");
+  lua_pushcclosure(L, math_floor, 0);
+  lua_setglobal(L, "floor");
+  lua_pushcclosure(L, math_frexp, 0);
+  lua_setglobal(L, "frexp");
+  lua_pushcclosure(L, math_ldexp, 0);
+  lua_setglobal(L, "ldexp");
+  lua_pushcclosure(L, math_log, 0);
+  lua_setglobal(L, "log");
+  lua_pushcclosure(L, math_log10, 0);
+  lua_setglobal(L, "log10");
+  lua_pushcclosure(L, math_max, 0);
+  lua_setglobal(L, "max");
+  lua_pushcclosure(L, math_min, 0);
+  lua_setglobal(L, "min");
+  lua_pushcclosure(L, math_fmod, 0);
+  lua_setglobal(L, "mod");
+  lua_pushnumber(L, PI);
+  lua_setglobal(L, "PI");
+  lua_pushcclosure(L, math_rad, 0);
+  lua_setglobal(L, "rad");
+  lua_pushcclosure(L, math_random, 0);
+  lua_setglobal(L, "random");
+  lua_pushcclosure(L, math_sqrt, 0);
+  lua_setglobal(L, "sqrt");
+
+  // Add global degree => radian compatibility wrappers. These are explicitly
+  // loaded via loadstring to ensure that any code which, for whatever unholy
+  // reason, is expecting them to be Lua functions and not C ones doesn't
+  // get surprised.
+
+  luaL_dostring(L, "return function (x) return math.deg(math.acos(x)) end");
+  lua_setglobal(L, "acos");
+  luaL_dostring(L, "return function (x) return math.deg(math.asin(x)) end");
+  lua_setglobal(L, "asin");
+  luaL_dostring(L, "return function (x) return math.deg(math.atan(x)) end");
+  lua_setglobal(L, "atan");
+  luaL_dostring(L, "return function (x,y) return math.deg(math.atan2(x,y)) end");
+  lua_setglobal(L, "atan2");
+  luaL_dostring(L, "return function (x) return math.cos(math.rad(x)) end");
+  lua_setglobal(L, "cos");
+  luaL_dostring(L, "return function (x) return math.sin(math.rad(x)) end");
+  lua_setglobal(L, "sin");
+  luaL_dostring(L, "return function (x) return math.tan(math.rad(x)) end");
+  lua_setglobal(L, "tan");
+
+  // The fastrandom function is meant to alias to what math.random used to
+  // be ingame, where math.random actually was changed to use a more secure
+  // PRNG during ~Mists of Pandaria.
+  //
+  // TODO: Change math.random to use literally anything else.
+
+  lua_pushcclosure(L, math_random, 0);
+  lua_setglobal(L, "fastrandom");
+
   return 1;
 }
 
