@@ -77,6 +77,8 @@ set(liblua_COMPILE_DEFINITIONS
 set(liblua_INCLUDE_DIRECTORIES
   PUBLIC
     "../include"
+  PRIVATE
+    "../extern/utf8"
 )
 
 set(liblua_LINK_LIBRARIES

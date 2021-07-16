@@ -11,6 +11,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <utf8.h>
+
 #define lstrlib_c
 #define LUA_LIB
 
@@ -829,6 +831,111 @@ static int str_format (lua_State *L) {
   return 1;
 }
 
+static int str_concat (lua_State *L) {
+  lua_concat(L, lua_gettop(L));
+  return 1;
+}
+
+static int str_trim (lua_State *L) {
+  size_t slen;
+  const char *str = luaL_checklstring(L, 1, &slen);
+  const char *delim = luaL_optstring(L, 2, " \r\n\t");
+
+  const char *begin = str;
+  const char *end = str + slen;
+
+  while (begin < end && strchr(delim, *begin)) {
+    ++begin;
+  }
+
+  while (end >= begin && strchr(delim, *end)) {
+    --end;
+  }
+
+  lua_pushlstring(L, begin, end - begin + 1);
+  return 1;
+}
+
+static int str_split (lua_State *L) {
+  const char *delim = luaL_checkstring(L, 1);
+  size_t slen;
+  const char *str = luaL_checklstring(L, 2, &slen);
+  const lua_Integer limit = luaL_optinteger(L, 3, 0);
+
+  lua_Integer count = 0;
+
+  // Keep the delimiter/source string on the stack so that they don't run the
+  // risk of being GCd while we're processing.
+
+  lua_settop(L, 2);
+
+  const char *begin = str;
+  const char *end = str + slen;
+
+  if (limit == 0 || limit > 1) {
+    while (begin <= end) {
+      const size_t distance = strcspn(begin, delim);
+      lua_pushlstring(L, begin, distance);
+
+      begin += distance + 1;  // +1 to skip over the delimiter.
+      ++count;
+    }
+  }
+
+  // Process remainder of string if any exists.
+
+  if (begin <= end) {
+    lua_pushstring(L, begin);
+    ++count;
+  }
+
+  return count;
+}
+
+static int str_join (lua_State *L) {
+  size_t seplen;
+  const char *separator = luaL_checklstring(L, 1, &seplen);
+  const int pieces = lua_gettop(L) - 1;
+
+  // lua_concat can be used when the separator is empty or when there's
+  // zero or one piece to be joined.
+
+  if (pieces <= 1 || seplen == 0) {
+    lua_concat(L, pieces);
+  } else {
+    luaL_Buffer buf;
+    luaL_buffinit(L, &buf);
+
+    for (int i = 1; i <= pieces; ++i) {
+      luaL_addstring(&buf, luaL_checkstring(L, i + 1));
+
+      if (i < pieces) {
+        luaL_addlstring(&buf, separator, seplen);
+      }
+    }
+
+    luaL_pushresult(&buf);
+  }
+
+  return 1;
+}
+
+static int strcmputf8i (lua_State *L) {
+  const char *str1 = luaL_checkstring(L, 1);
+  const char *str2 = luaL_checkstring(L, 2);
+
+  const int res = utf8casecmp(str1, str2);
+
+  lua_pushinteger(L, max(min(res, 1), -1));
+  return 1;
+}
+
+static int strlenutf8 (lua_State *L) {
+  const char *str = luaL_checkstring(L, 1);
+
+  lua_pushinteger(L, utf8len(str));
+  return 1;
+}
 
 static const luaL_Reg strlib[] = {
   {"byte", str_byte},
@@ -839,12 +946,15 @@ static const luaL_Reg strlib[] = {
   {"gfind", gfind_nodef},
   {"gmatch", gmatch},
   {"gsub", str_gsub},
+  {"join", str_join},
   {"len", str_len},
   {"lower", str_lower},
   {"match", str_match},
   {"rep", str_rep},
   {"reverse", str_reverse},
+  {"split", str_split},
   {"sub", str_sub},
+  {"trim", str_trim},
   {"upper", str_upper},
   {NULL, NULL}
 };
@@ -860,7 +970,6 @@ static void createmetatable (lua_State *L) {
   lua_setfield(L, -2, "__index");  /* ...is the __index metamethod */
   lua_pop(L, 1);  /* pop metatable */
 }
-
 
 /*
 ** Open string library
@@ -887,6 +996,8 @@ LUALIB_API int luaopen_string (lua_State *L) {
   lua_setglobal(L, "gmatch");
   lua_pushcclosure(L, str_gsub, 0);
   lua_setglobal(L, "gsub");
+  lua_pushcclosure(L, str_join, 0);
+  lua_setglobal(L, "strjoin");
   lua_pushcclosure(L, str_len, 0);
   lua_setglobal(L, "strlen");
   lua_pushcclosure(L, str_lower, 0);
@@ -897,21 +1008,24 @@ LUALIB_API int luaopen_string (lua_State *L) {
   lua_setglobal(L, "strrep");
   lua_pushcclosure(L, str_reverse, 0);
   lua_setglobal(L, "strrev");
+  lua_pushcclosure(L, str_split, 0);
+  lua_setglobal(L, "strsplit");
   lua_pushcclosure(L, str_sub, 0);
   lua_setglobal(L, "strsub");
+  lua_pushcclosure(L, str_trim, 0);
+  lua_setglobal(L, "strtrim");
   lua_pushcclosure(L, str_upper, 0);
   lua_setglobal(L, "strupper");
 
-  /**
-   * TODO: Implement the following:
-   *
-   *  strtrim/string.trim
-   *  strsplit/string.split
-   *  strjoin/string.join
-   *  strconcat
-   *  strcmputf8i
-   *  strlenutf8
-   */
+  // Expose global-only functions. These are not present in the 'string'
+  // table ingame.
+
+  lua_pushcclosure(L, str_concat, 0);
+  lua_setglobal(L, "strconcat");
+  lua_pushcclosure(L, strcmputf8i, 0);
+  lua_setglobal(L, "strcmputf8i");
+  lua_pushcclosure(L, strlenutf8, 0);
+  lua_setglobal(L, "strlenutf8");
 
   return 1;
 }
