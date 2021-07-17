@@ -26,15 +26,6 @@
       }
     },
     {
-      "name": "gcc",
-      "description": "Preset for configuring a build with GCC",
-      "hidden": true,
-      "cacheVariables": {
-        "CMAKE_C_COMPILER": "gcc",
-        "CMAKE_C_FLAGS": "-D_GNU_SOURCE -ffast-math -Wall -Wextra"
-      }
-    },
-    {
       "name": "msvc",
       "description": "Preset for configuring a build with MSVC",
       "hidden": true,
@@ -49,6 +40,24 @@
       "architecture": {
         "strategy": "external",
         "value": "x64"
+      }
+    },
+    {
+      "name": "gcc",
+      "description": "Preset for configuring a build with GCC",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_C_FLAGS": "-D_GNU_SOURCE -ffast-math -Wall -Wextra"
+      }
+    },
+    {
+      "name": "clang",
+      "description": "Preset for configuring a build with Clang",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_C_FLAGS": "-D_GNU_SOURCE -ffast-math -Wall -Wextra"
       }
     },
     {
@@ -76,6 +85,15 @@
       "inherits": [
         "base",
         "gcc"
+      ]
+    },
+    {
+      "name": "macos",
+      "displayName": "macOS",
+      "description": "Release configuration for macOS (Clang)",
+      "inherits": [
+        "base",
+        "clang"
       ]
     }
   ],
@@ -139,6 +157,24 @@
       "inherits": [
         "minimal",
         "linux"
+      ]
+    },
+    {
+      "name": "macos",
+      "displayName": "Release",
+      "description": "Release build for macOS (Clang)",
+      "configurePreset": "macos",
+      "inherits": [
+        "base"
+      ]
+    },
+    {
+      "name": "macos-minimal",
+      "displayName": "Minimal",
+      "description": "Minimal release build for macOS (Clang)",
+      "inherits": [
+        "minimal",
+        "macos"
       ]
     }
   ]
