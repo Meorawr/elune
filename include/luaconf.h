@@ -205,6 +205,17 @@
 
 
 /*
+@@ LUA_NORETURN hints to the compiler that a decorated function cannot return.
+** CHANGE it as needed for your compiler.
+*/
+#if defined(__GNUC__) || defined(__clang__)
+#define LUA_NORETURN __attribute__((noreturn))
+#else
+#define LUA_NORETURN
+#endif
+
+
+/*
 @@ LUA_QL describes how error messages quote program elements.
 ** CHANGE it if you want a different appearance.
 */
