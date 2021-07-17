@@ -210,6 +210,8 @@
 */
 #if defined(__GNUC__) || defined(__clang__)
 #define LUA_NORETURN __attribute__((noreturn))
+#elif defined(_MSC_VER)
+#define LUA_NORETURN __declspec(noreturn)
 #else
 #define LUA_NORETURN
 #endif

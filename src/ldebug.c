@@ -613,7 +613,7 @@ void luaG_aritherror (lua_State *L, const TValue *p1, const TValue *p2) {
 }
 
 
-int luaG_ordererror (lua_State *L, const TValue *p1, const TValue *p2) {
+void luaG_ordererror (lua_State *L, const TValue *p1, const TValue *p2) {
   const char *t1 = luaT_typenames[ttype(p1)];
   const char *t2 = luaT_typenames[ttype(p2)];
   if (t1[2] == t2[2])

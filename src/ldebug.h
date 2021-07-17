@@ -18,12 +18,12 @@
 #define resethookcount(L)	(L->hookcount = L->basehookcount)
 
 
-LUAI_FUNC void luaG_typeerror (lua_State *L, const TValue *o, const char *opname) LUA_NORETURN;
-LUAI_FUNC void luaG_concaterror (lua_State *L, StkId p1, StkId p2) LUA_NORETURN;
-LUAI_FUNC void luaG_aritherror (lua_State *L, const TValue *p1, const TValue *p2) LUA_NORETURN;
-LUAI_FUNC int luaG_ordererror (lua_State *L, const TValue *p1, const TValue *p2) LUA_NORETURN;
-LUAI_FUNC void luaG_runerror (lua_State *L, const char *fmt, ...) LUA_NORETURN;
-LUAI_FUNC void luaG_errormsg (lua_State *L) LUA_NORETURN;
+LUAI_FUNC LUA_NORETURN void luaG_typeerror (lua_State *L, const TValue *o, const char *opname);
+LUAI_FUNC LUA_NORETURN void luaG_concaterror (lua_State *L, StkId p1, StkId p2);
+LUAI_FUNC LUA_NORETURN void luaG_aritherror (lua_State *L, const TValue *p1, const TValue *p2);
+LUAI_FUNC LUA_NORETURN void luaG_ordererror (lua_State *L, const TValue *p1, const TValue *p2);
+LUAI_FUNC LUA_NORETURN void luaG_runerror (lua_State *L, const char *fmt, ...);
+LUAI_FUNC LUA_NORETURN void luaG_errormsg (lua_State *L);
 LUAI_FUNC int luaG_checkcode (const Proto *pt);
 LUAI_FUNC int luaG_checkopenop (Instruction i);
 
