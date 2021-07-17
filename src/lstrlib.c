@@ -929,9 +929,15 @@ static int strcmputf8i (lua_State *L) {
   const char *str1 = luaL_checkstring(L, 1);
   const char *str2 = luaL_checkstring(L, 2);
 
-  const int res = utf8casecmp(str1, str2);
+  int res = utf8casecmp(str1, str2);
 
-  lua_pushinteger(L, max(min(res, 1), -1));
+  if (res > 1) {
+    res = 1;
+  } else if (res < -1) {
+    res = -1;
+  }
+
+  lua_pushinteger(L, res);
   return 1;
 }
 
