@@ -65,8 +65,8 @@
       "displayName": "Windows Debug",
       "description": "Debug configuration for Windows (MSVC x64)",
       "inherits": [
-        "windows",
-        "debug"
+        "debug",
+        "windows"
       ]
     },
     {
@@ -119,8 +119,8 @@
       "description": "Minimal debug build for Windows (MSVC x64)",
       "configurePreset": "windows-debug",
       "inherits": [
-        "windows",
-        "minimal"
+        "minimal",
+        "windows"
       ]
     },
     {
