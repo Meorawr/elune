@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.20)
 
 option(BUILD_SHARED_LIBS "Build Lua as a shared library?" ON)
 
