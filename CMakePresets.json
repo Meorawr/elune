@@ -26,10 +26,12 @@
       }
     },
     {
-      "name": "release",
+      "name": "gcc",
+      "description": "Preset for configuring a build with GCC",
       "hidden": true,
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release"
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_C_FLAGS": "-D_GNU_SOURCE -ffast-math -Wall -Wextra"
       }
     },
     {
@@ -56,6 +58,15 @@
       "inherits": [
         "base",
         "msvc"
+      ]
+    },
+    {
+      "name": "linux",
+      "displayName": "Linux",
+      "description": "Release build for Linux (GCC)",
+      "inherits": [
+        "base",
+        "gcc"
       ]
     },
     {
