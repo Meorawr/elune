@@ -334,20 +334,15 @@ LUALIB_API int luaopen_table (lua_State *L) {
 
   // Add global compatibility aliases.
 
-  lua_pushcclosure(L, foreach, 0);
-  lua_setglobal(L, "foreach");
-  lua_pushcclosure(L, foreachi, 0);
-  lua_setglobal(L, "foreachi");
-  lua_pushcclosure(L, getn, 0);
-  lua_setglobal(L, "getn");
-  lua_pushcclosure(L, tinsert, 0);
-  lua_setglobal(L, "tinsert");
-  lua_pushcclosure(L, tremove, 0);
-  lua_setglobal(L, "tremove");
-  lua_pushcclosure(L, sort, 0);
-  lua_setglobal(L, "sort");
-  lua_pushcclosure(L, wipe, 0);
-  lua_setglobal(L, "wipe");
+  luaL_dostring(L, " \
+    foreach = table.foreach \
+    foreachi = table.foreachi \
+    getn = table.getn \
+    tinsert = table.insert \
+    tremove = table.remove \
+    sort = table.sort \
+    wipe = table.wipe \
+  ");
 
   return 1;
 }
