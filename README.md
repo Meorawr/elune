@@ -8,12 +8,19 @@ This is mostly just a toy project and shouldn't be used in any serious capacity.
 
 The original Makefiles have been replaced with a CMake-based build. Note that only builds on Linux (via GCC and Clang) and Windows (via MSVC) are supported. Mac OS X is as yet untested.
 
-```sh
-cmake -S <path to checkout> -B build/ -DCMAKE_BUILD_TYPE=Release
-cmake --build build/
+For a build with all components enabled in a release configuration, the following CMake commands will configure and build the project in a `build/<preset>` directory. The resulting binaries for Lua can be found in `bin/` and `lib/` subdirectories of that folder.
 
-# To install the generated binaries and libraries run the following.
-cmake --install build/ --prefix <path to install prefix>
+```sh
+cmake --preset <linux|windows>
+cmake --build --preset <linux|windows>
+```
+
+Additional presets can be discovered via `cmake --list-presets` or by reading the `CMakePresets.json` file.
+
+For a packaged release with header files included the following can be executed to create a set of `.tar.xz` and `.zip` files in the build directory for the selected preset.
+
+```sh
+cmake --build --preset <linux|windows> --target package
 ```
 
 ## License

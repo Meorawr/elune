@@ -10,3 +10,12 @@ project(tainted-lua
 )
 
 add_subdirectory(src)
+
+# Packaging integration.
+
+set(CPACK_PACKAGE_VENDOR "Meorawr")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${PROJECT_DESCRIPTION})
+set(CPACK_PACKAGE_CHECKSUM "SHA256")
+set(CPACK_GENERATOR "TXZ;ZIP")
+
+include(CPack)

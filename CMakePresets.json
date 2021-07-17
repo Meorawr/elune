@@ -1,14 +1,14 @@
 {
-  "version": 3,
+  "version": 2,
   "cmakeMinimumRequired": {
     "major": 3,
-    "minor": 16,
+    "minor": 20,
     "patch": 0
   },
   "configurePresets": [
     {
       "name": "base",
-      "displayName": "Base preset used to set up common options",
+      "description": "Base preset used to set up common options",
       "hidden": true,
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/${presetName}",
@@ -54,28 +54,91 @@
     {
       "name": "windows",
       "displayName": "Windows",
-      "description": "Release build for Windows (64-bit)",
+      "description": "Release configuration for Windows (MSVC x64)",
       "inherits": [
         "base",
         "msvc"
       ]
     },
     {
+      "name": "windows-debug",
+      "displayName": "Windows Debug",
+      "description": "Debug configuration for Windows (MSVC x64)",
+      "inherits": [
+        "windows",
+        "debug"
+      ]
+    },
+    {
       "name": "linux",
       "displayName": "Linux",
-      "description": "Release build for Linux (GCC)",
+      "description": "Release configuration for Linux (GCC)",
       "inherits": [
         "base",
         "gcc"
       ]
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "base",
+      "description": "Base preset for common build options",
+      "hidden": true,
+      "configurePreset": "base",
+      "inheritConfigureEnvironment": true
+    },
+    {
+      "name": "minimal",
+      "description": "Preset for a minimal build variant",
+      "hidden": true,
+      "targets": [
+        "lua"
+      ]
+    },
+    {
+      "name": "windows",
+      "displayName": "Release",
+      "description": "Release build for Windows (MSVC x64)",
+      "configurePreset": "windows",
+      "inherits": [
+        "base"
+      ]
+    },
+    {
+      "name": "windows-minimal",
+      "displayName": "Minimal",
+      "description": "Minimal release build for Windows (MSVC x64)",
+      "inherits": [
+        "minimal",
+        "windows"
+      ]
     },
     {
       "name": "windows-debug",
-      "displayName": "Windows (Debug)",
-      "description": "Debug build for Windows (64-bit)",
+      "displayName": "Minimal Debug",
+      "description": "Minimal debug build for Windows (MSVC x64)",
+      "configurePreset": "windows-debug",
       "inherits": [
         "windows",
-        "debug"
+        "minimal"
+      ]
+    },
+    {
+      "name": "linux",
+      "displayName": "Release",
+      "description": "Release build for Linux (GCC)",
+      "configurePreset": "linux",
+      "inherits": [
+        "base"
+      ]
+    },
+    {
+      "name": "linux-minimal",
+      "displayName": "Minimal",
+      "description": "Minimal release build for Linux (GCC)",
+      "inherits": [
+        "minimal",
+        "linux"
       ]
     }
   ]
