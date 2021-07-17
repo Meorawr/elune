@@ -5,6 +5,7 @@
 */
 
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <math.h>
 
@@ -22,6 +23,52 @@
 #define RADIANS_PER_DEGREE (PI/180.0)
 
 
+/**
+ * Written in 2016 by Kaito Udagawa
+ * Released under CC0 <http://creativecommons.org/publicdomain/zero/1.0/>
+ */
+
+static uint32_t splitmix32 (uint32_t *x) {
+  uint32_t z = (*x += 0x9e3779b9);
+  z = (z ^ (z >> 16)) * 0x85ebca6b;
+  z = (z ^ (z >> 13)) * 0xc2b2ae35;
+  return z ^ (z >> 16);
+}
+
+/**
+ * Written in 2018 by David Blackman and Sebastiano Vigna (vigna@acm.org)
+ *
+ * To the extent possible under law, the author has dedicated all copyright
+ * and related and neighboring rights to this software to the public domain
+ * worldwide. This software is distributed without any warranty.
+ *
+ * See <http://creativecommons.org/publicdomain/zero/1.0/>.
+ */
+
+static uint32_t rotl (const uint32_t x, int k) {
+  return (x << k) | (x >> (32 - k));
+}
+
+typedef struct xoroshiro_state {
+  uint32_t s[2];
+} xoroshiro_state;
+
+static void xoroshiro_init (xoroshiro_state *st, uint32_t seed) {
+  st->s[0] = splitmix32(&seed);
+  st->s[1] = splitmix32(&seed);
+}
+
+static uint32_t xoroshiro_next (xoroshiro_state *st) {
+	const uint32_t s0 = st->s[0];
+	uint32_t s1 = st->s[1];
+	const uint32_t result = rotl(s0 * 0x9E3779BB, 5) * 5;
+
+	s1 ^= s0;
+	st->s[0] = rotl(s0, 26) ^ s1 ^ (s1 << 9); // a, b
+	st->s[1] = rotl(s1, 13); // c
+
+	return result;
+}
 
 static int math_abs (lua_State *L) {
   lua_pushnumber(L, fabs(luaL_checknumber(L, 1)));
@@ -179,6 +226,44 @@ static int math_max (lua_State *L) {
 
 
 static int math_random (lua_State *L) {
+  lua_getfield(L, LUA_REGISTRYINDEX, "_XOROSTATE");
+  xoroshiro_state *state = (xoroshiro_state *) lua_touserdata(L, -1);
+
+  if (!state) {
+    return 0;  // Should only happen if called during close.
+  }
+
+  const lua_Number r = ldexp((lua_Number) xoroshiro_next(state), -32);
+  lua_pop(L, 1);
+
+  switch (lua_gettop(L)) {
+    case 0: {  // Random number between 0 and 1
+      lua_pushnumber(L, r);
+      break;
+    }
+    case 1: {  // Random integer between 1 and given upper limit
+      int u = luaL_checkint(L, 1);
+      luaL_argcheck(L, 1 <= u, 1, "interval is empty");
+      lua_pushnumber(L, floor(r * u) + 1);
+      break;
+    }
+    case 2: {  // Random integer between given limits
+      int l = luaL_checkint(L, 1);
+      int u = luaL_checkint(L, 2);
+      luaL_argcheck(L, l <= u, 2, "interval is empty");
+      lua_pushnumber(L, floor(r * (u - l + 1)) + l);
+      break;
+    }
+    default: {
+      return luaL_error(L, "wrong number of arguments");
+    }
+  }
+
+  return 1;
+}
+
+
+static int math_fastrandom (lua_State *L) {
   /* the `%' avoids the (rare) case of r==1, and is needed also because on
      some systems (SunOS!) `rand()' may return a value larger than RAND_MAX */
   lua_Number r = (lua_Number)(rand()%RAND_MAX) / (lua_Number)RAND_MAX;
@@ -207,7 +292,16 @@ static int math_random (lua_State *L) {
 
 
 static int math_randomseed (lua_State *L) {
-  srand(luaL_checkint(L, 1));
+  const int seed = luaL_checkint(L, 1);
+
+  lua_getfield(L, LUA_REGISTRYINDEX, "_XOROSTATE");
+  xoroshiro_state *state = (xoroshiro_state *) lua_touserdata(L, -1);
+
+  if (state) {
+    xoroshiro_init(state, (uint32_t) seed);
+  }
+
+  srand(seed);
   return 0;
 }
 
@@ -318,9 +412,14 @@ LUALIB_API int luaopen_math (lua_State *L) {
   // be ingame, where math.random actually was changed to use a more secure
   // PRNG during ~Mists of Pandaria.
   //
-  // TODO: Change math.random to use literally anything else.
+  // Security isn't a goal here, but we should at least provide two separate
+  // sources of RNG so that each function can be different.
 
-  lua_pushcclosure(L, math_random, 0);
+  xoroshiro_state *state = (xoroshiro_state *) lua_newuserdata(L, sizeof(xoroshiro_state));
+  xoroshiro_init(state, 0);
+  lua_setfield(L, LUA_REGISTRYINDEX, "_XOROSTATE");
+
+  lua_pushcclosure(L, math_fastrandom, 0);
   lua_setglobal(L, "fastrandom");
 
   return 1;
