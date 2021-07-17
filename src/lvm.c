@@ -324,6 +324,13 @@ void luaV_concat (lua_State *L, int total, int last) {
 }
 
 
+static void checkdivisiontrap (lua_State *L, lua_Number nc) {
+  if (lua_checktrap(L, LUA_TRAPDIVIDEBYZERO) && nc == 0) {
+    luaG_runerror(L, "division by zero");
+  }
+}
+
+
 static void Arith (lua_State *L, StkId ra, const TValue *rb,
                    const TValue *rc, TMS op) {
   TValue tempb, tempc;
@@ -335,8 +342,8 @@ static void Arith (lua_State *L, StkId ra, const TValue *rb,
       case TM_ADD: setnvalue(L, ra, luai_numadd(nb, nc)); break;
       case TM_SUB: setnvalue(L, ra, luai_numsub(nb, nc)); break;
       case TM_MUL: setnvalue(L, ra, luai_nummul(nb, nc)); break;
-      case TM_DIV: setnvalue(L, ra, luai_numdiv(nb, nc)); break;
-      case TM_MOD: setnvalue(L, ra, luai_nummod(nb, nc)); break;
+      case TM_DIV: checkdivisiontrap(L, nc); setnvalue(L, ra, luai_numdiv(nb, nc)); break;
+      case TM_MOD: checkdivisiontrap(L, nc); setnvalue(L, ra, luai_nummod(nb, nc)); break;
       case TM_POW: setnvalue(L, ra, luai_numpow(nb, nc)); break;
       case TM_UNM: setnvalue(L, ra, luai_numunm(nb)); break;
       default: lua_assert(0); break;
@@ -506,10 +513,12 @@ void luaV_execute (lua_State *L, int nexeccalls) {
         continue;
       }
       case OP_DIV: {
+        checkdivisiontrap(L, nvalue(RKC(i)));
         arith_op(luai_numdiv, TM_DIV);
         continue;
       }
       case OP_MOD: {
+        checkdivisiontrap(L, nvalue(RKC(i)));
         arith_op(luai_nummod, TM_MOD);
         continue;
       }

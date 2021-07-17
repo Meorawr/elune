@@ -755,6 +755,13 @@ static void addintlen (char *form) {
 }
 
 
+static void checkformatoverflow (lua_State *L, int trap, lua_Number num) {
+  if (lua_checktrap(L, trap) && !((num >= LUA_INTFRM_MIN) == (num <= LUA_INTFRM_MAX))) {
+    luaL_error(L, "integer overflow attempting to store %f", num);
+  }
+}
+
+
 static int str_format (lua_State *L) {
   int top = lua_gettop(L);
   int arg = 1;
@@ -781,16 +788,14 @@ static int str_format (lua_State *L) {
         }
         case 'd':  case 'i': {
           const lua_Number num = luaL_checknumber(L, arg);
-          if (!((num >= LUA_INTFRM_MIN) == (num <= LUA_INTFRM_MAX)))
-            luaL_error(L, "integer overflow attempting to store %f", num);
+          checkformatoverflow(L, LUA_TRAPSIGNEDOVERFLOW, num);
           addintlen(form);
           sprintf(buff, form, (LUA_INTFRM_T)num);
           break;
         }
         case 'o':  case 'u':  case 'x':  case 'X': {
           const lua_Number num = luaL_checknumber(L, arg);
-          if (!((num >= LUA_INTFRM_MIN) == (num <= LUA_INTFRM_MAX)))
-            luaL_error(L, "integer overflow attempting to store %f", num);
+          checkformatoverflow(L, LUA_TRAPUNSIGNEDOVERFLOW, num);
           addintlen(form);
           sprintf(buff, form, (unsigned LUA_INTFRM_T)num);
           break;

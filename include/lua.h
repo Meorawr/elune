@@ -356,6 +356,15 @@ LUA_API void lua_taintvalues (lua_State *L, int from, int to, const lua_TaintInf
 #define LUA_MASKCOUNT	(1 << LUA_HOOKCOUNT)
 #define LUA_MASKSECURITY (1 << LUA_HOOKSECURITY)
 
+/**
+ * Trap masks
+ */
+
+#define LUA_TRAPSIGNEDOVERFLOW (1 << 0)
+#define LUA_TRAPUNSIGNEDOVERFLOW (1 << 1)
+#define LUA_TRAPDIVIDEBYZERO (1 << 2)
+
+
 typedef struct lua_Debug lua_Debug;  /* activation record */
 
 
@@ -374,6 +383,10 @@ LUA_API int lua_sethook (lua_State *L, lua_Hook func, int mask, int count);
 LUA_API lua_Hook lua_gethook (lua_State *L);
 LUA_API int lua_gethookmask (lua_State *L);
 LUA_API int lua_gethookcount (lua_State *L);
+
+LUA_API void lua_settrapmask (lua_State *L, int mask);
+LUA_API int lua_gettrapmask (lua_State *L);
+LUA_API int lua_checktrap (lua_State *L, int trap);
 
 
 struct lua_Debug {

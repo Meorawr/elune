@@ -264,6 +264,20 @@ LUA_API int lua_getinfo (lua_State *L, const char *what, lua_Debug *ar) {
 }
 
 
+LUA_API void lua_settrapmask (lua_State *L, int mask) {
+  G(L)->trapmask = mask;
+}
+
+
+LUA_API int lua_gettrapmask (lua_State *L) {
+  return G(L)->trapmask;
+}
+
+
+LUA_API int lua_checktrap (lua_State *L, int trap) {
+  return (G(L)->trapmask & trap) != 0;
+}
+
 /*
 ** {======================================================
 ** Symbolic Execution and code checker

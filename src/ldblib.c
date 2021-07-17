@@ -380,6 +380,40 @@ static int db_forcesecure (lua_State* L) {
   return 0;
 }
 
+static int db_gettrapmask (lua_State *L) {
+  int mask = lua_gettrapmask(L);
+  char smask[4];
+
+  {
+    int i = 0;
+    if (mask & LUA_TRAPSIGNEDOVERFLOW) smask[i++] = 's';
+    if (mask & LUA_TRAPUNSIGNEDOVERFLOW) smask[i++] = 'u';
+    if (mask & LUA_TRAPDIVIDEBYZERO) smask[i++] = 'z';
+    smask[i] = '\0';
+  }
+
+  lua_pushstring(L, smask);
+  return 1;
+}
+
+static int db_settrapmask (lua_State *L) {
+  lua_settop(L, 1);
+
+  int mask = 0;
+  const char *smask = NULL;
+
+  if ((smask = luaL_optstring(L, 1, NULL))) {
+    int i = 0;
+
+    if (strchr(smask, 's')) mask |= LUA_TRAPSIGNEDOVERFLOW;
+    if (strchr(smask, 'u')) mask |= LUA_TRAPUNSIGNEDOVERFLOW;
+    if (strchr(smask, 'z')) mask |= LUA_TRAPDIVIDEBYZERO;
+  }
+
+  lua_settrapmask(L, mask);
+  return 0;
+}
+
 static const luaL_Reg dblib[] = {
   {"debug", db_debug},
   {"forcesecure", db_forcesecure},
@@ -387,13 +421,15 @@ static const luaL_Reg dblib[] = {
   {"gethook", db_gethook},
   {"getinfo", db_getinfo},
   {"getlocal", db_getlocal},
-  {"getregistry", db_getregistry},
   {"getmetatable", db_getmetatable},
+  {"getregistry", db_getregistry},
+  {"gettrapmask", db_gettrapmask},
   {"getupvalue", db_getupvalue},
   {"setfenv", db_setfenv},
   {"sethook", db_sethook},
   {"setlocal", db_setlocal},
   {"setmetatable", db_setmetatable},
+  {"settrapmask", db_settrapmask},
   {"setupvalue", db_setupvalue},
   {"traceback", db_errorfb},
   {NULL, NULL}
