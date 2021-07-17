@@ -338,6 +338,25 @@ static const luaL_Reg mathlib[] = {
   {NULL, NULL}
 };
 
+static const luaL_RegAlias mathlib_aliases[] = {
+  {"abs",     "abs"},
+  {"ceil",    "ceil"},
+  {"deg",     "deg"},
+  {"exp",     "exp"},
+  {"floor",   "floor"},
+  {"frexp",   "frexp"},
+  {"ldexp",   "ldexp"},
+  {"log",     "log"},
+  {"log10",   "log10"},
+  {"max",     "max"},
+  {"min",     "min"},
+  {"fmod",    "mod"},
+  {"pi",      "PI"},
+  {"rad",     "rad"},
+  {"random",  "random"},
+  {"sqrt",    "sqrt"},
+  {NULL, NULL}
+};
 
 /*
 ** Open math library
@@ -348,38 +367,18 @@ LUALIB_API int luaopen_math (lua_State *L) {
   lua_setfield(L, -2, "pi");
   lua_pushnumber(L, HUGE_VAL);
   lua_setfield(L, -2, "huge");
+  luaL_registeraliases(L, -1, mathlib_aliases);
 #if defined(LUA_COMPAT_MOD)
   lua_getfield(L, -1, "fmod");
   lua_setfield(L, -2, "mod");
 #endif
-
-  // Add global compatibility aliases.
-
-  luaL_dostring(L, " \
-    abs = math.abs \
-    ceil = math.ceil \
-    deg = math.deg \
-    exp = math.exp \
-    floor = math.floor \
-    frexp = math.frexp \
-    ldexp = math.ldexp \
-    log = math.log \
-    log10 = math.log10 \
-    max = math.max \
-    min = math.min \
-    mod = math.fmod \
-    PI = math.pi \
-    rad = math.rad \
-    random = math.random \
-    sqrt = math.sqrt \
-  ");
 
   // Add global degree => radian compatibility wrappers. These are explicitly
   // loaded via loadstring to ensure that any code which, for whatever unholy
   // reason, is expecting them to be Lua functions and not C ones doesn't
   // get surprised.
 
-  luaL_dostring(L, " \
+  (void) luaL_dostring(L, " \
     acos = function (x) return math.deg(math.acos(x)) end \
     asin = function (x) return math.deg(math.asin(x)) end \
     atan = function (x) return math.deg(math.atan(x)) end \

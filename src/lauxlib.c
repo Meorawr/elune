@@ -381,6 +381,13 @@ LUALIB_API const char *luaL_findtable (lua_State *L, int idx,
 }
 
 
+LUALIB_API void luaL_registeraliases (lua_State *L, int idx, const luaL_RegAlias *a) {
+  for (; a->fieldname; ++a) {
+    lua_getfield(L, idx, a->fieldname);
+    lua_setglobal(L, a->globalname);
+  }
+}
+
 
 /*
 ** {======================================================

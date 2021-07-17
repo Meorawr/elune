@@ -329,21 +329,20 @@ static const luaL_Reg tab_funcs[] = {
 };
 
 
+static const luaL_RegAlias tab_aliases[] = {
+  {"foreach",   "foreach"},
+  {"foreachi",  "foreachi"},
+  {"getn",      "getn"},
+  {"insert",    "tinsert"},
+  {"remove",    "tremove"},
+  {"sort",      "sort"},
+  {"wipe",      "wipe"},
+  {NULL, NULL}
+};
+
 LUALIB_API int luaopen_table (lua_State *L) {
   luaL_register(L, LUA_TABLIBNAME, tab_funcs);
-
-  // Add global compatibility aliases.
-
-  luaL_dostring(L, " \
-    foreach = table.foreach \
-    foreachi = table.foreachi \
-    getn = table.getn \
-    tinsert = table.insert \
-    tremove = table.remove \
-    sort = table.sort \
-    wipe = table.wipe \
-  ");
-
+  luaL_registeraliases(L, -1, tab_aliases);
   return 1;
 }
 

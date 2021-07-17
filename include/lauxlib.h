@@ -38,6 +38,12 @@ typedef struct luaL_Reg {
 } luaL_Reg;
 
 
+typedef struct luaL_RegAlias {
+  const char *fieldname;
+  const char *globalname;
+} luaL_RegAlias;
+
+
 
 LUALIB_API void (luaI_openlib) (lua_State *L, const char *libname,
                                 const luaL_Reg *l, int nup);
@@ -88,7 +94,7 @@ LUALIB_API const char *(luaL_gsub) (lua_State *L, const char *s, const char *p,
 LUALIB_API const char *(luaL_findtable) (lua_State *L, int idx,
                                          const char *fname, int szhint);
 
-
+LUALIB_API void luaL_registeraliases (lua_State *L, int idx, const luaL_RegAlias *a);
 
 
 /*

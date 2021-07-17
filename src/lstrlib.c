@@ -964,6 +964,25 @@ static const luaL_Reg strlib[] = {
   {NULL, NULL}
 };
 
+static const luaL_RegAlias strlib_aliases[] = {
+  {"byte",    "strbyte"},
+  {"char",    "strchar"},
+  {"find",    "strfind"},
+  {"format",  "format"},
+  {"gmatch",  "gmatch"},
+  {"gsub",    "gsub"},
+  {"join",    "strjoin"},
+  {"len",     "strlen"},
+  {"lower",   "strlower"},
+  {"match",   "strmatch"},
+  {"rep",     "strrep"},
+  {"reverse", "strrev"},
+  {"split",   "strsplit"},
+  {"sub",     "strsub"},
+  {"trim",    "strtrim"},
+  {"upper",   "strupper"},
+  {NULL, NULL}
+};
 
 static void createmetatable (lua_State *L) {
   lua_createtable(L, 0, 1);  /* create metatable for strings */
@@ -981,35 +1000,14 @@ static void createmetatable (lua_State *L) {
 */
 LUALIB_API int luaopen_string (lua_State *L) {
   luaL_register(L, LUA_STRLIBNAME, strlib);
+  luaL_registeraliases(L, -1, strlib_aliases);
 #if defined(LUA_COMPAT_GFIND)
   lua_getfield(L, -1, "gmatch");
   lua_setfield(L, -2, "gfind");
 #endif
   createmetatable(L);
 
-  // Add global compatibility aliases.
-
-  luaL_dostring(L, " \
-    strbyte = string.byte \
-    strchar = string.char \
-    strfind = string.find \
-    format = string.format \
-    gmatch = string.gmatch \
-    gsub = string.gsub \
-    strjoin = string.join \
-    strlen = string.len \
-    strlower = string.lower \
-    strmatch = string.match \
-    strrep = string.rep \
-    strrev = string.reverse \
-    strsplit = string.split \
-    strsub = string.sub \
-    strtrim = string.trim \
-    strupper = string.upper \
-  ");
-
-  // Expose global-only functions. These are not present in the 'string'
-  // table ingame.
+  // Expose global-only functions.
 
   lua_pushcclosure(L, str_concat, 0);
   lua_setglobal(L, "strconcat");
