@@ -444,7 +444,7 @@ static int luaB_newproxy (lua_State *L) {
 }
 
 static int luaB_forceinsecure (lua_State *L) {
-  static lua_TaintInfo taint = {"*** TaintForced ***"};
+  static lua_TaintInfo taint = {"*** TaintForced ***", NULL};
   lua_settop(L, 0);
   lua_settaint(L, &taint);
   return 0;

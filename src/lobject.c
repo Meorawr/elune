@@ -24,7 +24,7 @@
 
 
 
-const TValue luaO_nilobject_ = {{NULL}, LUA_TNIL};
+const TValue luaO_nilobject_ = {{NULL}, NULL, LUA_TNIL};
 
 
 /*
