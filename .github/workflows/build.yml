@@ -67,7 +67,6 @@ jobs:
         uses: ncipollo/release-action@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          name: tainted-lua ${{ github.ref }}
           artifacts: build/${{ matrix.config.preset-name }}/*.tar.xz,build/${{ matrix.config.preset-name }}/*.zip
           draft: true
           token: ${{ secrets.GITHUB_TOKEN }}
