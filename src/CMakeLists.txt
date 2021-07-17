@@ -1,19 +1,6 @@
 include(CheckCCompilerFlag)
 include(GNUInstallDirs)
 
-# Enable fast math flags for all targets in this subdirectory. This makes the
-# handling of NaN values consistent both ingame and out of game, which may
-# be significant in a few niche cases.
-
-check_c_compiler_flag("-ffast-math" LUA_COMPILER_HAS_FFAST_MATH)
-check_c_compiler_flag("/fp:fast" LUA_COMPILER_HAS_FP_FAST)
-
-if(LUA_COMPILER_HAS_FFAST_MATH)
-  add_compile_options(-ffast-math)
-elseif(LUA_COMPILER_HAS_FP_FAST)
-  add_compile_options(/fp:fast)
-endif()
-
 # The source and header listings are defined as variables as several part of
 # the build need to refer to these for project generation tweaks later on.
 #

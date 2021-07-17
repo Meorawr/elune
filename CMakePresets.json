@@ -7,16 +7,19 @@
   },
   "configurePresets": [
     {
-      "name": "ninja",
+      "name": "base",
+      "displayName": "Base preset used to set up common options",
       "hidden": true,
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/install/${presetName}"
       }
     },
     {
       "name": "debug",
+      "description": "Preset for configuring a debug build",
       "hidden": true,
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
@@ -31,10 +34,11 @@
     },
     {
       "name": "msvc",
+      "description": "Preset for configuring a build with MSVC",
       "hidden": true,
       "cacheVariables": {
         "CMAKE_C_COMPILER": "cl.exe",
-        "CMAKE_C_FLAGS": "/D_CRT_SECURE_NO_WARNINGS /W4 /wd4324 /wd4334 /utf-8"
+        "CMAKE_C_FLAGS": "/D_CRT_SECURE_NO_WARNINGS /fp:fast /W4 /wd4324 /wd4334 /utf-8"
       },
       "toolset": {
         "strategy": "external",
@@ -46,23 +50,21 @@
       }
     },
     {
+      "name": "windows",
+      "displayName": "Windows",
+      "description": "Release build for Windows (64-bit)",
+      "inherits": [
+        "base",
+        "msvc"
+      ]
+    },
+    {
       "name": "windows-debug",
       "displayName": "Windows (Debug)",
       "description": "Debug build for Windows (64-bit)",
       "inherits": [
-        "ninja",
-        "msvc",
+        "windows",
         "debug"
-      ]
-    },
-    {
-      "name": "windows",
-      "displayName": "Windows (Release)",
-      "description": "Release build for Windows (64-bit)",
-      "inherits": [
-        "ninja",
-        "msvc",
-        "release"
       ]
     }
   ]
