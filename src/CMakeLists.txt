@@ -162,6 +162,8 @@ set_target_properties(luac
     C_STANDARD_REQUIRED ON
     PDB_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin"
     RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin"
+    EXCLUDE_FROM_ALL ON
+    EXCLUDE_FROM_DEFAULT_BUILD ON
 )
 
 target_compile_definitions(luac ${liblua_COMPILE_DEFINITIONS})
