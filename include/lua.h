@@ -309,22 +309,12 @@ typedef struct lua_TaintInfo {
 } lua_TaintInfo;
 
 LUA_API lua_TaintInfo *lua_gettaint (lua_State *L);
-LUA_API void           lua_settaint (lua_State *L, const lua_TaintInfo *t);
+LUA_API void           lua_settaint (lua_State *L, lua_TaintInfo *t);
 LUA_API lua_TaintInfo *lua_getvaluetaint (lua_State *L, int idx);
-LUA_API void           lua_setvaluetaint (lua_State *L, int idx, const lua_TaintInfo *t);
+LUA_API void           lua_setvaluetaint (lua_State *L, int idx, lua_TaintInfo *t);
 LUA_API lua_TaintInfo *lua_getobjecttaint (lua_State *L, int idx);
-LUA_API void           lua_setobjecttaint (lua_State *L, int idx, const lua_TaintInfo *t);
-
-/* TODO: Rework above APIs. */
-
-/**
- * Applies the given taint to a range of values on the stack.
- *
- * The `from` and `to` parameters must be either absolute (positive) or
- * relative (negative) stack indices. Setting either of these to a
- * pseudo-index will have undefined behaviour.
- */
-LUA_API void lua_taintvalues (lua_State *L, int from, int to, const lua_TaintInfo *taint);
+LUA_API void           lua_setobjecttaint (lua_State *L, int idx, lua_TaintInfo *t);
+LUA_API void           lua_setstacktaint (lua_State *L, int from, int to, lua_TaintInfo *t);
 
 /* }====================================================================== */
 
@@ -400,7 +390,7 @@ struct lua_Debug {
   int linedefined;	/* (S) */
   int lastlinedefined;	/* (S) */
   char short_src[LUA_IDSIZE]; /* (S) */
-  const lua_TaintInfo *taint; /* (s) */
+  lua_TaintInfo *taint; /* (s) */
   /* private part */
   int i_ci;  /* active function */
 };

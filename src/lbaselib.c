@@ -444,7 +444,7 @@ static int luaB_newproxy (lua_State *L) {
 }
 
 static int luaB_forceinsecure (lua_State *L) {
-  static const lua_TaintInfo taint = {"*** TaintForced ***"};
+  static lua_TaintInfo taint = {"*** TaintForced ***"};
   lua_settop(L, 0);
   lua_settaint(L, &taint);
   return 0;
@@ -482,7 +482,7 @@ static int luaB_issecurevariable (lua_State *L) {
 
   /* --- END TAINT BOUNDARY --- */
 
-  lua_settaint(L, entrytaint);
+  lua_settaint(L, (lua_TaintInfo *) entrytaint);
 
   if (valuetaint) {
     lua_pushboolean(L, 0);
@@ -515,7 +515,7 @@ static int luaB_securecall (lua_State *L) {
 
   /* --- END TAINT BOUNDARY --- */
 
-  lua_settaint(L, entrytaint);
+  lua_settaint(L, (lua_TaintInfo *) entrytaint);
 
   /* Values returned to a secure caller should be cleared of taint. */
 
@@ -590,8 +590,8 @@ static int securehook (lua_State *L) {
    * is invoked by insecure code.
    */
 
-  if (!(entry_taint = lua_gettaint(L))) {
-    lua_settaint(L, posthook_taint);
+  if ((entry_taint = lua_gettaint(L)) == NULL) {
+    lua_settaint(L, (lua_TaintInfo *) posthook_taint);
   }
 
   /* --- BEGIN TAINTED EXECUTION --- */
@@ -602,7 +602,7 @@ static int securehook (lua_State *L) {
     lua_pushvalue(L, argi);
   }
 
-  /* luaD_precall will apply taint from the closure or state to all arguments. */
+  /* Taint will be applied to all arguments in the call automatically. */
   status = lua_pcall(L, argc, 0, -(argc + 2));
 
   if (status != 0) {
@@ -616,7 +616,7 @@ static int securehook (lua_State *L) {
 
   /* --- END TAINTED EXECUTION --- */
 
-  lua_settaint(L, entry_taint);
+  lua_settaint(L, (lua_TaintInfo *) entry_taint);
   return retc;
 }
 
@@ -666,7 +666,7 @@ static int luaB_hooksecurefunc (lua_State *L) {
 
   entry_taint = lua_gettaint(L);
   lua_settaint(L, NULL);
-  lua_taintvalues(L, 1, -1, NULL);
+  lua_setstacktaint(L, 1, -1, NULL);
 
   /* --- BEGIN SECURE EXECUTION --- */
 
@@ -678,7 +678,7 @@ static int luaB_hooksecurefunc (lua_State *L) {
 
   /* --- END SECURE EXECUTION --- */
 
-  lua_settaint(L, entry_taint);
+  lua_settaint(L, (lua_TaintInfo *) entry_taint);
   return 0;
 }
 

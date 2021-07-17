@@ -40,7 +40,7 @@ typedef union GCObject GCObject;
 ** Common Header for all collectable objects (in macro form, to be
 ** included in other objects)
 */
-#define CommonHeader	GCObject *next; const lua_TaintInfo *taint; lu_byte tt; lu_byte marked
+#define CommonHeader	GCObject *next; lua_TaintInfo *taint; lu_byte tt; lu_byte marked
 
 
 /*
@@ -67,7 +67,7 @@ typedef union {
 ** Tagged Values
 */
 
-#define TValuefields	Value value; const lua_TaintInfo *taint; int tt
+#define TValuefields	Value value; lua_TaintInfo *taint; int tt
 
 typedef struct lua_TValue {
   TValuefields;
@@ -188,7 +188,7 @@ typedef struct lua_TValue {
 #define settaint(obj, ta) (gettaint(obj) = (ta))
 #define propagatetaint(obj1, obj2) \
   do { \
-    const lua_TaintInfo *obj2taint = (obj2)->taint; \
+    lua_TaintInfo *obj2taint = (obj2)->taint; \
     if (obj2taint) (obj1)->taint = obj2taint; \
   } while(0)
 
