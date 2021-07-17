@@ -282,9 +282,9 @@ static int wipe (lua_State *L) {
 static int tremovemulti (lua_State *L) {
   luaL_checktype(L, 1, LUA_TTABLE);
 
-  const int length = lua_objlen(L, 1);
-  const int index = luaL_optinteger(L, 2, length);
-  const int count = luaL_optinteger(L, 3, 1);
+  const size_t length = lua_objlen(L, 1);
+  const int index = luaL_optint(L, 2, length);
+  const int count = luaL_optint(L, 3, 1);
 
   if (length == 0) {
     return 0;  // Accurate to reference. ¯\_(ツ)_/¯

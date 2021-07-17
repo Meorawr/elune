@@ -33,7 +33,8 @@
       "name": "msvc",
       "hidden": true,
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "cl.exe"
+        "CMAKE_C_COMPILER": "cl.exe",
+        "CMAKE_C_FLAGS": "/D_CRT_SECURE_NO_WARNINGS /W4 /wd4324 /wd4334 /utf-8"
       },
       "toolset": {
         "strategy": "external",

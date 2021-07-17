@@ -402,9 +402,7 @@ static int db_settrapmask (lua_State *L) {
   int mask = 0;
   const char *smask = NULL;
 
-  if ((smask = luaL_optstring(L, 1, NULL))) {
-    int i = 0;
-
+  if ((smask = luaL_optstring(L, 1, NULL)) != NULL) {
     if (strchr(smask, 's')) mask |= LUA_TRAPSIGNEDOVERFLOW;
     if (strchr(smask, 'u')) mask |= LUA_TRAPUNSIGNEDOVERFLOW;
     if (strchr(smask, 'z')) mask |= LUA_TRAPDIVIDEBYZERO;

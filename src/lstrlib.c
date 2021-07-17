@@ -865,9 +865,9 @@ static int str_split (lua_State *L) {
   const char *delim = luaL_checkstring(L, 1);
   size_t slen;
   const char *str = luaL_checklstring(L, 2, &slen);
-  const lua_Integer limit = luaL_optinteger(L, 3, 0);
+  const int limit = luaL_optint(L, 3, 0);
 
-  lua_Integer count = 0;
+  int count = 0;
 
   // Keep the delimiter/source string on the stack so that they don't run the
   // risk of being GCd while we're processing.

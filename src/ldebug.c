@@ -265,7 +265,7 @@ LUA_API int lua_getinfo (lua_State *L, const char *what, lua_Debug *ar) {
 
 
 LUA_API void lua_settrapmask (lua_State *L, int mask) {
-  G(L)->trapmask = mask;
+  G(L)->trapmask = cast_byte(mask);
 }
 
 
