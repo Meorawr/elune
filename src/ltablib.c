@@ -298,8 +298,11 @@ static int tremovemulti (lua_State *L) {
   for (int dsti = index; dsti <= length; ++dsti) {
     const int srci = dsti + count;
 
+    if (dsti <= (index + count - 1)) {
+      lua_rawgeti(L, 1, dsti);  // We're removing this, so push onto the stack to return it.
+    }
+
     if (srci <= length) {
-      lua_rawgeti(L, 1, srci);  // Push a copy of the value(s) we're removing for our returns.
       lua_rawgeti(L, 1, srci);
     } else {
       lua_pushnil(L);
