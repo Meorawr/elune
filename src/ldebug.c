@@ -432,6 +432,7 @@ static Instruction symbexec (const Proto *pt, int lastpc, int reg) {
       case OP_FORPREP:
         checkreg(pt, a+3);
         /* go through */
+        LUA_FALLTHROUGH;
       case OP_JMP: {
         int dest = pc+1+b;
         /* not full check and jump is forward and do not skip `lastpc'? */
@@ -619,7 +620,6 @@ int luaG_ordererror (lua_State *L, const TValue *p1, const TValue *p2) {
     luaG_runerror(L, "attempt to compare two %s values", t1);
   else
     luaG_runerror(L, "attempt to compare %s with %s", t1, t2);
-  return 0;
 }
 
 

@@ -272,12 +272,14 @@ static int collectargs (char **argv, int *pi, int *pv, int *pe) {
       case 'i':
         notail(argv[i]);
         *pi = 1;  /* go through */
+        LUA_FALLTHROUGH;
       case 'v':
         notail(argv[i]);
         *pv = 1;
         break;
       case 'e':
         *pe = 1;  /* go through */
+        LUA_FALLTHROUGH;
       case 'l':
         if (argv[i][2] == '\0') {
           i++;

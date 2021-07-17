@@ -193,6 +193,16 @@
 #endif
 
 
+/*
+@@ LUA_FALLTHROUGH hints to the compiler that a case fallthrough is intended.
+** CHANGE it as needed for your compiler.
+*/
+#if defined(__GNUC__) || defined(__clang__)
+#define LUA_FALLTHROUGH __attribute__((fallthrough))
+#else
+#define LUA_FALLTHROUGH ((void) (0))
+#endif
+
 
 /*
 @@ LUA_QL describes how error messages quote program elements.
@@ -569,7 +579,7 @@
 
 /* On a Pentium, resort to a trick */
 #if defined(LUA_NUMBER_DOUBLE) && !defined(LUA_ANSI) && !defined(__SSE2__) && \
-    (defined(__i386) || defined (_M_IX86) || defined(__i386__))
+    (defined(__i386) || defined(_M_IX86) || defined(__i386__))
 
 /* On a Microsoft compiler, use assembler */
 #if defined(_MSC_VER)
