@@ -103,14 +103,14 @@ add_library(liblua)
 
 set_target_properties(liblua
   PROPERTIES
-    OUTPUT_NAME              $<IF:$<PLATFORM_ID:Windows>,lua51,lua5.1>
-    C_EXTENSIONS             OFF
-    C_STANDARD               17
-    C_STANDARD_REQUIRED      OFF
-    PUBLIC_HEADER            "${liblua_HEADERS}"  # Must be a string representation of a list.
+    OUTPUT_NAME $<IF:$<PLATFORM_ID:Windows>,lua51,lua5.1>
+    C_EXTENSIONS OFF
+    C_STANDARD 11
+    C_STANDARD_REQUIRED ON
+    PUBLIC_HEADER "${liblua_HEADERS}"  # Must be a string representation of a list.
     ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib"
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib"
-    PDB_OUTPUT_DIRECTORY     "${PROJECT_BINARY_DIR}/bin"
+    PDB_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin"
     RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin"
 )
 
@@ -136,13 +136,13 @@ add_executable(lua)
 
 set_target_properties(lua
   PROPERTIES
-    OUTPUT_NAME              $<IF:$<PLATFORM_ID:Windows>,lua,lua5.1>
-    C_EXTENSIONS             OFF
-    C_STANDARD               17
-    C_STANDARD_REQUIRED      OFF
-    BUILD_RPATH_USE_ORIGIN   ON
-    INSTALL_RPATH            "\$ORIGIN/../${CMAKE_INSTALL_LIBDIR}"
-    PDB_OUTPUT_DIRECTORY     "${PROJECT_BINARY_DIR}/bin"
+    OUTPUT_NAME $<IF:$<PLATFORM_ID:Windows>,lua,lua5.1>
+    C_EXTENSIONS OFF
+    C_STANDARD 11
+    C_STANDARD_REQUIRED ON
+    BUILD_RPATH_USE_ORIGIN ON
+    INSTALL_RPATH "\$ORIGIN/../${CMAKE_INSTALL_LIBDIR}"
+    PDB_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin"
     RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin"
 )
 
@@ -169,11 +169,11 @@ add_executable(luac)
 
 set_target_properties(luac
   PROPERTIES
-    OUTPUT_NAME              $<IF:$<PLATFORM_ID:Windows>,luac,luac5.1>
-    C_EXTENSIONS             OFF
-    C_STANDARD               17
-    C_STANDARD_REQUIRED      OFF
-    PDB_OUTPUT_DIRECTORY     "${PROJECT_BINARY_DIR}/bin"
+    OUTPUT_NAME $<IF:$<PLATFORM_ID:Windows>,luac,luac5.1>
+    C_EXTENSIONS OFF
+    C_STANDARD 11
+    C_STANDARD_REQUIRED ON
+    PDB_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin"
     RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin"
 )
 
