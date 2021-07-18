@@ -2,8 +2,12 @@
 
 ## [Unreleased]
 ### Added
-- Added a "-t" flag to the interpreter to run inline scripts ("-e") or load files insecurely.
-  - When this flag is specified, any modules loaded via "-l" will still be loaded securely.
+- Added a `-t` flag to the interpreter to run inline scripts (`-e`) or load files insecurely.
+  - When this flag is specified, any modules loaded via `-l` will still be loaded securely.
+- Added the `nparams` and `isvararg` fields to debug information obtained from functions, backported from Lua 5.2.
+
+### Changed
+- Relocated the taint field on the `lua_Debug` type to the end of the structure to fix potential binary incompatibilities.
 
 ## [v1]
 ### Added

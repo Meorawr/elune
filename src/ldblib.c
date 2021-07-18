@@ -73,6 +73,12 @@ static void settabsi (lua_State *L, const char *i, int v) {
 }
 
 
+static void settabsb (lua_State *L, const char *i, int v) {
+  lua_pushboolean(L, v);
+  lua_setfield(L, -2, i);
+}
+
+
 static lua_State *getthread (lua_State *L, int *arg) {
   if (lua_isthread(L, 1)) {
     *arg = 1;
@@ -131,6 +137,8 @@ static int db_getinfo (lua_State *L) {
     settabsi(L, "currentline", ar.currentline);
   if (strchr(options, 'u'))
     settabsi(L, "nups", ar.nups);
+    settabsi(L, "nparams", ar.nparams);
+    settabsb(L, "isvararg", ar.isvararg);
   if (strchr(options, 'n')) {
     settabss(L, "name", ar.name);
     settabss(L, "namewhat", ar.namewhat);
