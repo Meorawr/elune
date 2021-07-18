@@ -67,6 +67,7 @@ UpVal *luaF_findupval (lua_State *L, StkId level) {
     pp = &p->next;
   }
   uv = luaM_new(L, UpVal);  /* not found: create a new one */
+  settaint(uv, gettaint(L));
   uv->tt = LUA_TUPVAL;
   uv->marked = luaC_white(g);
   uv->v = level;  /* current value lives in the stack */
