@@ -23,6 +23,9 @@ static lua_State *globalL = NULL;
 
 static const char *progname = LUA_PROGNAME;
 
+static int runtainted = 0;
+
+static lua_TaintInfo taint = { "*** TaintForced ***", NULL };
 
 
 static void lstop (lua_State *L, lua_Debug *ar) {
@@ -46,6 +49,7 @@ static void print_usage (void) {
   "  -e stat  execute string " LUA_QL("stat") "\n"
   "  -l name  require library " LUA_QL("name") "\n"
   "  -i       enter interactive mode after executing " LUA_QL("script") "\n"
+  "  -t       load and execute scripts insecurely\n"
   "  -v       show version information\n"
   "  --       stop handling options\n"
   "  -        execute stdin and stop handling options\n"
@@ -63,6 +67,7 @@ static void l_message (const char *pname, const char *msg) {
 
 
 static int report (lua_State *L, int status) {
+  lua_settaint(L, NULL);
   if (status && !lua_isnil(L, -1)) {
     const char *msg = lua_tostring(L, -1);
     if (msg == NULL) msg = "(error object is not a string)";
@@ -132,12 +137,14 @@ static int getargs (lua_State *L, char **argv, int n) {
 
 
 static int dofile (lua_State *L, const char *name) {
+  lua_settaint(L, runtainted ? &taint : NULL);
   int status = luaL_loadfile(L, name) || docall(L, 0, 1);
   return report(L, status);
 }
 
 
 static int dostring (lua_State *L, const char *s, const char *name) {
+  lua_settaint(L, runtainted ? &taint : NULL);
   int status = luaL_loadbuffer(L, s, strlen(s), name) || docall(L, 0, 1);
   return report(L, status);
 }
@@ -276,6 +283,10 @@ static int collectargs (char **argv, int *pi, int *pv, int *pe) {
       case 'v':
         notail(argv[i]);
         *pv = 1;
+        break;
+      case 't':
+        notail(argv[i]);
+        runtainted = 1;
         break;
       case 'e':
         *pe = 1;  /* go through */
