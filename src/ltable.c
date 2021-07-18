@@ -162,7 +162,7 @@ int luaH_next (lua_State *L, Table *t, StkId key) {
   int i = findindex(L, t, key);  /* find original element */
   for (i++; i < t->sizearray; i++) {  /* try first array part */
     if (!ttisnil(&t->array[i])) {  /* a non-nil value? */
-      setnvalue(L, key, cast_num(i+1));
+      setnvalue(key, cast_num(i+1));
       setobj2s(L, key+1, &t->array[i]);
       return 1;
     }
@@ -513,7 +513,7 @@ TValue *luaH_setnum (lua_State *L, Table *t, int key) {
     return cast(TValue *, p);
   else {
     TValue k;
-    setnvalue(L, &k, cast_num(key));
+    setnvalue(&k, cast_num(key));
     return newkey(L, t, &k);
   }
 }

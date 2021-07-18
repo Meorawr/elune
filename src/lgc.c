@@ -348,7 +348,7 @@ static int iscleared (const TValue *o, int iskey) {
 /*
 ** clear collected entries from weaktables
 */
-static void cleartable (lua_State *L, GCObject *l) {
+static void cleartable (GCObject *l) {
   while (l) {
     Table *h = gco2h(l);
     int i = h->sizearray;
@@ -543,7 +543,7 @@ static void atomic (lua_State *L) {
   udsize = luaC_separateudata(L, 0);  /* separate userdata to be finalized */
   marktmu(g);  /* mark `preserved' userdata */
   udsize += propagateall(g);  /* remark, to propagate `preserveness' */
-  cleartable(L, g->weak);  /* remove collected objects from weak tables */
+  cleartable(g->weak);  /* remove collected objects from weak tables */
   /* flip current white */
   g->currentwhite = cast_byte(otherwhite(g));
   g->sweepstrgc = 0;

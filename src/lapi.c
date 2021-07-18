@@ -428,7 +428,7 @@ LUA_API void lua_pushnil (lua_State *L) {
 
 LUA_API void lua_pushnumber (lua_State *L, lua_Number n) {
   lua_lock(L);
-  setnvalue(L, L->top, n);
+  setnvalue(L->top, n);
   api_incr_top(L);
   lua_unlock(L);
 }
@@ -436,7 +436,7 @@ LUA_API void lua_pushnumber (lua_State *L, lua_Number n) {
 
 LUA_API void lua_pushinteger (lua_State *L, lua_Integer n) {
   lua_lock(L);
-  setnvalue(L, L->top, cast_num(n));
+  setnvalue(L->top, cast_num(n));
   api_incr_top(L);
   lua_unlock(L);
 }
@@ -502,7 +502,7 @@ LUA_API void lua_pushcclosure (lua_State *L, lua_CFunction fn, int n) {
 
 LUA_API void lua_pushboolean (lua_State *L, int b) {
   lua_lock(L);
-  setbvalue(L, L->top, (b != 0));  /* ensure that true is 1 */
+  setbvalue(L->top, (b != 0));  /* ensure that true is 1 */
   api_incr_top(L);
   lua_unlock(L);
 }
@@ -510,7 +510,7 @@ LUA_API void lua_pushboolean (lua_State *L, int b) {
 
 LUA_API void lua_pushlightuserdata (lua_State *L, void *p) {
   lua_lock(L);
-  setpvalue(L, L->top, p);
+  setpvalue(L->top, p);
   api_incr_top(L);
   lua_unlock(L);
 }
@@ -841,7 +841,7 @@ static void f_Ccall (lua_State *L, void *ud) {
   cl->c.f = c->func;
   setclvalue(L, L->top, cl);  /* push function */
   api_incr_top(L);
-  setpvalue(L, L->top, c->ud);  /* push only argument */
+  setpvalue(L->top, c->ud);  /* push only argument */
   api_incr_top(L);
   luaD_call(L, L->top - 2, 0);
 }
