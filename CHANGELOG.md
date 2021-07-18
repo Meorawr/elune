@@ -1,6 +1,9 @@
 # Changelog
 
 ## [Unreleased]
+### Added
+- Added a "-t" flag to the interpreter to run inline scripts ("-e") or load files insecurely.
+  - When this flag is specified, any modules loaded via "-l" will still be loaded securely.
 
 ## [v1]
 ### Added
