@@ -103,7 +103,7 @@ static void LoadConstants(LoadState* S, Proto* f)
  n=LoadInt(S);
  f->k=luaM_newvector(S->L,n,TValue);
  f->sizek=n;
- for (i=0; i<n; i++) setnilvalue(S->L,&f->k[i]);
+ for (i=0; i<n; i++) setnilvalue(&f->k[i]);
  for (i=0; i<n; i++)
  {
   TValue* o=&f->k[i];
@@ -111,7 +111,7 @@ static void LoadConstants(LoadState* S, Proto* f)
   switch (t)
   {
    case LUA_TNIL:
-	setnilvalue(S->L,o);
+	setnilvalue(o);
 	break;
    case LUA_TBOOLEAN:
 	setbvalue(S->L,o,LoadChar(S)!=0);

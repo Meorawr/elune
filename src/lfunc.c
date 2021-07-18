@@ -47,7 +47,7 @@ UpVal *luaF_newupval (lua_State *L) {
   UpVal *uv = luaM_new(L, UpVal);
   luaC_link(L, obj2gco(uv), LUA_TUPVAL);
   uv->v = &uv->u.value;
-  setnilvalue(L, uv->v);
+  setnilvalue(uv->v);
   return uv;
 }
 

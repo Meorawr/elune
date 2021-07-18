@@ -52,7 +52,7 @@ static void stack_init (lua_State *L1, lua_State *L) {
   L1->stack_last = L1->stack+(L1->stacksize - EXTRA_STACK)-1;
   /* initialize first ci */
   L1->ci->func = L1->top;
-  setnilvalue(L1, L1->top++);  /* `function' entry for this `ci' */
+  setnilvalue(L1->top++);  /* `function' entry for this `ci' */
   L1->base = L1->ci->base = L1->top;
   L1->ci->top = L1->top + LUA_MINSTACK;
 }
@@ -99,7 +99,7 @@ static void preinit_state (lua_State *L, global_State *g) {
   L->savedpc = NULL;
   L->errfunc = 0;
   settaint(L, NULL);
-  setnilvalue(L, gt(L));
+  setnilvalue(gt(L));
 }
 
 
@@ -165,7 +165,7 @@ LUA_API lua_State *lua_newstate (lua_Alloc f, void *ud) {
   g->strt.size = 0;
   g->strt.nuse = 0;
   g->strt.hash = NULL;
-  setnilvalue(L, registry(L));
+  setnilvalue(registry(L));
   luaZ_initbuffer(L, &g->buff);
   g->panic = NULL;
   g->gcstate = GCSpause;

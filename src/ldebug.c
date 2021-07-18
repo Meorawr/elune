@@ -177,7 +177,7 @@ static void info_tailcall (lua_State *L, lua_Debug *ar) {
 
 static void collectvalidlines (lua_State *L, Closure *f) {
   if (f == NULL || f->c.isC) {
-    setnilvalue(L, L->top);
+    setnilvalue(L->top);
   }
   else {
     Table *t = luaH_new(L, 0, 0);
@@ -253,7 +253,7 @@ LUA_API int lua_getinfo (lua_State *L, const char *what, lua_Debug *ar) {
   }
   status = auxgetinfo(L, what, ar, f, ci);
   if (strchr(what, 'f')) {
-    if (f == NULL) setnilvalue(L, L->top);
+    if (f == NULL) setnilvalue(L->top);
     else setclvalue(L, L->top, f);
     incr_top(L);
   }

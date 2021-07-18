@@ -265,7 +265,7 @@ static void traversestack (global_State *g, lua_State *l) {
   for (o = l->stack; o < l->top; o++)
     markvalue(g, o);
   for (; o <= lim; o++)
-    setnilvalue(l, o);
+    setnilvalue(o);
   checkstacksizes(l, lim);
 }
 
@@ -358,7 +358,7 @@ static void cleartable (lua_State *L, GCObject *l) {
       while (i--) {
         TValue *o = &h->array[i];
         if (iscleared(o, 0))  /* value was collected? */
-          setnilvalue(L, o);  /* remove value */
+          setnilvalue(o);  /* remove value */
       }
     }
     i = sizenode(h);
@@ -366,7 +366,7 @@ static void cleartable (lua_State *L, GCObject *l) {
       Node *n = gnode(h, i);
       if (!ttisnil(gval(n)) &&  /* non-empty entry? */
           (iscleared(key2tval(n), 1) || iscleared(gval(n), 0))) {
-        setnilvalue(L, gval(n));  /* remove value ... */
+        setnilvalue(gval(n));  /* remove value ... */
         removeentry(n);  /* remove entry from table */
       }
     }

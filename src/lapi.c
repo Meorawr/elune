@@ -166,7 +166,7 @@ LUA_API void lua_settop (lua_State *L, int idx) {
   if (idx >= 0) {
     api_check(L, idx <= L->stack_last - L->base);
     while (L->top < L->base + idx)
-      setnilvalue(L, L->top++);
+      setnilvalue(L->top++);
     L->top = L->base + idx;
   }
   else {
@@ -420,7 +420,7 @@ LUA_API const void *lua_topointer (lua_State *L, int idx) {
 
 LUA_API void lua_pushnil (lua_State *L) {
   lua_lock(L);
-  setnilvalue(L, L->top);
+  setnilvalue(L->top);
   api_incr_top(L);
   lua_unlock(L);
 }
@@ -629,7 +629,7 @@ LUA_API void lua_getfenv (lua_State *L, int idx) {
       setobj2s(L, L->top,  gt(thvalue(o)));
       break;
     default:
-      setnilvalue(L, L->top);
+      setnilvalue(L->top);
       break;
   }
   api_incr_top(L);

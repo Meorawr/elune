@@ -449,7 +449,7 @@ void luaV_execute (lua_State *L, int nexeccalls) {
       case OP_LOADNIL: {
         TValue *rb = RB(i);
         do {
-          setnilvalue(L, rb--);
+          setnilvalue(rb--);
         } while (rb >= ra);
         continue;
       }
@@ -787,7 +787,7 @@ void luaV_execute (lua_State *L, int nexeccalls) {
             setobjs2s(L, ra + j, ci->base - n + j);
           }
           else {
-            setnilvalue(L, ra + j);
+            setnilvalue(ra + j);
           }
         }
         continue;

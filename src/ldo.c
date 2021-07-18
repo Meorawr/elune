@@ -211,7 +211,7 @@ static StkId adjust_varargs (lua_State *L, Proto *p, int actual) {
   Table *htab = NULL;
   StkId base, fixed;
   for (; actual < nfixargs; ++actual)
-    setnilvalue(L, L->top++);
+    setnilvalue(L->top++);
 #if defined(LUA_COMPAT_VARARG)
   if (p->is_vararg & VARARG_NEEDSARG) { /* compat. with old-style vararg? */
     int nvar = actual - nfixargs;  /* number of extra arguments */
@@ -230,7 +230,7 @@ static StkId adjust_varargs (lua_State *L, Proto *p, int actual) {
   base = L->top;  /* final position of first argument */
   for (i=0; i<nfixargs; i++) {
     setobjs2s(L, L->top++, fixed+i);
-    setnilvalue(L, fixed+i);
+    setnilvalue(fixed+i);
   }
   /* add `arg' parameter */
   if (htab) {
@@ -296,7 +296,7 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
     ci->tailcalls = 0;
     ci->nresults = nresults;
     for (st = L->top; st < ci->top; st++)
-      setnilvalue(L, st);
+      setnilvalue(st);
     for (st = ci->base; st < ci->top; st++)  /* propagate taint to all stack parameters */
       settaint(st, gettaint(L));
     L->top = ci->top;
@@ -360,11 +360,13 @@ int luaD_poscall (lua_State *L, StkId firstResult) {
   L->savedpc = (ci - 1)->savedpc;  /* restore savedpc */
   /* move results to correct place */
   for (i = wanted; i != 0 && firstResult < L->top; i--) {
-    settaint(firstResult, gettaint(L));  /* propagate state taint to stack returns */
-    setobjs2s(L, res++, firstResult++);
+    setobjs2s(L, res, firstResult++);
+    settaint(res++, gettaint(L));  /* propagate state taint to stack returns */
   }
-  while (i-- > 0)
-    setnilvalue(L, res++);
+  while (i-- > 0) {
+    setnilvalue(res);
+    settaint(res++, gettaint(L));  /* propagate state taint to stack returns */
+  }
   L->top = res;
   return (wanted - LUA_MULTRET);  /* 0 iff wanted == LUA_MULTRET */
 }

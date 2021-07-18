@@ -263,7 +263,7 @@ static void setarrayvector (lua_State *L, Table *t, int size) {
   int i;
   luaM_reallocvector(L, t->array, t->sizearray, size, TValue);
   for (i=t->sizearray; i<size; i++)
-     setnilvalue(L, &t->array[i]);
+     setnilvalue(&t->array[i]);
   t->sizearray = size;
 }
 
@@ -284,8 +284,8 @@ static void setnodevector (lua_State *L, Table *t, int size) {
     for (i=0; i<size; i++) {
       Node *n = gnode(t, i);
       gnext(n) = NULL;
-      setnilvalue(L, key2tval(n));
-      setnilvalue(L, gval(n));
+      setnilvalue(key2tval(n));
+      setnilvalue(gval(n));
     }
   }
   t->lsizenode = cast_byte(lsize);
@@ -412,7 +412,7 @@ static TValue *newkey (lua_State *L, Table *t, const TValue *key) {
       gnext(othern) = n;  /* redo the chain with `n' in place of `mp' */
       *n = *mp;  /* copy colliding node into free pos. (mp->next also goes) */
       gnext(mp) = NULL;  /* now `mp' is free */
-      setnilvalue(L, gval(mp));
+      setnilvalue(gval(mp));
     }
     else {  /* colliding node is in its own main position */
       /* new node will go into free position */
