@@ -135,10 +135,11 @@ static int db_getinfo (lua_State *L) {
     settabss(L, "taintedby", ar.taint->source);
   if (strchr(options, 'l'))
     settabsi(L, "currentline", ar.currentline);
-  if (strchr(options, 'u'))
+  if (strchr(options, 'u')) {
     settabsi(L, "nups", ar.nups);
     settabsi(L, "nparams", ar.nparams);
     settabsb(L, "isvararg", ar.isvararg);
+  }
   if (strchr(options, 'n')) {
     settabss(L, "name", ar.name);
     settabss(L, "namewhat", ar.namewhat);
