@@ -9,23 +9,21 @@ jobs:
     runs-on: ${{ matrix.config.os }}
     strategy:
       fail-fast: false
+
       matrix:
         config:
           - name: Windows
             os: windows-2019
+            preset: windows
             arch: x64
-            preset-name: windows
-            artifact-name: windows-x64
 
           - name: Linux
             os: ubuntu-20.04
-            preset-name: linux
-            artifact-name: linux-x64
+            preset: linux
 
           - name: macOS
             os: macos-10.15
-            preset-name: macos
-            artifact-name: macos-x64
+            preset: macos
 
     steps:
       - uses: actions/checkout@v2
@@ -46,28 +44,28 @@ jobs:
         if: startsWith(matrix.config.os, 'ubuntu') || startsWith(matrix.config.os, 'macos')
 
       - name: Configure
-        run: cmake --preset ${{ matrix.config.preset-name }}
+        run: cmake --preset ${{ matrix.config.preset }}
 
       - name: Build
-        run: cmake --build --preset ${{ matrix.config.preset-name }}
+        run: cmake --build --preset ${{ matrix.config.preset }}
 
       - name: Install
-        run: cmake --build --preset ${{ matrix.config.preset-name }} --target install
+        run: cmake --build --preset ${{ matrix.config.preset }} --target install
 
       - name: Package
-        run: cmake --build --preset ${{ matrix.config.preset-name }} --target package
+        run: cmake --build --preset ${{ matrix.config.preset }} --target package
 
       - name: Upload
         uses: actions/upload-artifact@v2
         with:
-          path: build/install/${{ matrix.config.preset-name }}/**/*
-          name: ${{ matrix.config.artifact-name }}
+          path: build/${{ matrix.config.preset }}/install/**/*
+          name: ${{ matrix.config.name }}
 
-      - name: Upload Release
+      - name: Release
         uses: ncipollo/release-action@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          artifacts: build/${{ matrix.config.preset-name }}/*.tar.xz,build/${{ matrix.config.preset-name }}/*.zip
+          artifacts: build/${{ matrix.config.preset }}/*.tar.xz,build/${{ matrix.config.preset }}/*.zip
           draft: true
           token: ${{ secrets.GITHUB_TOKEN }}
           allowUpdates: true

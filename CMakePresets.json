@@ -10,19 +10,10 @@
       "name": "base",
       "description": "Base preset used to set up common options",
       "hidden": true,
-      "generator": "Ninja",
+      "generator": "Ninja Multi-Config",
       "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/install/${presetName}"
-      }
-    },
-    {
-      "name": "debug",
-      "description": "Preset for configuring a debug build",
-      "hidden": true,
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/${presetName}/install"
       }
     },
     {
@@ -31,7 +22,10 @@
       "hidden": true,
       "cacheVariables": {
         "CMAKE_C_COMPILER": "cl.exe",
-        "CMAKE_C_FLAGS": "/D_CRT_SECURE_NO_WARNINGS /fp:fast /W4 /wd4324 /wd4334 /utf-8"
+        "CMAKE_C_FLAGS": "/D_CRT_SECURE_NO_WARNINGS /fp:fast /W4 /wd4324 /wd4334 /utf-8",
+        "CMAKE_C_FLAGS_RELEASE": "/Zi",
+        "CMAKE_EXE_LINKER_FLAGS_RELEASE": "/DEBUG:FULL /INCREMENTAL:NO /OPT:REF /OPT:ICF /PDBALTPATH:%_PDB% /MANIFEST:NO",
+        "CMAKE_SHARED_LINKER_FLAGS_RELEASE": "/DEBUG:FULL /INCREMENTAL:NO /OPT:REF /OPT:ICF /PDBALTPATH:%_PDB% /MANIFEST:NO"
       },
       "toolset": {
         "strategy": "external",
@@ -70,15 +64,6 @@
       ]
     },
     {
-      "name": "windows-debug",
-      "displayName": "Windows Debug",
-      "description": "Debug configuration for Windows (MSVC x64)",
-      "inherits": [
-        "debug",
-        "windows"
-      ]
-    },
-    {
       "name": "linux",
       "displayName": "Linux",
       "description": "Release configuration for Linux (GCC)",
@@ -103,15 +88,8 @@
       "description": "Base preset for common build options",
       "hidden": true,
       "configurePreset": "base",
+      "configuration": "release",
       "inheritConfigureEnvironment": true
-    },
-    {
-      "name": "minimal",
-      "description": "Preset for a minimal build variant",
-      "hidden": true,
-      "targets": [
-        "lua"
-      ]
     },
     {
       "name": "windows",
@@ -123,21 +101,11 @@
       ]
     },
     {
-      "name": "windows-minimal",
-      "displayName": "Minimal",
-      "description": "Minimal release build for Windows (MSVC x64)",
-      "inherits": [
-        "minimal",
-        "windows"
-      ]
-    },
-    {
       "name": "windows-debug",
-      "displayName": "Minimal Debug",
-      "description": "Minimal debug build for Windows (MSVC x64)",
-      "configurePreset": "windows-debug",
+      "displayName": "Debug",
+      "description": "Debug build for Windows (MSVC x64)",
+      "configuration": "debug",
       "inherits": [
-        "minimal",
         "windows"
       ]
     },
@@ -151,11 +119,11 @@
       ]
     },
     {
-      "name": "linux-minimal",
-      "displayName": "Minimal",
-      "description": "Minimal release build for Linux (GCC)",
+      "name": "linux-debug",
+      "displayName": "Debug",
+      "description": "Debug build for Linux (GCC)",
+      "configuration": "debug",
       "inherits": [
-        "minimal",
         "linux"
       ]
     },
@@ -169,11 +137,11 @@
       ]
     },
     {
-      "name": "macos-minimal",
-      "displayName": "Minimal",
-      "description": "Minimal release build for macOS (Clang)",
+      "name": "macos-debug",
+      "displayName": "Debug",
+      "description": "Debug build for macOS (Clang)",
+      "configuration": "debug",
       "inherits": [
-        "minimal",
         "macos"
       ]
     }

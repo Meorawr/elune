@@ -6,21 +6,25 @@ This is mostly just a toy project and shouldn't be used in any serious capacity.
 
 ## Building
 
-The original Makefiles have been replaced with a CMake-based build. Note that only builds on Linux (via GCC and Clang) and Windows (via MSVC) are supported. Mac OS X is as yet untested.
+The original Makefiles have been replaced with a CMake-based build. Note that only builds on Linux (GCC), macOS (Clang) and Windows (MSVC) are supported. These are implemented as presets in the `CMakePresets.json` file.
 
-For a build with all components enabled in a release configuration, the following CMake commands will configure and build the project in a `build/<preset>` directory. The resulting binaries for Lua can be found in `bin/` and `lib/` subdirectories of that folder.
+For a build with all components enabled in a release configuration, the following CMake commands will configure and build the project in a `build/<preset>` directory. The resulting binaries for Lua can be found in `bin/release/` and `lib/release/` subdirectories of that folder.
 
 ```sh
-cmake --preset <linux|windows>
-cmake --build --preset <linux|windows>
+cmake --preset <linux|macos|windows>
+cmake --build --preset <linux|windows> [--config <debug|release>]
 ```
 
-Additional presets can be discovered via `cmake --list-presets` or by reading the `CMakePresets.json` file.
-
-For a packaged release with header files included the following can be executed to create a set of `.tar.xz` and `.zip` files in the build directory for the selected preset.
+Installation of the compiled artifacts to a specified target directory can be performed with the following command.
 
 ```sh
-cmake --build --preset <linux|windows> --target package
+cmake --install build/<preset> [--config <debug|release>] [--prefix <path to install to>] [--strip]
+```
+
+To generate a fully packaged release the following can be executed to create a set of `.tar.xz` and `.zip` files in the build directory for the selected preset.
+
+```sh
+cmake --build --preset <linux|macos|windows> [--config <debug|release>] --target package
 ```
 
 ## License

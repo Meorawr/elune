@@ -2,6 +2,20 @@ cmake_minimum_required(VERSION 3.20)
 
 option(BUILD_SHARED_LIBS "Build Lua as a shared library?" ON)
 
+# Restrict build configurations to debug or release. For all generators we'll
+# aim to default to doing release builds if otherwise unspecified.
+
+get_cmake_property(GENERATOR_IS_MULTI_CONFIG GENERATOR_IS_MULTI_CONFIG)
+set(CMAKE_CONFIGURATION_TYPES "debug;release" CACHE STRING "List of supported configuration types for building")
+
+if(CMAKE_GENERATOR MATCHES "Ninja" AND GENERATOR_IS_MULTI_CONFIG)
+  set(CMAKE_CROSS_CONFIGS "all" CACHE STRING "Configurations available from all build trees")
+  set(CMAKE_DEFAULT_BUILD_TYPE  "release" CACHE STRING "Default configuration to build if unspecified")
+  set(CMAKE_DEFAULT_CONFIGS "release" CACHE STRING "Default configurations to build if unspecified")
+elseif(NOT DEFINED CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "release" CACHE STRING "Configuration to build in")
+endif()
+
 project(tainted-lua
   VERSION "1"
   DESCRIPTION "Lua 5.1 with support for World of Warcraft-style tainted execution"
