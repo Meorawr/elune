@@ -6,14 +6,14 @@ option(BUILD_SHARED_LIBS "Build Lua as a shared library?" ON)
 # aim to default to doing release builds if otherwise unspecified.
 
 get_cmake_property(GENERATOR_IS_MULTI_CONFIG GENERATOR_IS_MULTI_CONFIG)
-set(CMAKE_CONFIGURATION_TYPES "debug;release" CACHE STRING "List of supported configuration types for building")
+set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "List of supported configuration types for building")
 
 if(CMAKE_GENERATOR MATCHES "Ninja" AND GENERATOR_IS_MULTI_CONFIG)
   set(CMAKE_CROSS_CONFIGS "all" CACHE STRING "Configurations available from all build trees")
-  set(CMAKE_DEFAULT_BUILD_TYPE  "release" CACHE STRING "Default configuration to build if unspecified")
-  set(CMAKE_DEFAULT_CONFIGS "release" CACHE STRING "Default configurations to build if unspecified")
+  set(CMAKE_DEFAULT_BUILD_TYPE  "Release" CACHE STRING "Default configuration to build if unspecified")
+  set(CMAKE_DEFAULT_CONFIGS "Release" CACHE STRING "Default configurations to build if unspecified")
 elseif(NOT DEFINED CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE "release" CACHE STRING "Configuration to build in")
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Configuration to build in")
 endif()
 
 project(tainted-lua
