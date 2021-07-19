@@ -73,12 +73,6 @@ static void settabsi (lua_State *L, const char *i, int v) {
 }
 
 
-static void settabsb (lua_State *L, const char *i, int v) {
-  lua_pushboolean(L, v);
-  lua_setfield(L, -2, i);
-}
-
-
 static lua_State *getthread (lua_State *L, int *arg) {
   if (lua_isthread(L, 1)) {
     *arg = 1;
