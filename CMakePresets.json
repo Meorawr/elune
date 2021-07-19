@@ -57,7 +57,7 @@
     {
       "name": "windows",
       "displayName": "Windows",
-      "description": "Release configuration for Windows (MSVC x64)",
+      "description": "Configuration for Windows using MSVC (x64)",
       "inherits": [
         "base",
         "msvc"
@@ -66,7 +66,7 @@
     {
       "name": "linux",
       "displayName": "Linux",
-      "description": "Release configuration for Linux (GCC)",
+      "description": "Configuration for Linux using GCC",
       "inherits": [
         "base",
         "gcc"
@@ -75,7 +75,7 @@
     {
       "name": "macos",
       "displayName": "macOS",
-      "description": "Release configuration for macOS (Clang)",
+      "description": "Configuration for macOS using Clang",
       "inherits": [
         "base",
         "clang"
