@@ -43,4 +43,4 @@ set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-v${PROJECT_VERSION}-${LUA_PACKAGE_S
 set(CPACK_GENERATOR "TXZ;ZIP")
 set(CPACK_STRIP_FILES ON)
 
-include(CPack)
+include(CPack)  # This needs to be done _after_ defining all the above.
