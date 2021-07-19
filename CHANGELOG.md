@@ -4,10 +4,12 @@
 ### Added
 - Added a `-t` flag to the interpreter to run inline scripts (`-e`) or load files insecurely.
   - When this flag is specified, any modules loaded via `-l` will still be loaded securely.
-- Added the `nparams` and `isvararg` fields to debug information obtained from functions, backported from Lua 5.2.
+- Added a `debug.gettaintsource([thread])` function which returns the string identifier of any taint source current for the supplied thread, or the current if none is supplied.
+  - This replaces the `"s"` field usable with `debug.getinfo`, which has now been removed.
 
-### Changed
-- Relocated the taint field on the `lua_Debug` type to the end of the structure to fix potential binary incompatibilities.
+### Removed
+- Removed the taint field on the `lua_Debug` to fix potential binary incompatibilities.
+- Removed the `"s"` field from `debug.getinfo` to return taint information.
 
 ## [v1]
 ### Added

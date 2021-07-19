@@ -164,14 +164,13 @@ static void funcinfo (lua_Debug *ar, Closure *cl) {
 }
 
 
-static void info_tailcall (lua_State *L, lua_Debug *ar) {
+static void info_tailcall (lua_Debug *ar) {
   ar->name = ar->namewhat = "";
   ar->what = "tail";
   ar->lastlinedefined = ar->linedefined = ar->currentline = -1;
   ar->source = "=(tail call)";
   luaO_chunkid(ar->short_src, ar->source, LUA_IDSIZE);
   ar->nups = 0;
-  ar->taint = gettaint(L);
 }
 
 
@@ -195,7 +194,7 @@ static int auxgetinfo (lua_State *L, const char *what, lua_Debug *ar,
                     Closure *f, CallInfo *ci) {
   int status = 1;
   if (f == NULL) {
-    info_tailcall(L, ar);
+    info_tailcall(ar);
     return status;
   }
   for (; *what; what++) {
@@ -204,23 +203,12 @@ static int auxgetinfo (lua_State *L, const char *what, lua_Debug *ar,
         funcinfo(ar, f);
         break;
       }
-      case 's': {
-        ar->taint = gettaint(L);
-        break;
-      }
       case 'l': {
         ar->currentline = (ci) ? currentline(L, ci) : -1;
         break;
       }
       case 'u': {
         ar->nups = f->c.nupvalues;
-        if (f == NULL || f->c.isC) {
-          ar->nparams = 0;
-          ar->isvararg = 1;
-        } else {
-          ar->nparams = f->l.p->numparams;
-          ar->isvararg = f->l.p->is_vararg;
-        }
         break;
       }
       case 'n': {

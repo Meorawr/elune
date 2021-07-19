@@ -392,10 +392,6 @@ struct lua_Debug {
   char short_src[LUA_IDSIZE]; /* (S) */
   /* private part */
   int i_ci;  /* active function */
-  /* additions (at end for binary compatibility) */
-  lua_TaintInfo *taint; /* (s) */
-  int nparams; /* (u) number of parameters */
-  int isvararg; /* (u) */
 };
 
 /* }====================================================================== */

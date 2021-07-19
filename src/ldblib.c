@@ -131,15 +131,10 @@ static int db_getinfo (lua_State *L) {
     settabsi(L, "lastlinedefined", ar.lastlinedefined);
     settabss(L, "what", ar.what);
   }
-  if (strchr(options, 's') && ar.taint)
-    settabss(L, "taintedby", ar.taint->source);
   if (strchr(options, 'l'))
     settabsi(L, "currentline", ar.currentline);
-  if (strchr(options, 'u')) {
+  if (strchr(options, 'u'))
     settabsi(L, "nups", ar.nups);
-    settabsi(L, "nparams", ar.nparams);
-    settabsb(L, "isvararg", ar.isvararg);
-  }
   if (strchr(options, 'n')) {
     settabss(L, "name", ar.name);
     settabss(L, "namewhat", ar.namewhat);
@@ -421,6 +416,26 @@ static int db_settrapmask (lua_State *L) {
   return 0;
 }
 
+static int db_gettaintsource (lua_State *L) {
+  lua_State *L1;
+
+  if (lua_isthread(L, 1)) {
+    L1 = lua_tothread(L, 1);
+  } else {
+    L1 = L;
+  }
+
+  const lua_TaintInfo *taint = lua_gettaint(L1);
+
+  if (taint) {
+    lua_pushstring(L, taint->source);
+  } else {
+    lua_pushnil(L);
+  }
+
+  return 1;
+}
+
 static const luaL_Reg dblib[] = {
   {"debug", db_debug},
   {"forcesecure", db_forcesecure},
@@ -430,6 +445,7 @@ static const luaL_Reg dblib[] = {
   {"getlocal", db_getlocal},
   {"getmetatable", db_getmetatable},
   {"getregistry", db_getregistry},
+  {"gettaintsource", db_gettaintsource},
   {"gettrapmask", db_gettrapmask},
   {"getupvalue", db_getupvalue},
   {"setfenv", db_setfenv},
