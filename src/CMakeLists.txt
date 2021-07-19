@@ -1,84 +1,6 @@
 include(CheckCCompilerFlag)
 include(GNUInstallDirs)
 
-# The source and header listings are defined as variables as several part of
-# the build need to refer to these for project generation tweaks later on.
-#
-# Additionally, compile definitions, include directories, and link libraries
-# for the liblua target are also made into variables; this is because these
-# are shared between both the liblua and luac target as luac requires special
-# care when building.
-
-set(liblua_HEADERS
-  "../include/lua.h"
-  "../include/lauxlib.h"
-  "../include/lualib.h"
-  "../include/luaconf.h"
-  "../include/lua.hpp"
-)
-
-set(liblua_SOURCES
-  # Core sources.
-  "lapi.c"        "lapi.h"
-  "lcode.c"       "lcode.h"
-  "ldebug.c"      "ldebug.h"
-  "ldo.c"         "ldo.h"
-  "ldump.c"
-  "lfunc.c"       "lfunc.h"
-  "lgc.c"         "lgc.h"
-  "llex.c"        "llex.h"
-                  "llimits.h"
-  "lmem.c"        "lmem.h"
-  "lobject.c"     "lobject.h"
-  "lopcodes.c"    "lopcodes.h"
-  "lparser.c"     "lparser.h"
-  "lstate.c"      "lstate.h"
-  "lstring.c"     "lstring.h"
-  "ltable.c"      "ltable.h"
-  "ltm.c"         "ltm.h"
-  "lundump.c"     "lundump.h"
-  "lvm.c"         "lvm.h"
-  "lzio.c"        "lzio.h"
-
-  # Library sources.
-  "lauxlib.c"
-  "lbaselib.c"
-  "lbitlib.c"
-  "ldblib.c"
-  "liolib.c"
-  "lmathlib.c"
-  "loadlib.c"
-  "loslib.c"
-  "lstrlib.c"
-  "ltablib.c"
-  "linit.c"
-)
-
-set(liblua_COMPILE_DEFINITIONS
-  PUBLIC
-    # Note that the original Makefile build defines LUA_USE_LINUX for Mac
-    # builds instead of LUA_USE_MACOSX which is supposedly intended for OSX
-    # versions 10.3 or older.
-    $<$<PLATFORM_ID:Darwin,Linux>:LUA_USE_LINUX>
-  PRIVATE
-    # Enable internal assertions on debug builds.
-    $<$<CONFIG:Debug>:LUA_USE_ASSERT>
-    $<$<CONFIG:Debug>:LUA_USE_APICHECK>
-)
-
-set(liblua_INCLUDE_DIRECTORIES
-  PUBLIC
-    "../include"
-  PRIVATE
-    "../extern/utf8"
-)
-
-set(liblua_LINK_LIBRARIES
-  PRIVATE
-    $<$<PLATFORM_ID:Darwin,Linux>:dl>
-    $<$<PLATFORM_ID:Darwin,Linux>:m>
-)
-
 #
 # liblua
 #
@@ -94,26 +16,109 @@ set_target_properties(liblua
     C_EXTENSIONS OFF
     C_STANDARD 11
     C_STANDARD_REQUIRED ON
-    PUBLIC_HEADER "${liblua_HEADERS}"  # Must be a string representation of a list.
     ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib"
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib"
     PDB_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin"
     RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin"
 )
 
-# Define LUA_BUILD_AS_DLL if liblua was build as a shared library target
-# for Windows platforms, where we assume MSVC and (unsupportedly) MinGW
-# or Clang will accept __declspec attributes.
-
 target_compile_definitions(liblua
   PUBLIC
+    # Note that the original Makefile build defines LUA_USE_LINUX for Mac
+    # builds instead of LUA_USE_MACOSX which is supposedly intended for OSX
+    # versions 10.3 or older.
+    $<$<PLATFORM_ID:Darwin,Linux>:LUA_USE_LINUX>
+    # Define LUA_BUILD_AS_DLL if liblua was build as a shared library target
+    # for Windows platforms, where we assume MSVC and (unsupportedly) MinGW
+    # or Clang will accept __declspec attributes.
     $<$<AND:$<PLATFORM_ID:Windows>,$<STREQUAL:$<TARGET_PROPERTY:liblua,TYPE>,SHARED_LIBRARY>>:LUA_BUILD_AS_DLL>
+  PRIVATE
+    # Enable internal assertions on debug builds.
+    $<$<CONFIG:debug>:LUA_USE_ASSERT>
+    $<$<CONFIG:debug>:LUA_USE_APICHECK>
 )
 
-target_compile_definitions(liblua ${liblua_COMPILE_DEFINITIONS})
-target_include_directories(liblua ${liblua_INCLUDE_DIRECTORIES})
-target_link_libraries(liblua ${liblua_LINK_LIBRARIES})
-target_sources(liblua PRIVATE ${liblua_HEADERS} ${liblua_SOURCES})
+target_include_directories(liblua
+  PUBLIC
+    "../include"
+  PRIVATE
+    "../extern/utf8"
+)
+
+target_link_libraries(liblua
+  PRIVATE
+    $<$<PLATFORM_ID:Darwin,Linux>:dl>
+    $<$<PLATFORM_ID:Darwin,Linux>:m>
+)
+
+target_sources(liblua
+  PRIVATE
+    # Public headers
+    "../include/lua.h"
+    "../include/lauxlib.h"
+    "../include/lualib.h"
+    "../include/luaconf.h"
+    "../include/lua.hpp"
+
+    # Core sources
+    "lapi.c"        "lapi.h"
+    "lcode.c"       "lcode.h"
+    "ldebug.c"      "ldebug.h"
+    "ldo.c"         "ldo.h"
+    "ldump.c"
+    "lfunc.c"       "lfunc.h"
+    "lgc.c"         "lgc.h"
+    "llex.c"        "llex.h"
+                    "llimits.h"
+    "lmem.c"        "lmem.h"
+    "lobject.c"     "lobject.h"
+    "lopcodes.c"    "lopcodes.h"
+    "lparser.c"     "lparser.h"
+    "lstate.c"      "lstate.h"
+    "lstring.c"     "lstring.h"
+    "ltable.c"      "ltable.h"
+    "ltm.c"         "ltm.h"
+    "lundump.c"     "lundump.h"
+    "lvm.c"         "lvm.h"
+    "lzio.c"        "lzio.h"
+
+    # Library sources
+    "lauxlib.c"
+    "lbaselib.c"
+    "lbitlib.c"
+    "ldblib.c"
+    "liolib.c"
+    "lmathlib.c"
+    "loadlib.c"
+    "loslib.c"
+    "lstrlib.c"
+    "ltablib.c"
+    "linit.c"
+)
+
+# Extract public headers from the source listing and mark them as their own
+# source group for better IDE support. We'll also flag them as public headers
+# for this target so that they're installed automatically.
+
+get_target_property(liblua_SOURCES liblua SOURCES)
+set(liblua_HEADERS "")
+
+foreach(source IN LISTS liblua_SOURCES)
+  if(source MATCHES "include/")
+    list(APPEND liblua_HEADERS ${source})
+  endif()
+endforeach()
+
+source_group(
+  TREE    "${PROJECT_SOURCE_DIR}/include"
+  PREFIX  "Header Files"
+  FILES   ${liblua_HEADERS}
+)
+
+set_target_properties(liblua
+  PROPERTIES
+    PUBLIC_HEADER "${liblua_HEADERS}"  # Must be a string representation of a list.
+)
 
 #
 # lua
@@ -164,30 +169,25 @@ set_target_properties(luac
     RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin"
 )
 
-target_compile_definitions(luac ${liblua_COMPILE_DEFINITIONS})
-target_include_directories(luac ${liblua_INCLUDE_DIRECTORIES})
-target_link_libraries(luac ${liblua_LINK_LIBRARIES})
+target_link_libraries(luac
+  PRIVATE
+    liblua
+    $<$<PLATFORM_ID:Darwin,Linux>:dl>
+    $<$<PLATFORM_ID:Darwin,Linux>:m>
+)
 
 target_sources(luac
   PRIVATE
-    ${liblua_SOURCES}
     "luac.c"
     "print.c"
+    $<TARGET_OBJECTS:liblua>
 )
 
 #
-# Misc.
+# Installation
 #
 
-# Mark public headers for better IDE support.
-
-source_group(
-  TREE    "${PROJECT_SOURCE_DIR}/include"
-  PREFIX  "Header Files"
-  FILES   ${liblua_HEADERS}
-)
-
-# Add `make install` support that'll populate an install prefix with a
+# Add install target support that'll populate a destination prefix with a
 # standard distribution of bin/, lib/, and include/ directories.
 
 install(
