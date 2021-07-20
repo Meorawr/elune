@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 option(BUILD_SHARED_LIBS "Build Lua as a shared library?" ON)
+option(BUILD_TESTING "Build tests?" ON)
 
 # Restrict build configurations to debug or release. For all generators we'll
 # aim to default to doing release builds if otherwise unspecified.
@@ -24,6 +25,7 @@ project(tainted-lua
 )
 
 add_subdirectory(src)
+add_subdirectory(test)
 
 # Packaging integration.
 

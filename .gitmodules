@@ -1,3 +1,6 @@
 [submodule "extern/utf8"]
 	path = extern/utf8
 	url = https://github.com/sheredom/utf8.h.git
+[submodule "extern/acutest"]
+	path = extern/acutest
+	url = https://github.com/mity/acutest.git
