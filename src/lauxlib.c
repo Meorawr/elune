@@ -662,6 +662,26 @@ LUALIB_API lua_State *luaL_newstate (void) {
 ** =======================================================================
 */
 
+static lua_TaintInfo luaO_forcedtaint = {"*** TaintForced ***", NULL};
+
+LUALIB_API void luaL_forcetaint (lua_State *L) {
+  if (!lua_gettaint(L)) {
+    lua_settaint(L, &luaO_forcedtaint);
+  }
+}
+
+LUALIB_API void luaL_forcetaintvalue (lua_State *L, int idx) {
+  if (!lua_getvaluetaint(L, idx)) {
+    lua_setvaluetaint(L, idx, &luaO_forcedtaint);
+  }
+}
+
+LUALIB_API void luaL_forcetaintobject (lua_State *L, int idx) {
+  if (!lua_getobjecttaint(L, idx)) {
+    lua_setobjecttaint(L, idx, &luaO_forcedtaint);
+  }
+}
+
 LUALIB_API void luaL_seterrorhandler (lua_State *L) {
   lua_setfield(L, LUA_REGISTRYINDEX, "_ERRORHANDLER");
 }
