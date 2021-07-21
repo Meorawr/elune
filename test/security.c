@@ -4,6 +4,10 @@
 
 #include <acutest.h>
 
+/****************************************************************************
+ * Test Utilities
+ ****************************************************************************/
+
 static lua_TaintInfo test_taint = { "Test Taint", NULL };
 
 static int push_number(lua_State *L) { lua_pushnumber(L, 123.456); return 0; }
@@ -16,6 +20,12 @@ static int push_lightuserdata(lua_State *L) { lua_pushlightuserdata(L, &test_tai
 static int push_userdata(lua_State *L) { lua_newuserdata(L, 0); return 0; }
 static int push_cclosure(lua_State *L) { lua_pushcclosure(L, &push_cclosure, 0); return 0; }
 static int push_thread(lua_State *L) { lua_newthread(L); return 0; }
+
+static lua_State *newtaintedstate() {
+  lua_State *L = luaL_newstate();
+  lua_settaint(L, &test_taint);
+  return L;
+}
 
 /****************************************************************************
  * Value Test Vectors
@@ -61,8 +71,7 @@ void test_startup_taint(void) {
 }
 
 void test_tainted(void) {
-  lua_State *L = luaL_newstate();
-  lua_settaint(L, &test_taint);
+  lua_State *L = newtaintedstate();
   TEST_CHECK(lua_gettaint(L) == &test_taint);
   TEST_CHECK(!luaL_issecure(L));
   lua_close(L);
@@ -76,8 +85,7 @@ void test_forced_taint(void) {
 }
 
 void test_forced_taint_override(void) {
-  lua_State *L = luaL_newstate();
-  lua_settaint(L, &test_taint);
+  lua_State *L = newtaintedstate();
   luaL_forcetaint(L);
   TEST_CHECK(lua_gettaint(L) == &test_taint);
   lua_close(L);
@@ -90,8 +98,7 @@ void test_forced_taint_override(void) {
 void test_push_values_with_taint(void) {
   for (struct LuaValueVector *vec = lua_value_vectors; vec->name; ++vec) {
     TEST_CASE(vec->name);
-    lua_State *L = luaL_newstate();
-    lua_settaint(L, &test_taint);
+    lua_State *L = newtaintedstate();
     vec->func(L);
     TEST_CHECK(lua_getvaluetaint(L, 1) != NULL);
     TEST_CHECK(!luaL_issecurevalue(L, 1));
@@ -113,8 +120,7 @@ void test_push_values_without_taint(void) {
 void test_push_objects_with_taint(void) {
   for (struct LuaValueVector *vec = lua_object_vectors; vec->name; ++vec) {
     TEST_CASE(vec->name);
-    lua_State *L = luaL_newstate();
-    lua_settaint(L, &test_taint);
+    lua_State *L = newtaintedstate();
     vec->func(L);
     TEST_CHECK(lua_getobjecttaint(L, 1) != NULL);
     TEST_CHECK(!luaL_issecureobject(L, 1));
