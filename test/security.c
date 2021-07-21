@@ -139,6 +139,43 @@ void test_push_objects_without_taint(void) {
   }
 }
 
+void test_tainted_table_structures(void) {
+  lua_State *L = newtaintedstate();
+
+  // Create a color-like table on the stack.
+  lua_createtable(L, 0, 3);
+  lua_pushnumber(L, 0.3);
+  lua_setfield(L, 1, "r");
+  lua_pushnumber(L, 0.6);
+  lua_setfield(L, 1, "g");
+  lua_pushnumber(L, 0.9);
+  lua_setfield(L, 1, "b");
+
+  // Expect all fields to be tainted. This is to mimic behaviors like calling
+  // C_ClassColor.GetClassColor ingame which returns a table with tainted
+  // keys.
+
+  lua_settaint(L, NULL);
+  lua_getfield(L, 1, "r");
+  TEST_CHECK(!luaL_issecure(L));
+  TEST_CHECK(!luaL_issecurevalue(L, -1));
+  lua_pop(L, 1);
+
+  lua_settaint(L, NULL);
+  lua_getfield(L, 1, "g");
+  TEST_CHECK(!luaL_issecure(L));
+  TEST_CHECK(!luaL_issecurevalue(L, -1));
+  lua_pop(L, 1);
+
+  lua_settaint(L, NULL);
+  lua_getfield(L, 1, "b");
+  TEST_CHECK(!luaL_issecure(L));
+  TEST_CHECK(!luaL_issecurevalue(L, -1));
+  lua_pop(L, 1);
+
+  lua_close(L);
+}
+
 /****************************************************************************
  * Test Listing
  ****************************************************************************/
@@ -152,5 +189,6 @@ TEST_LIST = {
   { "pushed values aren't tainted by default", test_push_values_without_taint },
   { "pushed objects inherit state taint", test_push_objects_with_taint },
   { "pushed objects aren't tainted by default", test_push_objects_without_taint },
+  { "tainted table structures", test_tainted_table_structures },
   { NULL, NULL }
 };
