@@ -16,6 +16,7 @@ jobs:
             os: windows-2019
             preset: windows
             arch: x64
+            executable-suffix: .exe
 
           - name: Linux
             os: ubuntu-20.04
@@ -53,7 +54,7 @@ jobs:
         run: cmake --build --preset ${{ matrix.config.preset }} --target install
 
       - name: Test
-        run: build/${{ matrix.config.preset }}/bin/Release/lua-tests.exe
+        run: build/${{ matrix.config.preset }}/bin/Release/lua-tests${{ matrix.config.executable-suffix }}
 
       - name: Package
         run: cmake --build --preset ${{ matrix.config.preset }} --target package
