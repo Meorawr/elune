@@ -289,7 +289,7 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
     ci = inc_ci(L);  /* now `enter' new function */
     ci->func = func;
     L->base = ci->base = base;
-    propagatetaint(L, cl);  /* propagate internal closure taint to state */
+    luaO_taintstate(L, cl);  /* propagate internal closure taint to state */
     ci->top = L->base + p->maxstacksize;
     lua_assert(ci->top <= L->stack_last);
     L->savedpc = p->code;  /* starting point */
@@ -297,8 +297,8 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
     ci->nresults = nresults;
     for (st = L->top; st < ci->top; st++)
       setnilvalue(st);
-    for (st = ci->base; st < ci->top; st++)  /* propagate taint to all stack parameters */
-      propagatetaint(st, L);
+    for (st = ci->base; st < ci->top; st++)  /* propagate taint to/from stack parameters */
+      luaO_taint2way(L, st);
     L->top = ci->top;
     if (L->hookmask & LUA_MASKCALL) {
       L->savedpc++;  /* hooks assume 'pc' is already incremented */
@@ -315,12 +315,12 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
     ci = inc_ci(L);  /* now `enter' new function */
     ci->func = restorestack(L, funcr);
     L->base = ci->base = ci->func + 1;
-    propagatetaint(L, cl);  /* propagate internal closure taint to state */
+    luaO_taintstate(L, cl);  /* propagate internal closure taint to state */
     ci->top = L->top + LUA_MINSTACK;
     lua_assert(ci->top <= L->stack_last);
     ci->nresults = nresults;
-    for (st = ci->base; st < ci->top; st++)  /* propagate taint to all stack parameters */
-      propagatetaint(st, L);
+    for (st = ci->base; st < ci->top; st++)  /* propagate taint to/from stack parameters */
+      luaO_taint2way(L, st);
     if (L->hookmask & LUA_MASKCALL)
       luaD_callhook(L, LUA_HOOKCALL, -1);
     lua_unlock(L);
@@ -361,11 +361,11 @@ int luaD_poscall (lua_State *L, StkId firstResult) {
   /* move results to correct place */
   for (i = wanted; i != 0 && firstResult < L->top; i--) {
     setobjs2s(L, res, firstResult++);
-    propagatetaint(res++, L);  /* propagate state taint to stack returns */
+    luaO_taint2way(L, res++);  /* propagate taint to/from stack returns */
   }
   while (i-- > 0) {
     setnilvalue(res);
-    propagatetaint(res++, L);  /* propagate state taint to stack returns */
+    luaO_taintvalue(L, res++);  /* propagate state taint to stack returns */
   }
   L->top = res;
   return (wanted - LUA_MULTRET);  /* 0 iff wanted == LUA_MULTRET */
