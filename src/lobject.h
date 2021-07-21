@@ -87,7 +87,6 @@ typedef struct lua_TValue {
 
 /* Macros to access values */
 #define ttype(o)	((o)->tt)
-#define gettaint(o)	((o)->taint)
 #define gcvalue(o)	check_exp(iscollectable(o), (o)->value.gc)
 #define pvalue(o)	check_exp(ttislightuserdata(o), (o)->value.p)
 #define nvalue(o)	check_exp(ttisnumber(o), (o)->value.n)
@@ -101,7 +100,7 @@ typedef struct lua_TValue {
 #define thvalue(o)	check_exp(ttisthread(o), &(o)->value.gc->th)
 
 #define l_isfalse(o)	(ttisnil(o) || (ttisboolean(o) && bvalue(o) == 0))
-#define l_issecure(o) (!gettaint(o))
+#define l_issecure(o) (o->taint == NULL)
 
 /*
 ** for internal debug only
@@ -185,7 +184,6 @@ typedef struct lua_TValue {
 #define setsvalue2n	setsvalue
 
 #define setttype(obj, tt) (ttype(obj) = (tt))
-#define settaint(obj, ta) (gettaint(obj) = (ta))
 #define propagatetaint(obj1, obj2) \
   do { \
     lua_TaintInfo *obj2taint = (obj2)->taint; \

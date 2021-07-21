@@ -298,7 +298,7 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
     for (st = L->top; st < ci->top; st++)
       setnilvalue(st);
     for (st = ci->base; st < ci->top; st++)  /* propagate taint to all stack parameters */
-      settaint(st, gettaint(L));
+      propagatetaint(st, L);
     L->top = ci->top;
     if (L->hookmask & LUA_MASKCALL) {
       L->savedpc++;  /* hooks assume 'pc' is already incremented */
@@ -320,7 +320,7 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
     lua_assert(ci->top <= L->stack_last);
     ci->nresults = nresults;
     for (st = ci->base; st < ci->top; st++)  /* propagate taint to all stack parameters */
-      settaint(st, gettaint(L));
+      propagatetaint(st, L);
     if (L->hookmask & LUA_MASKCALL)
       luaD_callhook(L, LUA_HOOKCALL, -1);
     lua_unlock(L);
@@ -361,11 +361,11 @@ int luaD_poscall (lua_State *L, StkId firstResult) {
   /* move results to correct place */
   for (i = wanted; i != 0 && firstResult < L->top; i--) {
     setobjs2s(L, res, firstResult++);
-    settaint(res++, gettaint(L));  /* propagate state taint to stack returns */
+    propagatetaint(res++, L);  /* propagate state taint to stack returns */
   }
   while (i-- > 0) {
     setnilvalue(res);
-    settaint(res++, gettaint(L));  /* propagate state taint to stack returns */
+    propagatetaint(res++, L);  /* propagate state taint to stack returns */
   }
   L->top = res;
   return (wanted - LUA_MULTRET);  /* 0 iff wanted == LUA_MULTRET */

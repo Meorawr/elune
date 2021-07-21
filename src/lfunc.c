@@ -26,7 +26,7 @@ Closure *luaF_newCclosure (lua_State *L, int nelems, Table *e) {
   c->c.isC = 1;
   c->c.env = e;
   c->c.nupvalues = cast_byte(nelems);
-  c->c.taint = gettaint(L);  /* mark closure as internally tainted */
+  c->c.taint = L->taint;  /* mark closure as internally tainted */
   return c;
 }
 
@@ -38,7 +38,7 @@ Closure *luaF_newLclosure (lua_State *L, int nelems, Table *e) {
   c->l.env = e;
   c->l.nupvalues = cast_byte(nelems);
   while (nelems--) c->l.upvals[nelems] = NULL;
-  c->l.taint = gettaint(L);  /* mark closure as internally tainted */
+  c->l.taint = L->taint;  /* mark closure as internally tainted */
   return c;
 }
 
@@ -67,7 +67,7 @@ UpVal *luaF_findupval (lua_State *L, StkId level) {
     pp = &p->next;
   }
   uv = luaM_new(L, UpVal);  /* not found: create a new one */
-  settaint(uv, gettaint(L));
+  uv->taint = L->taint;
   uv->tt = LUA_TUPVAL;
   uv->marked = luaC_white(g);
   uv->v = level;  /* current value lives in the stack */

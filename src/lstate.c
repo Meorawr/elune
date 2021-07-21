@@ -98,7 +98,7 @@ static void preinit_state (lua_State *L, global_State *g) {
   L->base_ci = L->ci = NULL;
   L->savedpc = NULL;
   L->errfunc = 0;
-  settaint(L, NULL);
+  L->taint = NULL;
   setnilvalue(gt(L));
 }
 
@@ -126,7 +126,7 @@ lua_State *luaE_newthread (lua_State *L) {
   L1->hookmask = L->hookmask;
   L1->basehookcount = L->basehookcount;
   L1->hook = L->hook;
-  settaint(L1, gettaint(L));
+  L1->taint = L->taint;
   resethookcount(L1);
   lua_assert(iswhite(obj2gco(L1)));
   return L1;

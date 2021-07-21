@@ -1104,7 +1104,7 @@ LUA_API lua_TaintInfo *lua_gettaint (lua_State *L) {
   lua_TaintInfo *t;
 
   lua_lock(L);
-  t = gettaint(L);
+  t = L->taint;
   lua_unlock(L);
 
   return t;
@@ -1112,7 +1112,7 @@ LUA_API lua_TaintInfo *lua_gettaint (lua_State *L) {
 
 LUA_API void lua_settaint (lua_State *L, lua_TaintInfo *t) {
   lua_lock(L);
-  settaint(L, t);
+  L->taint = t;
   lua_unlock(L);
 }
 
@@ -1123,7 +1123,7 @@ LUA_API lua_TaintInfo *lua_getvaluetaint (lua_State *L, int idx) {
   lua_lock(L);
   v = index2adr(L, idx);
   api_checkvalidindex(L, v);
-  t = gettaint(v);
+  t = v->taint;
   lua_unlock(L);
 
   return t;
@@ -1135,7 +1135,7 @@ LUA_API void lua_setvaluetaint (lua_State *L, int idx, lua_TaintInfo *t) {
   lua_lock(L);
   v = index2adr(L, idx);
   api_checkvalidindex(L, v);
-  settaint(v, t);
+  v->taint = t;
   lua_unlock(L);
 }
 
@@ -1170,7 +1170,7 @@ LUA_API void lua_setstacktaint (lua_State *L, int from, int to, lua_TaintInfo *t
   api_checkvalidindex(L, end);
 
   for (; cur <= end; ++cur) {
-    settaint(cur, t);
+    cur->taint = t;
   }
 
   lua_unlock(L);

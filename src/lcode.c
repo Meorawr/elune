@@ -240,7 +240,7 @@ static int addk (FuncState *fs, TValue *k, TValue *v) {
     luaM_growvector(L, f->k, fs->nk, f->sizek, TValue,
                     MAXARG_Bx, "constant table overflow");
     while (oldsize < f->sizek) setnilvalue(&f->k[oldsize++]);
-    settaint(v, gettaint(L));  /* propagate taint to constants */
+    propagatetaint(v, L);  /* propagate taint to constants */
     setobj(L, &f->k[fs->nk], v);
     luaC_barrier(L, f, v);
     return fs->nk++;
