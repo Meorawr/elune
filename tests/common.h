@@ -35,8 +35,8 @@ struct LuaValueVector {
   lua_CFunction func;
 };
 
-struct LuaValueVector luaT_value_vectors[];
-struct LuaValueVector luaT_object_vectors[];
+extern struct LuaValueVector luaT_value_vectors[];
+extern struct LuaValueVector luaT_object_vectors[];
 
 /**
  * Precompiled Script Fixtures

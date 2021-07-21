@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
   }
 
   fprintf(outputfile, "#include <stdlib.h>\n\n");
-  fprintf(outputfile, "extern const char %s_data[] = {\n\t", symbol);
+  fprintf(outputfile, "const char %s_data[] = {\n\t", symbol);
 
   {
     size_t bytesread = 0;
@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
   }
 
   fprintf(outputfile, "};\n\n");
-  fprintf(outputfile, "extern const size_t %s_size = sizeof(%s_data);\n", symbol, symbol);
+  fprintf(outputfile, "const size_t %s_size = sizeof(%s_data);\n", symbol, symbol);
 
   retcode = EXIT_SUCCESS;
 
