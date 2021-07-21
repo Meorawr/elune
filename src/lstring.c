@@ -56,6 +56,7 @@ static TString *newlstr (lua_State *L, const char *str, size_t l,
   ts = cast(TString *, luaM_malloc(L, (l+1)*sizeof(char)+sizeof(TString)));
   ts->tsv.len = l;
   ts->tsv.hash = h;
+  ts->tsv.taint = gettaint(L);
   ts->tsv.marked = luaC_white(G(L));
   ts->tsv.tt = LUA_TSTRING;
   ts->tsv.reserved = 0;
@@ -98,6 +99,7 @@ Udata *luaS_newudata (lua_State *L, size_t s, Table *e) {
   if (s > MAX_SIZET - sizeof(Udata))
     luaM_toobig(L);
   u = cast(Udata *, luaM_malloc(L, s + sizeof(Udata)));
+  u->uv.taint = gettaint(L);
   u->uv.marked = luaC_white(G(L));  /* is not finalized */
   u->uv.tt = LUA_TUSERDATA;
   u->uv.len = s;
