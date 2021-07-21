@@ -288,18 +288,18 @@ static int tremovemulti (lua_State *L) {
   const int count = luaL_optint(L, 3, 1);
 
   if (length == 0) {
-    return 0;  // Accurate to reference. ¯\_(ツ)_/¯
+    return 0;  /* Accurate to reference. ¯\_(ツ)_/¯ */
   } else if (index <= 0 || count < 0 || (index + count - 1) > length) {
     return luaL_error(L, "parameters out of bounds");
   }
 
-  lua_settop(L, 1);  // Keep the table as the only thing on the stack.
+  lua_settop(L, 1);  /* Keep the table as the only thing on the stack. */
 
   for (int dsti = index; dsti <= length; ++dsti) {
     const int srci = dsti + count;
 
     if (dsti <= (index + count - 1)) {
-      lua_rawgeti(L, 1, dsti);  // We're removing this, so push onto the stack to return it.
+      lua_rawgeti(L, 1, dsti);  /* We're removing this, so push onto the stack to return it. */
     }
 
     if (srci <= length) {

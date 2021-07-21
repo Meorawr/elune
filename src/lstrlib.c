@@ -869,8 +869,10 @@ static int str_split (lua_State *L) {
 
   int count = 0;
 
-  // Keep the delimiter/source string on the stack so that they don't run the
-  // risk of being GCd while we're processing.
+  /**
+   * Keep the delimiter/source string on the stack so that they don't run the
+   * risk of being GCd while we're processing.
+   */
 
   lua_settop(L, 2);
 
@@ -882,12 +884,12 @@ static int str_split (lua_State *L) {
       const size_t distance = strcspn(begin, delim);
       lua_pushlstring(L, begin, distance);
 
-      begin += distance + 1;  // +1 to skip over the delimiter.
+      begin += distance + 1;  /* +1 to skip over the delimiter. */
       ++count;
     }
   }
 
-  // Process remainder of string if any exists.
+  /* Process remainder of string if any exists. */
 
   if (begin <= end) {
     lua_pushstring(L, begin);
@@ -902,8 +904,10 @@ static int str_join (lua_State *L) {
   const char *separator = luaL_checklstring(L, 1, &seplen);
   const int pieces = lua_gettop(L) - 1;
 
-  // lua_concat can be used when the separator is empty or when there's
-  // zero or one piece to be joined.
+  /**
+   * lua_concat can be used when the separator is empty or when there's
+   * zero or one piece to be joined.
+   */
 
   if (pieces <= 1 || seplen == 0) {
     lua_concat(L, pieces);
@@ -1013,7 +1017,7 @@ LUALIB_API int luaopen_string (lua_State *L) {
 #endif
   createmetatable(L);
 
-  // Expose global-only functions.
+  /* Expose global-only functions. */
 
   lua_pushcclosure(L, str_concat, 0);
   lua_setglobal(L, "strconcat");

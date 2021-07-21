@@ -373,10 +373,12 @@ LUALIB_API int luaopen_math (lua_State *L) {
   lua_setfield(L, -2, "mod");
 #endif
 
-  // Add global degree => radian compatibility wrappers. These are explicitly
-  // loaded via loadstring to ensure that any code which, for whatever unholy
-  // reason, is expecting them to be Lua functions and not C ones doesn't
-  // get surprised.
+  /**
+   * Add global degree => radian compatibility wrappers. These are explicitly
+   * loaded via loadstring to ensure that any code which, for whatever unholy
+   * reason, is expecting them to be Lua functions and not C ones doesn't
+   * get surprised.
+   */
 
   (void) luaL_dostring(L, " \
     acos = function (x) return math.deg(math.acos(x)) end \
@@ -388,12 +390,14 @@ LUALIB_API int luaopen_math (lua_State *L) {
     tan = function (x) return math.tan(math.rad(x)) end \
   ");
 
-  // The fastrandom function is meant to alias to what math.random used to
-  // be ingame, where math.random actually was changed to use a more secure
-  // PRNG during ~Mists of Pandaria.
-  //
-  // Security isn't a goal here, but we should at least provide two separate
-  // sources of RNG so that each function can be different.
+  /**
+   * The fastrandom function is meant to alias to what math.random used to
+   * be ingame, where math.random actually was changed to use a more secure
+   * PRNG during ~Mists of Pandaria.
+   *
+   * Security isn't a goal here, but we should at least provide two separate
+   * sources of RNG so that each function can be different.
+   */
 
   xoroshiro_state *state = (xoroshiro_state *) lua_newuserdata(L, sizeof(xoroshiro_state));
   xoroshiro_init(state, 0);
