@@ -188,6 +188,14 @@ void test_secure_constants(void) {
 }
 
 /**
+ * Script Tests
+ */
+
+void test_issecurevariable(void) {
+  luaT_loadfixture(LT, luac_issecurevariable);
+}
+
+/**
  * Test Listing
  */
 
@@ -203,5 +211,6 @@ TEST_LIST = {
   { "tainted table structures", test_tainted_table_structures },
   { "read secure values while tainted", test_secure_value_reads },
   { "secure constants don't inherit state taint", &test_secure_constants },
+  { "script: issecurevariable", &test_issecurevariable },
   { NULL, NULL }
 };
