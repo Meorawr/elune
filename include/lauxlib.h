@@ -182,8 +182,10 @@ LUALIB_API void (luaL_pushresult) (luaL_Buffer *B);
 */
 
 #define luaL_issecure(L) (lua_gettaint(L) == NULL)
-#define luaL_issecurevalue(L, o) (lua_getvaluetaint(L, o) == NULL)
-#define luaL_issecureobject(L, o) (lua_getobjecttaint(L, o) == NULL)
+#define luaL_issecurevalue(L, idx) (lua_getvaluetaint(L, idx) == NULL)
+#define luaL_issecuretable(L, idx) (lua_gettabletaint(L, idx) == NULL)
+#define luaL_issecurefield(L, idx, k) (lua_getfieldtaint(L, idx, k) == NULL)
+#define luaL_issecureobject(L, idx) (lua_getobjecttaint(L, idx) == NULL)
 
 LUALIB_API void luaL_forcetaint (lua_State *L);
 LUALIB_API void luaL_forcetaintvalue (lua_State *L, int idx);

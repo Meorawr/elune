@@ -312,6 +312,8 @@ LUA_API lua_TaintInfo *lua_gettaint (lua_State *L);
 LUA_API void           lua_settaint (lua_State *L, lua_TaintInfo *t);
 LUA_API lua_TaintInfo *lua_getvaluetaint (lua_State *L, int idx);
 LUA_API void           lua_setvaluetaint (lua_State *L, int idx, lua_TaintInfo *t);
+LUA_API lua_TaintInfo *lua_gettabletaint (lua_State *L, int idx);
+LUA_API lua_TaintInfo *lua_getfieldtaint (lua_State *L, int idx, const char *k);
 LUA_API lua_TaintInfo *lua_getobjecttaint (lua_State *L, int idx);
 LUA_API void           lua_setobjecttaint (lua_State *L, int idx, lua_TaintInfo *t);
 LUA_API void           lua_setstacktaint (lua_State *L, int from, int to, lua_TaintInfo *t);

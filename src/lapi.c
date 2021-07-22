@@ -1164,6 +1164,39 @@ LUA_API void lua_setobjecttaint (lua_State *L, int idx, lua_TaintInfo *t) {
   lua_unlock(L);
 }
 
+LUA_API lua_TaintInfo *lua_gettabletaint (lua_State *L, int idx) {
+  StkId table;
+  TValue value;
+  lua_TaintInfo *taint;
+
+  lua_lock(L);
+  table = index2adr(L, idx);
+  api_checkvalidindex(L, table);
+  luaV_gettable(L, table, L->top - 1, &value);
+  taint = value.taint;
+  lua_unlock(L);
+
+  return taint;
+}
+
+LUA_API lua_TaintInfo *lua_getfieldtaint (lua_State *L, int idx, const char *k) {
+  StkId table;
+  TValue key;
+  TValue value;
+  lua_TaintInfo *taint;
+
+  lua_lock(L);
+  table = index2adr(L, idx);
+  api_checkvalidindex(L, table);
+  setsvalue(L, &key, luaS_new(L, k));
+  luaV_gettable(L, table, &key, &value);
+  taint = value.taint;
+  lua_unlock(L);
+
+  return taint;
+}
+
+
 LUA_API void lua_setstacktaint (lua_State *L, int from, int to, lua_TaintInfo *t) {
   lua_lock(L);
 
