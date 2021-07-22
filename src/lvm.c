@@ -381,12 +381,15 @@ static void Arith (lua_State *L, StkId ra, const TValue *rb,
 #define arith_op(op,tm) { \
         TValue *rb = RKB(i); \
         TValue *rc = RKC(i); \
+        luaO_taintstate(L, rb); \
+        luaO_taintstate(L, rc); \
         if (ttisnumber(rb) && ttisnumber(rc)) { \
           lua_Number nb = nvalue(rb), nc = nvalue(rc); \
           setnvalue(ra, op(nb, nc)); \
         } \
         else \
           Protect(Arith(L, ra, rb, rc, tm)); \
+        luaO_taint2way(L, ra); \
       }
 
 
@@ -435,27 +438,32 @@ void luaV_execute (lua_State *L, int nexeccalls) {
     switch (GET_OPCODE(i)) {
       case OP_MOVE: {
         setobjs2s(L, ra, RB(i));
+        luaO_taint2way(L, ra);
         continue;
       }
       case OP_LOADK: {
         setobj2s(L, ra, KBx(i));
+        luaO_taintstate(L, ra);
         continue;
       }
       case OP_LOADBOOL: {
         setbvalue(ra, GETARG_B(i));
+        luaO_taintvalue(L, ra);
         if (GETARG_C(i)) pc++;  /* skip next instruction (if C) */
         continue;
       }
       case OP_LOADNIL: {
         TValue *rb = RB(i);
         do {
-          setnilvalue(rb--);
+          setnilvalue(rb);
+          luaO_taintvalue(L, rb--);
         } while (rb >= ra);
         continue;
       }
       case OP_GETUPVAL: {
         int b = GETARG_B(i);
         setobj2s(L, ra, cl->upvals[b]->v);
+        luaO_taint2way(L, ra);
         continue;
       }
       case OP_GETGLOBAL: {
@@ -464,10 +472,12 @@ void luaV_execute (lua_State *L, int nexeccalls) {
         sethvalue(L, &g, cl->env);
         lua_assert(ttisstring(rb));
         Protect(luaV_gettable(L, &g, rb, ra));
+        luaO_taint2way(L, ra);
         continue;
       }
       case OP_GETTABLE: {
         Protect(luaV_gettable(L, RB(i), RKC(i), ra));
+        luaO_taint2way(L, ra);
         continue;
       }
       case OP_SETGLOBAL: {
@@ -491,6 +501,7 @@ void luaV_execute (lua_State *L, int nexeccalls) {
         int b = GETARG_B(i);
         int c = GETARG_C(i);
         sethvalue(L, ra, luaH_new(L, luaO_fb2int(b), luaO_fb2int(c)));
+        luaO_taintvalue(L, ra);
         Protect(luaC_checkGC(L));
         continue;
       }
@@ -498,6 +509,8 @@ void luaV_execute (lua_State *L, int nexeccalls) {
         StkId rb = RB(i);
         setobjs2s(L, ra+1, rb);
         Protect(luaV_gettable(L, rb, RKC(i), ra));
+        luaO_taint2way(L, ra);
+        luaO_taint2way(L, ra + 1);
         continue;
       }
       case OP_ADD: {
@@ -528,6 +541,7 @@ void luaV_execute (lua_State *L, int nexeccalls) {
       }
       case OP_UNM: {
         TValue *rb = RB(i);
+        luaO_taintstate(L, rb);
         if (ttisnumber(rb)) {
           lua_Number nb = nvalue(rb);
           setnvalue(ra, luai_numunm(nb));
@@ -535,15 +549,18 @@ void luaV_execute (lua_State *L, int nexeccalls) {
         else {
           Protect(Arith(L, ra, rb, rb, TM_UNM));
         }
+        luaO_taint2way(L, ra);
         continue;
       }
       case OP_NOT: {
         int res = l_isfalse(RB(i));  /* next assignment may change this value */
         setbvalue(ra, res);
+        luaO_taintvalue(L, ra);
         continue;
       }
       case OP_LEN: {
         const TValue *rb = RB(i);
+        luaO_taintstate(L, rb);
         switch (ttype(rb)) {
           case LUA_TTABLE: {
             setnvalue(ra, cast_num(luaH_getn(hvalue(rb))));
@@ -560,6 +577,7 @@ void luaV_execute (lua_State *L, int nexeccalls) {
             )
           }
         }
+        luaO_taintvalue(L, ra);
         continue;
       }
       case OP_CONCAT: {
