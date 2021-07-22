@@ -456,36 +456,19 @@ static int luaB_issecure (lua_State *L) {
 }
 
 static int luaB_issecurevariable (lua_State *L) {
-  const lua_TaintInfo* entrytaint;
-  const lua_TaintInfo* valuetaint;
-  int nargs;
-  int tbl;
+  const lua_TaintInfo* taint;
 
   if (lua_tostring(L, 1)) {
-    nargs = 1;
-    tbl = LUA_GLOBALSINDEX;
+    taint = lua_gettabletaint(L, LUA_GLOBALSINDEX);
   } else if (lua_tostring(L, 2)) {
-    nargs = 2;
-    tbl = 1;
+    taint = lua_gettabletaint(L, 1);
   } else {
     return luaL_error(L, "Usage: issecurevariable([table,] \"variable\")");
   }
 
-  entrytaint = lua_gettaint(L);
-
-  /* --- BEGIN TAINT BOUNDARY --- */
-
-  lua_settop(L, nargs);
-  lua_gettable(L, tbl);
-  valuetaint = lua_getvaluetaint(L, -1);
-
-  /* --- END TAINT BOUNDARY --- */
-
-  lua_settaint(L, (lua_TaintInfo *) entrytaint);
-
-  if (valuetaint) {
+  if (taint) {
     lua_pushboolean(L, 0);
-    lua_pushstring(L, valuetaint->source ? valuetaint->source : "");
+    lua_pushstring(L, taint->source ? taint->source : "");
   } else {
     lua_pushboolean(L, 1);
     lua_pushnil(L);
