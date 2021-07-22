@@ -17,6 +17,15 @@ extern lua_TaintInfo luaT_taint;
 
 #define luaT_extentof(a) (sizeof(a) / sizeof(a[0]))
 
+#define luaT_loadfixture(L, name) \
+  do { \
+    const luaT_Fixture *fx_ = &name; \
+    if (!TEST_CHECK(luaL_loadbuffer(L, fx_->data, fx_->size, NULL) == 0) || !TEST_CHECK(lua_pcall(L, 0, 0, 0) == 0)) { \
+      TEST_MSG(lua_tostring(L, -1)); \
+      lua_pop(L, 1); \
+    } \
+  } while(0)
+
 extern int luaT_pushnumber(lua_State *L);
 extern int luaT_pushinteger(lua_State *L);
 extern int luaT_pushnil(lua_State *L);
@@ -27,8 +36,6 @@ extern int luaT_pushlightuserdata(lua_State *L);
 extern int luaT_pushuserdata(lua_State *L);
 extern int luaT_pushcclosure(lua_State *L);
 extern int luaT_pushthread(lua_State *L);
-
-extern int luaT_loadfixtures(lua_State *L);
 
 /**
  * Test Vectors
@@ -44,9 +51,6 @@ extern struct LuaValueVector luaT_object_vectors[];
 
 /**
  * Precompiled Script Fixtures
- *
- * Add any fixtures to the luaT_fixtures macro to automatically create a
- * declaration and enable them for use with luaT_loadfixtures.
  */
 
 typedef struct luaT_Fixture {
@@ -54,13 +58,8 @@ typedef struct luaT_Fixture {
   size_t size;
 } luaT_Fixture;
 
-#define luaT_fixtures(X) \
-  X(luac_mixin) \
-  X(luac_rectanglemixin)
-
-#define luaT_declarefixture(name) extern const luaT_Fixture name;
-luaT_fixtures(luaT_declarefixture);
-#undef luaT_declarefixture
+extern const luaT_Fixture luac_mixin;
+extern const luaT_Fixture luac_rectanglemixin;
 
 /**
  * Test Initialization/Teardown
