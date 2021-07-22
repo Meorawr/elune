@@ -546,7 +546,8 @@ LUA_API void lua_gettable (lua_State *L, int idx) {
   lua_lock(L);
   t = index2adr(L, idx);
   api_checkvalidindex(L, t);
-  luaV_gettable(L, t, L->top - 1, L->top - 1);  /* applies taint */
+  luaV_gettable(L, t, L->top - 1, L->top - 1);
+  luaO_taint2way(L, L->top - 1);  /* propagate taint to/from read value */
   lua_unlock(L);
 }
 
@@ -558,7 +559,8 @@ LUA_API void lua_getfield (lua_State *L, int idx, const char *k) {
   t = index2adr(L, idx);
   api_checkvalidindex(L, t);
   setsvalue(L, &key, luaS_new(L, k));
-  luaV_gettable(L, t, &key, L->top);  /* applies taint */
+  luaV_gettable(L, t, &key, L->top);
+  luaO_taint2way(L, L->top);  /* propagate taint to/from read value */
   api_incr_top(L);
   lua_unlock(L);
 }

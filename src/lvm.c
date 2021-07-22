@@ -125,7 +125,6 @@ void luaV_gettable (lua_State *L, const TValue *t, TValue *key, StkId val) {
       if (!ttisnil(res) ||  /* result is no nil? */
           (tm = fasttm(L, h->metatable, TM_INDEX)) == NULL) { /* or no TM? */
         setobj2s(L, val, res);
-        luaO_taint2way(L, val);  /* propagate taint to/from read value */
         return;
       }
       /* else will try the tag method */
