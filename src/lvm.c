@@ -510,7 +510,6 @@ void luaV_execute (lua_State *L, int nexeccalls) {
         setobjs2s(L, ra+1, rb);
         Protect(luaV_gettable(L, rb, RKC(i), ra));
         luaO_taint2way(L, ra);
-        luaO_taint2way(L, ra + 1);
         continue;
       }
       case OP_ADD: {
