@@ -106,6 +106,7 @@ void luaT_test_init(void) {
   luaT_taint.data = NULL;
 
   LT = luaL_newstate();
+  luaL_openlibs(LT);
 }
 
 void luaT_test_reinit(void) {
