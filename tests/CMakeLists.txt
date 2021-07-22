@@ -45,6 +45,8 @@ function(generate_test_fixture)
     DEPENDS
       mkembed
       ${SOURCE_FILE}
+    COMMENT
+      "Generating test fixture ${ARG_NAME}"
     VERBATIM
   )
 

@@ -9,7 +9,7 @@ static const char *USAGE_TEXT = \
 int main(int argc, char **argv) {
   int retcode = EXIT_FAILURE;
 
-  if (argc < 3) {
+  if (argc < 4) {
     fprintf(stderr, USAGE_TEXT, argv[0]);
     goto exit_usage_error;
   }
@@ -18,14 +18,14 @@ int main(int argc, char **argv) {
   const char *sourcename = argv[2];
   const char *outputname = argv[3];
 
-  FILE *sourcefile = fopen(sourcename, "r");
+  FILE *sourcefile = fopen(sourcename, "rb");
 
   if (!sourcefile) {
     perror(sourcename);
     goto exit_source_error;
   }
 
-  FILE *outputfile = fopen(outputname, "w");
+  FILE *outputfile = fopen(outputname, "wb");
 
   if (!outputfile) {
     perror(outputname);
