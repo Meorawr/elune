@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 static const char *USAGE_TEXT = \
-    "Usage: %s <symbol> <source> <output>\n\n"
+    "Usage: %s <symbol> <source> <output> <name>\n\n"
     "Creates an 'output.c' file with the contents of 'source'.\n";
 
 
@@ -32,8 +32,9 @@ int main(int argc, char **argv) {
     goto exit_output_error;
   }
 
+  fprintf(outputfile, "#include \"common.h\"\n\n");
   fprintf(outputfile, "#include <stdlib.h>\n\n");
-  fprintf(outputfile, "const char %s_data[] = {\n\t", symbol);
+  fprintf(outputfile, "static const char %s_data[] = {\n\t", symbol);
 
   {
     size_t bytesread = 0;
@@ -59,7 +60,7 @@ int main(int argc, char **argv) {
   }
 
   fprintf(outputfile, "};\n\n");
-  fprintf(outputfile, "const size_t %s_size = sizeof(%s_data);\n", symbol, symbol);
+  fprintf(outputfile, "const luaT_Fixture %s = { %s_data, sizeof(%s_data) };\n", symbol, symbol, symbol);
 
   retcode = EXIT_SUCCESS;
 

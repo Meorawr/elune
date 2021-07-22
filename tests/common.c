@@ -1,5 +1,8 @@
 #include "common.h"
 
+#define TEST_NO_MAIN
+#include <acutest.h>
+
 lua_State *LT = NULL;
 lua_TaintInfo luaT_taint = {NULL, NULL};
 
@@ -73,6 +76,28 @@ int luaT_pushcclosure(lua_State *L) {
 
 int luaT_pushthread(lua_State *L) {
   lua_newthread(L);
+  return 0;
+}
+
+int luaT_loadfixtures(lua_State *L) {
+  #define luaT_fixture2addr(name) &name,
+  const luaT_Fixture* fixtures[] = { luaT_fixtures(luaT_fixture2addr) };
+  #undef luaT_fixture2addr
+
+  for (int i = 0; i < luaT_extentof(fixtures); ++i) {
+    const luaT_Fixture *f = fixtures[i];
+
+    int status = luaL_loadbuffer(L, f->data, f->size, NULL);
+
+    if (!TEST_CHECK(status == 0)) {
+      TEST_MSG(lua_tostring(L, -1));
+      lua_pop(L, 1);
+    } else if (!TEST_CHECK(lua_pcall(L, 0, 0, 0) != 0)) {
+      TEST_MSG(lua_tostring(L, -1));
+      lua_pop(L, 1);
+    }
+  }
+
   return 0;
 }
 

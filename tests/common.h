@@ -15,6 +15,8 @@ extern lua_TaintInfo luaT_taint;
  * Utility Functions
  */
 
+#define luaT_extentof(a) (sizeof(a) / sizeof(a[0]))
+
 extern int luaT_pushnumber(lua_State *L);
 extern int luaT_pushinteger(lua_State *L);
 extern int luaT_pushnil(lua_State *L);
@@ -25,6 +27,8 @@ extern int luaT_pushlightuserdata(lua_State *L);
 extern int luaT_pushuserdata(lua_State *L);
 extern int luaT_pushcclosure(lua_State *L);
 extern int luaT_pushthread(lua_State *L);
+
+extern int luaT_loadfixtures(lua_State *L);
 
 /**
  * Test Vectors
@@ -40,12 +44,23 @@ extern struct LuaValueVector luaT_object_vectors[];
 
 /**
  * Precompiled Script Fixtures
+ *
+ * Add any fixtures to the luaT_fixtures macro to automatically create a
+ * declaration and enable them for use with luaT_loadfixtures.
  */
 
-extern const char luac_mixin_data[];
-extern const size_t luac_mixin_size;
-extern const char luac_rectanglemixin_data[];
-extern const size_t luac_rectanglemixin_size;
+typedef struct luaT_Fixture {
+  const char *data;
+  size_t size;
+} luaT_Fixture;
+
+#define luaT_fixtures(X) \
+  X(luac_mixin) \
+  X(luac_rectanglemixin)
+
+#define luaT_declarefixture(name) extern const luaT_Fixture name;
+luaT_fixtures(luaT_declarefixture);
+#undef luaT_declarefixture
 
 /**
  * Test Initialization/Teardown

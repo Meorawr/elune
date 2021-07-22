@@ -73,6 +73,7 @@ set_target_properties(lua-tests
 target_include_directories(lua-tests
   PRIVATE
     "../extern/acutest/include"
+    ${CMAKE_CURRENT_SOURCE_DIR}  # Required for generated fixtures.
 )
 
 target_link_libraries(lua-tests
