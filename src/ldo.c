@@ -297,8 +297,8 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
     ci->nresults = nresults;
     for (st = L->top; st < ci->top; st++)
       setnilvalue(st);
-    for (st = ci->base; st < ci->top; st++)  /* propagate taint to/from stack parameters */
-      luaO_taint2way(L, st);
+    for (st = ci->base; st < ci->top; st++)  /* propagate taint to stack */
+      luaO_taintvalue(L, st);
     L->top = ci->top;
     if (L->hookmask & LUA_MASKCALL) {
       L->savedpc++;  /* hooks assume 'pc' is already incremented */
@@ -319,8 +319,8 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
     ci->top = L->top + LUA_MINSTACK;
     lua_assert(ci->top <= L->stack_last);
     ci->nresults = nresults;
-    for (st = ci->base; st < ci->top; st++)  /* propagate taint to/from stack parameters */
-      luaO_taint2way(L, st);
+    for (st = ci->base; st < ci->top; st++)  /* propagate taint to stack */
+      luaO_taintvalue(L, st);
     if (L->hookmask & LUA_MASKCALL)
       luaD_callhook(L, LUA_HOOKCALL, -1);
     lua_unlock(L);
