@@ -20,7 +20,7 @@ extern lua_TaintInfo luaT_taint;
 #define luaT_checkcall(L, nargs, nresults) \
   do { \
     if (!TEST_CHECK(lua_pcall(L, nargs, nresults, 0) == 0)) { \
-      TEST_MSG(lua_tostring(L, -1)); \
+      TEST_MSG("call failure: %s", lua_tostring(L, -1)); \
       lua_pop(L, 1); \
     } \
   } while(0)
@@ -29,7 +29,7 @@ extern lua_TaintInfo luaT_taint;
   do { \
     const luaT_Fixture *fx_ = &name; \
     if (!TEST_CHECK(luaL_loadbuffer(L, fx_->data, fx_->size, NULL) == 0) || !TEST_CHECK(lua_pcall(L, 0, 0, 0) == 0)) { \
-      TEST_MSG(lua_tostring(L, -1)); \
+      TEST_MSG("load failure: %s", lua_tostring(L, -1)); \
       lua_pop(L, 1); \
     } \
   } while(0)
