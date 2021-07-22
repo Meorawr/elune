@@ -17,6 +17,14 @@ extern lua_TaintInfo luaT_taint;
 
 #define luaT_extentof(a) (sizeof(a) / sizeof(a[0]))
 
+#define luaT_checkcall(L, nargs, nresults) \
+  do { \
+    if (!TEST_CHECK(lua_pcall(L, nargs, nresults, 0) == 0)) { \
+      TEST_MSG(lua_tostring(L, -1)); \
+      lua_pop(L, 1); \
+    } \
+  } while(0)
+
 #define luaT_loadfixture(L, name) \
   do { \
     const luaT_Fixture *fx_ = &name; \
