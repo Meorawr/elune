@@ -143,6 +143,7 @@ LUA_API lua_State *lua_newthread (lua_State *L) {
   luaC_checkGC(L);
   L1 = luaE_newthread(L);
   setthvalue(L, L->top, L1);
+  luaO_taintvalue(L, L->top);
   api_incr_top(L);
   lua_unlock(L);
   luai_userstatethread(L, L1);
@@ -228,6 +229,7 @@ LUA_API void lua_replace (lua_State *L, int idx) {
 LUA_API void lua_pushvalue (lua_State *L, int idx) {
   lua_lock(L);
   setobj2s(L, L->top, index2adr(L, idx));
+  luaO_taint2way(L, L->top);
   api_incr_top(L);
   lua_unlock(L);
 }
