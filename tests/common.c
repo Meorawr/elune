@@ -1,8 +1,5 @@
 #include "common.h"
 
-#define TEST_NO_MAIN
-#include <acutest.h>
-
 lua_State *LT = NULL;
 lua_TaintInfo luaT_taint = {NULL, NULL};
 
@@ -13,7 +10,7 @@ struct LuaValueVector luaT_value_vectors[] = {
   { "string", luaT_pushstring },
   { "boolean", luaT_pushboolean },
   { "table", luaT_pushtable },
-  { "lightuserdataluaT_", luaT_pushlightuserdata },
+  { "lightuserdata", luaT_pushlightuserdata },
   { "userdata", luaT_pushuserdata },
   { "function", luaT_pushcclosure },
   { "thread", luaT_pushthread },
