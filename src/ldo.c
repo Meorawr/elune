@@ -265,6 +265,7 @@ static StkId tryfuncTM (lua_State *L, StkId func) {
 int luaD_precall (lua_State *L, StkId func, int nresults) {
   LClosure *cl;
   ptrdiff_t funcr;
+  int nargs;
   if (!ttisfunction(func)) /* `func' is not a function? */
     func = tryfuncTM(L, func);  /* check the `function' tag method */
   funcr = savestack(L, func);
@@ -278,11 +279,12 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
     func = restorestack(L, funcr);
     if (!p->is_vararg) {  /* no varargs? */
       base = func + 1;
-      if (L->top > base + p->numparams)
-        L->top = base + p->numparams;
+      nargs = p->numparams;
+      if (L->top > base + nargs)
+        L->top = base + nargs;
     }
     else {  /* vararg function */
-      int nargs = cast_int(L->top - func) - 1;
+      nargs = cast_int(L->top - func) - 1;
       base = adjust_varargs(L, p, nargs);
       func = restorestack(L, funcr);  /* previous call may change the stack */
     }
@@ -295,10 +297,13 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
     L->savedpc = p->code;  /* starting point */
     ci->tailcalls = 0;
     ci->nresults = nresults;
-    for (st = L->top; st < ci->top; st++)
+    for (st = L->top; st < ci->top; st++) {
       setnilvalue(st);
-    for (st = ci->base; st < ci->top; st++)  /* propagate taint to stack */
       luaO_taintvalue(L, st);
+    }
+    for (st = ci->base; st < ci->base + nargs; st++) {  /* propagate taint to stack */
+      luaO_taintvalue(L, st);
+    }
     L->top = ci->top;
     if (L->hookmask & LUA_MASKCALL) {
       L->savedpc++;  /* hooks assume 'pc' is already incremented */
@@ -312,6 +317,7 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
     StkId st;
     int n;
     luaD_checkstack(L, LUA_MINSTACK);  /* ensure minimum stack size */
+    nargs = cast_int(L->top - func) - 1;
     ci = inc_ci(L);  /* now `enter' new function */
     ci->func = restorestack(L, funcr);
     L->base = ci->base = ci->func + 1;
@@ -319,8 +325,9 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
     ci->top = L->top + LUA_MINSTACK;
     lua_assert(ci->top <= L->stack_last);
     ci->nresults = nresults;
-    for (st = ci->base; st < ci->top; st++)  /* propagate taint to stack */
+    for (st = ci->base; st < ci->base + nargs; st++) {  /* propagate taint to stack */
       luaO_taintvalue(L, st);
+    }
     if (L->hookmask & LUA_MASKCALL)
       luaD_callhook(L, LUA_HOOKCALL, -1);
     lua_unlock(L);
@@ -368,6 +375,7 @@ int luaD_poscall (lua_State *L, StkId firstResult) {
     luaO_taintvalue(L, res++);  /* propagate state taint to stack returns */
   }
   L->top = res;
+  /* TODO: Clear state taint on return to top-level of stack? */
   return (wanted - LUA_MULTRET);  /* 0 iff wanted == LUA_MULTRET */
 }
 
