@@ -34,8 +34,8 @@ target_compile_definitions(liblua
     $<$<AND:$<PLATFORM_ID:Windows>,$<STREQUAL:$<TARGET_PROPERTY:liblua,TYPE>,SHARED_LIBRARY>>:LUA_BUILD_AS_DLL>
   PRIVATE
     # Enable internal assertions on debug builds.
-    $<$<CONFIG:debug>:LUA_USE_ASSERT>
-    $<$<CONFIG:debug>:LUA_USE_APICHECK>
+    $<$<CONFIG:Debug>:LUA_USE_ASSERT>
+    $<$<CONFIG:Debug>:LUA_USE_APICHECK>
 )
 
 target_include_directories(liblua
