@@ -1228,11 +1228,7 @@ LUA_API void lua_secureget (lua_State *L, int idx) {
   luaV_gettable(L, table, L->top - 1, L->top - 1);
   /* --- END TAINT BARRIER --- */
   L->taint = entrytaint;
-
-  if (!entrytaint) {
-    (L->top - 1)->taint = NULL;  /* clear taint if initially secure */
-  }
-
+  luaV_writetaint(L, L->top - 1);  /* propagate taint to read value only */
   lua_unlock(L);
 }
 
