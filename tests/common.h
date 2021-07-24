@@ -9,7 +9,7 @@
 extern lua_State *LT;
 
 /** Reusable taint info object that can be applied during testing. */
-extern lua_TaintInfo luaT_taint;
+extern lua_Taint luaT_taint;
 
 /**
  * Utility Functions

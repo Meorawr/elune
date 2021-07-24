@@ -25,7 +25,7 @@ static const char *progname = LUA_PROGNAME;
 
 static int runtainted = 0;
 
-static lua_TaintInfo taint = { "*** TaintForced ***", NULL };
+static lua_Taint taint = { "*** TaintForced ***", NULL };
 
 
 static void lstop (lua_State *L, lua_Debug *ar) {

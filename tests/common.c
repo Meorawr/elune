@@ -1,7 +1,7 @@
 #include "common.h"
 
 lua_State *LT = NULL;
-lua_TaintInfo luaT_taint = {NULL, NULL};
+lua_Taint luaT_taint = {NULL, NULL};
 
 struct LuaValueVector luaT_value_vectors[] = {
   { "number", luaT_pushnumber },

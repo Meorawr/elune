@@ -662,7 +662,7 @@ LUALIB_API lua_State *luaL_newstate (void) {
 ** =======================================================================
 */
 
-static lua_TaintInfo luaO_forcedtaint = {"*** TaintForced ***", NULL};
+static lua_Taint luaO_forcedtaint = {"*** TaintForced ***", NULL};
 
 LUALIB_API void luaL_forcetaint (lua_State *L) {
   if (!lua_gettaint(L)) {

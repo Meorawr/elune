@@ -1106,8 +1106,8 @@ LUA_API const char *lua_setupvalue (lua_State *L, int funcindex, int n) {
 ** =======================================================================
 */
 
-LUA_API lua_TaintInfo *lua_gettaint (lua_State *L) {
-  lua_TaintInfo *t;
+LUA_API lua_Taint *lua_gettaint (lua_State *L) {
+  lua_Taint *t;
 
   lua_lock(L);
   t = L->taint;
@@ -1116,14 +1116,14 @@ LUA_API lua_TaintInfo *lua_gettaint (lua_State *L) {
   return t;
 }
 
-LUA_API void lua_settaint (lua_State *L, lua_TaintInfo *t) {
+LUA_API void lua_settaint (lua_State *L, lua_Taint *t) {
   lua_lock(L);
   L->taint = t;
   lua_unlock(L);
 }
 
-LUA_API lua_TaintInfo *lua_getvaluetaint (lua_State *L, int idx) {
-  lua_TaintInfo *t;
+LUA_API lua_Taint *lua_getvaluetaint (lua_State *L, int idx) {
+  lua_Taint *t;
   StkId v;
 
   lua_lock(L);
@@ -1135,7 +1135,7 @@ LUA_API lua_TaintInfo *lua_getvaluetaint (lua_State *L, int idx) {
   return t;
 }
 
-LUA_API void lua_setvaluetaint (lua_State *L, int idx, lua_TaintInfo *t) {
+LUA_API void lua_setvaluetaint (lua_State *L, int idx, lua_Taint *t) {
   StkId v;
 
   lua_lock(L);
@@ -1145,8 +1145,8 @@ LUA_API void lua_setvaluetaint (lua_State *L, int idx, lua_TaintInfo *t) {
   lua_unlock(L);
 }
 
-LUA_API lua_TaintInfo *lua_getobjecttaint (lua_State *L, int idx) {
-  lua_TaintInfo *t;
+LUA_API lua_Taint *lua_getobjecttaint (lua_State *L, int idx) {
+  lua_Taint *t;
   GCObject *gco;
 
   lua_lock(L);
@@ -1157,7 +1157,7 @@ LUA_API lua_TaintInfo *lua_getobjecttaint (lua_State *L, int idx) {
   return t;
 }
 
-LUA_API void lua_setobjecttaint (lua_State *L, int idx, lua_TaintInfo *t) {
+LUA_API void lua_setobjecttaint (lua_State *L, int idx, lua_Taint *t) {
   GCObject *gco;
 
   lua_lock(L);
@@ -1166,10 +1166,10 @@ LUA_API void lua_setobjecttaint (lua_State *L, int idx, lua_TaintInfo *t) {
   lua_unlock(L);
 }
 
-LUA_API lua_TaintInfo *lua_gettabletaint (lua_State *L, int idx) {
+LUA_API lua_Taint *lua_gettabletaint (lua_State *L, int idx) {
   StkId table;
   TValue value;
-  lua_TaintInfo *taint;
+  lua_Taint *taint;
 
   lua_lock(L);
   table = index2adr(L, idx);
@@ -1181,11 +1181,11 @@ LUA_API lua_TaintInfo *lua_gettabletaint (lua_State *L, int idx) {
   return taint;
 }
 
-LUA_API lua_TaintInfo *lua_getfieldtaint (lua_State *L, int idx, const char *k) {
+LUA_API lua_Taint *lua_getfieldtaint (lua_State *L, int idx, const char *k) {
   StkId table;
   TValue key;
   TValue value;
-  lua_TaintInfo *taint;
+  lua_Taint *taint;
 
   lua_lock(L);
   table = index2adr(L, idx);
@@ -1199,7 +1199,7 @@ LUA_API lua_TaintInfo *lua_getfieldtaint (lua_State *L, int idx, const char *k) 
 }
 
 
-LUA_API void lua_setstacktaint (lua_State *L, int from, int to, lua_TaintInfo *t) {
+LUA_API void lua_setstacktaint (lua_State *L, int from, int to, lua_Taint *t) {
   lua_lock(L);
 
   StkId cur = index2adr(L, from);

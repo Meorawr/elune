@@ -419,7 +419,7 @@ static int db_gettaintsource (lua_State *L) {
     L1 = L;
   }
 
-  const lua_TaintInfo *taint = lua_gettaint(L1);
+  const lua_Taint *taint = lua_gettaint(L1);
 
   if (taint) {
     lua_pushstring(L, taint->source);
