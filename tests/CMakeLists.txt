@@ -91,3 +91,4 @@ target_sources(lua-tests
 generate_test_fixture(NAME "luac_mixin" SOURCE "fixtures/mixin.lua")
 generate_test_fixture(NAME "luac_rectanglemixin" SOURCE "fixtures/rectanglemixin.lua")
 generate_test_fixture(NAME "luac_issecurevariable" SOURCE "fixtures/issecurevariable.lua")
+generate_test_fixture(NAME "luac_securecallutil" SOURCE "fixtures/securecallutil.lua")

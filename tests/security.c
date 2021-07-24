@@ -196,6 +196,187 @@ static void test_issecurevariable(void) {
 }
 
 /**
+ * Lua Security API tests
+ */
+
+static void test_securecall_initiallysecure(void) {
+  luaT_loadfixture(LT, luac_securecallutil);
+
+  lua_pushliteral(LT, "securecall_identity");
+  luaT_pushstring(LT);
+  luaT_pushnumber(LT);
+  luaT_pushboolean(LT);
+  luaT_pushtable(LT);
+  TEST_CHECK(lua_securecall(LT, 4, LUA_MULTRET, 0) == 0);
+
+  TEST_CHECK(luaL_issecure(LT));            /* Should still be secure. */
+  TEST_CHECK(lua_gettop(LT) == 4);          /* Should have four return values. */
+  TEST_CHECK(luaL_issecurevalue(LT, -1));   /* All function returns should be secure. */
+  TEST_CHECK(luaL_issecurevalue(LT, -1));
+  TEST_CHECK(luaL_issecurevalue(LT, -1));
+  TEST_CHECK(luaL_issecurevalue(LT, -1));
+}
+
+static void test_securecall_initiallyinsecure(void) {
+  luaT_loadfixture(LT, luac_securecallutil);
+
+  lua_settaint(LT, &luaT_taint);            /* Taint execution */
+  lua_pushliteral(LT, "securecall_identity");
+  luaT_pushstring(LT);
+  luaT_pushnumber(LT);
+  luaT_pushboolean(LT);
+  luaT_pushtable(LT);
+  TEST_CHECK(lua_securecall(LT, 4, LUA_MULTRET, 0) == 0);
+
+  TEST_CHECK(!luaL_issecure(LT));           /* Should not be secure. */
+  TEST_CHECK(lua_gettop(LT) == 4);          /* Should have four return values. */
+  TEST_CHECK(!luaL_issecurevalue(LT, -1));  /* All function returns should be insecure. */
+  TEST_CHECK(!luaL_issecurevalue(LT, -1));
+  TEST_CHECK(!luaL_issecurevalue(LT, -1));
+  TEST_CHECK(!luaL_issecurevalue(LT, -1));
+}
+
+static void test_securecall_insecurefunction(void) {
+  lua_settaint(LT, &luaT_taint);            /* Load fixture insecurely. */
+  luaT_loadfixture(LT, luac_securecallutil);
+  lua_settaint(LT, NULL);
+
+  TEST_CHECK(luaL_issecure(LT));            /* Should be secure at this point. */
+
+  lua_pushliteral(LT, "securecall_identity");
+  luaT_pushstring(LT);
+  luaT_pushnumber(LT);
+  luaT_pushboolean(LT);
+  luaT_pushtable(LT);
+  TEST_CHECK(lua_securecall(LT, 4, LUA_MULTRET, 0) == 0);
+
+  TEST_CHECK(luaL_issecure(LT));            /* Should still be secure. */
+  TEST_CHECK(lua_gettop(LT) == 4);          /* Should have four return values. */
+  TEST_CHECK(luaL_issecurevalue(LT, -1));   /* All function returns should be secure. */
+  TEST_CHECK(luaL_issecurevalue(LT, -1));
+  TEST_CHECK(luaL_issecurevalue(LT, -1));
+  TEST_CHECK(luaL_issecurevalue(LT, -1));
+}
+
+static void test_securecall_forceinsecure(void) {
+  luaT_loadfixture(LT, luac_securecallutil);
+
+  lua_pushliteral(LT, "securecall_forceinsecure");
+  luaT_pushstring(LT);
+  luaT_pushnumber(LT);
+  luaT_pushboolean(LT);
+  luaT_pushtable(LT);
+  TEST_CHECK(lua_securecall(LT, 4, LUA_MULTRET, 0) == 0);
+
+  TEST_CHECK(luaL_issecure(LT));            /* Should still be secure. */
+  TEST_CHECK(lua_gettop(LT) == 4);          /* Should have four return values. */
+  TEST_CHECK(luaL_issecurevalue(LT, -1));   /* All function returns should be secure. */
+  TEST_CHECK(luaL_issecurevalue(LT, -1));
+  TEST_CHECK(luaL_issecurevalue(LT, -1));
+  TEST_CHECK(luaL_issecurevalue(LT, -1));
+}
+
+static void test_securecall_directsecurefunction(void) {
+  luaT_loadfixture(LT, luac_securecallutil);
+
+  TEST_CHECK(luaL_issecure(LT));            /* Should be secure at this point. */
+
+  lua_pushvalue(LT, LUA_GLOBALSINDEX);
+  lua_pushliteral(LT, "securecall_identity");
+  lua_gettable(LT, -2);
+  lua_remove(LT, 1);                        /* Leave only the function on the stack. */
+
+  luaT_pushstring(LT);
+  luaT_pushnumber(LT);
+  luaT_pushboolean(LT);
+  luaT_pushtable(LT);
+  TEST_CHECK(lua_securecall(LT, 4, LUA_MULTRET, 0) == 0);
+
+  TEST_CHECK(luaL_issecure(LT));            /* Should still be secure. */
+  TEST_CHECK(lua_gettop(LT) == 4);          /* Should have four return values. */
+  TEST_CHECK(luaL_issecurevalue(LT, -1));   /* All function returns should be secure. */
+  TEST_CHECK(luaL_issecurevalue(LT, -1));
+  TEST_CHECK(luaL_issecurevalue(LT, -1));
+  TEST_CHECK(luaL_issecurevalue(LT, -1));
+}
+
+static void test_securecall_directinsecurefunction(void) {
+  luaT_loadfixture(LT, luac_securecallutil);
+
+  TEST_CHECK(luaL_issecure(LT));            /* Should be secure at this point. */
+
+  lua_pushvalue(LT, LUA_GLOBALSINDEX);
+  lua_pushliteral(LT, "securecall_identity");
+  lua_gettable(LT, -2);
+  lua_setvaluetaint(LT, -1, &luaT_taint);   /* Taint read function value. */
+  lua_remove(LT, 1);                        /* Leave only the function on the stack. */
+
+  luaT_pushstring(LT);
+  luaT_pushnumber(LT);
+  luaT_pushboolean(LT);
+  luaT_pushtable(LT);
+  TEST_CHECK(lua_securecall(LT, 4, LUA_MULTRET, 0) == 0);
+
+  TEST_CHECK(luaL_issecure(LT));            /* Should still be secure. */
+  TEST_CHECK(lua_gettop(LT) == 4);          /* Should have four return values. */
+  TEST_CHECK(luaL_issecurevalue(LT, -1));   /* All function returns should be secure. */
+  TEST_CHECK(luaL_issecurevalue(LT, -1));
+  TEST_CHECK(luaL_issecurevalue(LT, -1));
+  TEST_CHECK(luaL_issecurevalue(LT, -1));
+}
+
+static int secureerrorhandler(lua_State *L) {
+  TEST_CHECK(lua_gettop(L) == 1);          /* Expect only error information on the stack */
+  TEST_CHECK(luaL_issecure(L));            /* Expect to have been called securely... */
+  TEST_CHECK(luaL_issecurevalue(L, 1));    /* ...And that our one argument is secure. */
+  return 1;
+}
+
+static void test_securecall_secureerror(void) {
+  luaT_loadfixture(LT, luac_securecallutil);
+
+  lua_pushcclosure(LT, secureerrorhandler, 0);    /* See securerrrorhandler for additional checks. */
+  lua_pushliteral(LT, "securecall_error");
+  lua_pushliteral(LT, "test error message");
+  TEST_CHECK(lua_securecall(LT, 1, 0, 1) != 0);   /* Expect call to fail. */
+  TEST_CHECK(luaL_issecure(LT));                  /* Expect to remain secure. */
+  TEST_CHECK(lua_gettop(LT) == 2);                /* Expect two values on stack; errfunc and err */
+  TEST_CHECK(luaL_issecurevalue(LT, -1));         /* Error object should be secure */
+}
+
+static int insecureerrorhandler(lua_State *L) {
+  TEST_CHECK(lua_gettop(L) == 1);          /* Expect only error information on the stack */
+  TEST_CHECK(!luaL_issecure(L));           /* Expect to have been called insecurely... */
+  TEST_CHECK(!luaL_issecurevalue(L, 1));   /* ...And that our one argument is insecure. */
+  return 1;
+}
+
+static void test_securecall_insecureerror(void) {
+  luaT_loadfixture(LT, luac_securecallutil);
+
+  lua_settaint(LT, &luaT_taint);
+  lua_pushcclosure(LT, insecureerrorhandler, 0);  /* See insecurerrorhandler for additional checks. */
+  lua_pushliteral(LT, "securecall_error");
+  lua_pushliteral(LT, "test error message");
+  TEST_CHECK(lua_securecall(LT, 1, 0, 1) != 0);   /* Expect call to fail. */
+  TEST_CHECK(!luaL_issecure(LT));                 /* Expect to remain insecure. */
+  TEST_CHECK(lua_gettop(LT) == 2);                /* Expect two values on stack; errfunc and err */
+  TEST_CHECK(!luaL_issecurevalue(LT, -1));        /* Error object should be insecure */
+}
+
+static void test_securecall_forceinsecureerror(void) {
+  luaT_loadfixture(LT, luac_securecallutil);
+
+  lua_pushcclosure(LT, insecureerrorhandler, 0);  /* See insecurerrorhandler for additional checks. */
+  lua_pushliteral(LT, "securecall_insecureerror");
+  lua_pushliteral(LT, "test error message");
+  TEST_CHECK(lua_securecall(LT, 1, 0, 1) != 0);   /* Expect call to fail. */
+  TEST_CHECK(luaL_issecure(LT));                  /* Expect to remain secure. */
+  TEST_CHECK(lua_gettop(LT) == 2);                /* Expect two values on stack; errfunc and err */
+  TEST_CHECK(luaL_issecurevalue(LT, -1));         /* Error object should be secure */
+}
+
+/**
  * Test Listing
  */
 
@@ -212,5 +393,14 @@ TEST_LIST = {
   { "read secure values while tainted", test_secure_value_reads },
   { "secure constants don't inherit state taint", &test_secure_constants },
   { "script: issecurevariable", &test_issecurevariable },
+  { "lua_securecall: named call while secure", &test_securecall_initiallysecure },
+  { "lua_securecall: named call while insecure", &test_securecall_initiallyinsecure },
+  { "lua_securecall: named call insecure function", &test_securecall_insecurefunction },
+  { "lua_securecall: named call forceinsecure", &test_securecall_forceinsecure },
+  { "lua_securecall: direct call secure function value", &test_securecall_directsecurefunction },
+  { "lua_securecall: direct call insecure function value", &test_securecall_directinsecurefunction },
+  { "lua_securecall: secure error handling", &test_securecall_secureerror },
+  { "lua_securecall: insecure error handling", &test_securecall_insecureerror },
+  { "lua_securecall: forceinsecure error handling", &test_securecall_forceinsecureerror },
   { NULL, NULL }
 };

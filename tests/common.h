@@ -69,6 +69,7 @@ typedef struct luaT_Fixture {
 extern const luaT_Fixture luac_mixin;
 extern const luaT_Fixture luac_rectanglemixin;
 extern const luaT_Fixture luac_issecurevariable;
+extern const luaT_Fixture luac_securecallutil;
 
 /**
  * Test Initialization/Teardown
