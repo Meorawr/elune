@@ -24,9 +24,9 @@
       "cacheVariables": {
         "CMAKE_C_COMPILER": "cl.exe",
         "CMAKE_C_FLAGS": "/D_CRT_SECURE_NO_WARNINGS /fp:fast /W4 /wd4324 /wd4334 /utf-8",
-        "CMAKE_C_FLAGS_RELEASE": "/Zi",
-        "CMAKE_EXE_LINKER_FLAGS_RELEASE": "/DEBUG:FULL /INCREMENTAL:NO /OPT:REF /OPT:ICF /PDBALTPATH:%_PDB% /MANIFEST:NO",
-        "CMAKE_SHARED_LINKER_FLAGS_RELEASE": "/DEBUG:FULL /INCREMENTAL:NO /OPT:REF /OPT:ICF /PDBALTPATH:%_PDB% /MANIFEST:NO"
+        "CMAKE_C_FLAGS_RELEASE": "/GL /Gw /Gy /O2 /Ob3 /Oi /Zi",
+        "CMAKE_EXE_LINKER_FLAGS_RELEASE": "/DEBUG:FULL /LTCG /INCREMENTAL:NO /OPT:REF /OPT:ICF /PDBALTPATH:%_PDB% /MANIFEST:NO",
+        "CMAKE_SHARED_LINKER_FLAGS_RELEASE": "/DEBUG:FULL /LTCG /INCREMENTAL:NO /OPT:REF /OPT:ICF /PDBALTPATH:%_PDB% /MANIFEST:NO"
       },
       "toolset": {
         "strategy": "external",
@@ -43,7 +43,8 @@
       "hidden": true,
       "cacheVariables": {
         "CMAKE_C_COMPILER": "gcc",
-        "CMAKE_C_FLAGS": "-D_GNU_SOURCE -ffast-math -Wall -Wextra"
+        "CMAKE_C_FLAGS": "-D_GNU_SOURCE -ffast-math -Wall -Wextra",
+        "CMAKE_C_FLAGS_RELEASE": "-DNDEBUG -flto -O3"
       }
     },
     {
@@ -52,7 +53,8 @@
       "hidden": true,
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang",
-        "CMAKE_C_FLAGS": "-D_GNU_SOURCE -ffast-math -Wall -Wextra"
+        "CMAKE_C_FLAGS": "-D_GNU_SOURCE -ffast-math -Wall -Wextra",
+        "CMAKE_C_FLAGS_RELEASE": "-DNDEBUG -flto -O3"
       }
     },
     {
