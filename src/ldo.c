@@ -289,6 +289,7 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
     ci = inc_ci(L);  /* now `enter' new function */
     ci->func = func;
     L->base = ci->base = base;
+    luaV_readtaint(L, func);  /* propagate tainted function value to state */
     luaV_readgcotaint(L, obj2gco(cl));  /* propagate internal closure taint to state */
     ci->top = L->base + p->maxstacksize;
     lua_assert(ci->top <= L->stack_last);
@@ -318,6 +319,7 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
     ci = inc_ci(L);  /* now `enter' new function */
     ci->func = restorestack(L, funcr);
     L->base = ci->base = ci->func + 1;
+    luaV_readtaint(L, func);  /* propagate tainted function value to state */
     luaV_readgcotaint(L, obj2gco(cl));  /* propagate internal closure taint to state */
     ci->top = L->top + LUA_MINSTACK;
     lua_assert(ci->top <= L->stack_last);
@@ -372,7 +374,6 @@ int luaD_poscall (lua_State *L, StkId firstResult) {
     luaV_writetaint(L, res++);  /* propagate state taint to stack returns */
   }
   L->top = res;
-  /* TODO: Clear state taint on return to top-level of stack? */
   return (wanted - LUA_MULTRET);  /* 0 iff wanted == LUA_MULTRET */
 }
 
