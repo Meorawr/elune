@@ -33,4 +33,33 @@ LUAI_FUNC void luaV_settable (lua_State *L, const TValue *t, TValue *key,
 LUAI_FUNC void luaV_execute (lua_State *L, int nexeccalls);
 LUAI_FUNC void luaV_concat (lua_State *L, int total, int last);
 
+static inline void luaV_taint(lua_State *L, TValue *v) {
+  if (!v->taint) v->taint = L->taint;
+  else if (!L->taint) L->taint = v->taint;
+}
+
+static inline void luaV_readtaint(lua_State *L, TValue *v) {
+  if (!L->taint) L->taint = v->taint;
+}
+
+static inline void luaV_writetaint(lua_State *L, TValue *v) {
+  if (!v->taint) v->taint = L->taint;
+}
+
+static inline void luaV_gcotaint(lua_State *L, GCObject *gco) {
+  GCheader *gch = &gco->gch;
+  if (!gch->taint) gch->taint = L->taint;
+  else if (!L->taint) L->taint = gch->taint;
+}
+
+static inline void luaV_readgcotaint(lua_State *L, GCObject *gco) {
+  GCheader *gch = &gco->gch;
+  if (!L->taint) L->taint = gch->taint;
+}
+
+static inline void luaV_writegcotaint(lua_State *L, GCObject *gco) {
+  GCheader *gch = &gco->gch;
+  if (!gch->taint) gch->taint = L->taint;
+}
+
 #endif

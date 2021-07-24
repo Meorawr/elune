@@ -291,7 +291,7 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
     ci = inc_ci(L);  /* now `enter' new function */
     ci->func = func;
     L->base = ci->base = base;
-    luaO_taintstate(L, cl);  /* propagate internal closure taint to state */
+    luaV_writegcotaint(L, obj2gco(cl));  /* propagate internal closure taint to state */
     ci->top = L->base + p->maxstacksize;
     lua_assert(ci->top <= L->stack_last);
     L->savedpc = p->code;  /* starting point */
@@ -299,10 +299,10 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
     ci->nresults = nresults;
     for (st = L->top; st < ci->top; st++) {
       setnilvalue(st);
-      luaO_taintvalue(L, st);
+      luaV_writetaint(L, st);
     }
     for (st = ci->base; st < ci->base + nargs; st++) {  /* propagate taint to stack */
-      luaO_taintvalue(L, st);
+      luaV_writetaint(L, st);
     }
     L->top = ci->top;
     if (L->hookmask & LUA_MASKCALL) {
@@ -321,12 +321,12 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
     ci = inc_ci(L);  /* now `enter' new function */
     ci->func = restorestack(L, funcr);
     L->base = ci->base = ci->func + 1;
-    luaO_taintstate(L, cl);  /* propagate internal closure taint to state */
+    luaV_writegcotaint(L, obj2gco(cl));  /* propagate internal closure taint to state */
     ci->top = L->top + LUA_MINSTACK;
     lua_assert(ci->top <= L->stack_last);
     ci->nresults = nresults;
     for (st = ci->base; st < ci->base + nargs; st++) {  /* propagate taint to stack */
-      luaO_taintvalue(L, st);
+      luaV_writetaint(L, st);
     }
     if (L->hookmask & LUA_MASKCALL)
       luaD_callhook(L, LUA_HOOKCALL, -1);
@@ -368,11 +368,11 @@ int luaD_poscall (lua_State *L, StkId firstResult) {
   /* move results to correct place */
   for (i = wanted; i != 0 && firstResult < L->top; i--) {
     setobjs2s(L, res, firstResult++);
-    luaO_taint2way(L, res++);  /* propagate taint to/from stack returns */
+    luaV_taint(L, res++);  /* propagate taint to/from stack returns */
   }
   while (i-- > 0) {
     setnilvalue(res);
-    luaO_taintvalue(L, res++);  /* propagate state taint to stack returns */
+    luaV_writetaint(L, res++);  /* propagate state taint to stack returns */
   }
   L->top = res;
   /* TODO: Clear state taint on return to top-level of stack? */

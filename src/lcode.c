@@ -22,6 +22,7 @@
 #include "lopcodes.h"
 #include "lparser.h"
 #include "ltable.h"
+#include "lvm.h"
 
 
 #define hasjumps(e)	((e)->t != (e)->f)
@@ -240,7 +241,7 @@ static int addk (FuncState *fs, TValue *k, TValue *v) {
     luaM_growvector(L, f->k, fs->nk, f->sizek, TValue,
                     MAXARG_Bx, "constant table overflow");
     while (oldsize < f->sizek) setnilvalue(&f->k[oldsize++]);
-    luaO_taintvalue(L, v);  /* propagate taint to constants */
+    luaV_writetaint(L, v);  /* propagate taint to constants */
     setobj(L, &f->k[fs->nk], v);
     luaC_barrier(L, f, v);
     return fs->nk++;

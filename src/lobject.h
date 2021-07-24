@@ -360,44 +360,6 @@ typedef struct Table {
 
 #define luaO_nilobject		(&luaO_nilobject_)
 
-/** Applies taint from L to obj; does nothing if obj is already tainted. */
-#define luaO_taintvalue(L, obj) \
-  do { \
-    lua_TaintInfo **objtaint = &(obj)->taint; \
-    *objtaint = (*objtaint ? *objtaint : L->taint); \
-  } while(0)
-
-/** Applies taint from obj to L; does nothing if L is already tainted. */
-#define luaO_taintstate(L, obj) \
-  do { \
-    lua_TaintInfo *objtaint = (obj)->taint; \
-    L->taint = (L->taint ? L->taint : objtaint); \
-  } while(0)
-
-/** Applies taint from L to obj if obj is secure, or from obj to L if L is secure. */
-#define luaO_taint2way(L, obj) \
-  do { \
-    lua_TaintInfo **ltaint = &(L)->taint; \
-    lua_TaintInfo **objtaint = &(obj)->taint; \
-    if (*ltaint && !*objtaint) *objtaint = *ltaint; \
-    else if (*objtaint && !*ltaint) *ltaint = *objtaint; \
-  } while(0)
-
-
-/** Copies taint from obj2 to obj1, even if obj1 is already tainted. */
-#define luaO_copytaint(obj1, obj2) \
-  do { \
-    (obj1)->taint = (obj2->taint); \
-  } while(0)
-
-/** Moves taint from obj2 to obj1, clearing it from obj1. */
-#define luaO_movetaint(obj1, obj2) \
-  do { \
-    lua_TaintInfo **obj2taint = &(obj2)->taint; \
-    (obj1)->taint = *obj2taint; \
-    *obj2taint = NULL; \
-  } while(0)
-
 LUAI_DATA const TValue luaO_nilobject_;
 
 #define ceillog2(x)	(luaO_log2((x)-1) + 1)
