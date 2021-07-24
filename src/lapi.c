@@ -143,7 +143,6 @@ LUA_API lua_State *lua_newthread (lua_State *L) {
   luaC_checkGC(L);
   L1 = luaE_newthread(L);
   setthvalue(L, L->top, L1);
-  luaV_writetaint(L, L->top);
   api_incr_top(L);
   lua_unlock(L);
   luai_userstatethread(L, L1);
@@ -451,7 +450,6 @@ LUA_API void lua_pushlstring (lua_State *L, const char *s, size_t len) {
   lua_lock(L);
   luaC_checkGC(L);
   setsvalue2s(L, L->top, luaS_newlstr(L, s, len));
-  luaV_writetaint(L, L->top);
   api_incr_top(L);
   lua_unlock(L);
 }
@@ -471,7 +469,6 @@ LUA_API const char *lua_pushvfstring (lua_State *L, const char *fmt,
   lua_lock(L);
   luaC_checkGC(L);
   ret = luaO_pushvfstring(L, fmt, argp);
-  luaV_writetaint(L, L->top);
   lua_unlock(L);
   return ret;
 }
@@ -485,7 +482,6 @@ LUA_API const char *lua_pushfstring (lua_State *L, const char *fmt, ...) {
   va_start(argp, fmt);
   ret = luaO_pushvfstring(L, fmt, argp);
   va_end(argp);
-  luaV_writetaint(L, L->top);
   lua_unlock(L);
   return ret;
 }
@@ -502,7 +498,6 @@ LUA_API void lua_pushcclosure (lua_State *L, lua_CFunction fn, int n) {
   while (n--)
     setobj2n(L, &cl->c.upvalue[n], L->top+n);
   setclvalue(L, L->top, cl);
-  luaV_writetaint(L, L->top);
   lua_assert(iswhite(obj2gco(cl)));
   api_incr_top(L);
   lua_unlock(L);
@@ -530,7 +525,6 @@ LUA_API void lua_pushlightuserdata (lua_State *L, void *p) {
 LUA_API int lua_pushthread (lua_State *L) {
   lua_lock(L);
   setthvalue(L, L->top, L);
-  luaV_writetaint(L, L->top);
   api_incr_top(L);
   lua_unlock(L);
   return (G(L)->mainthread == L);
@@ -621,6 +615,7 @@ LUA_API int lua_getmetatable (lua_State *L, int objindex) {
     res = 0;
   else {
     sethvalue(L, L->top, mt);
+    luaV_taint(L, L->top);  /* propagate taint to/from read value */
     api_incr_top(L);
     res = 1;
   }
@@ -648,6 +643,7 @@ LUA_API void lua_getfenv (lua_State *L, int idx) {
       setnilvalue(L->top);
       break;
   }
+  luaV_taint(L, L->top);  /* propagate taint to/from read value */
   api_incr_top(L);
   lua_unlock(L);
 }
@@ -993,6 +989,8 @@ LUA_API int lua_next (lua_State *L, int idx) {
   api_check(L, ttistable(t));
   more = luaH_next(L, hvalue(t), L->top - 1);
   if (more) {
+    luaV_taint(L, L->top - 1);  /* propagate taint to/from read key */
+    luaV_taint(L, L->top);      /* propagate taint to/from read value */
     api_incr_top(L);
   }
   else  /* no more elements */
@@ -1076,6 +1074,7 @@ LUA_API const char *lua_getupvalue (lua_State *L, int funcindex, int n) {
   name = aux_upvalue(index2adr(L, funcindex), n, &val);
   if (name) {
     setobj2s(L, L->top, val);
+    luaV_taint(L, L->top);  /* propagate taint to/from read value */
     api_incr_top(L);
   }
   lua_unlock(L);
