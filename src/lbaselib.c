@@ -480,9 +480,6 @@ static int luaB_issecurevariable (lua_State *L) {
 static int luaB_securecall (lua_State *L) {
   int status;
 
-  lua_pushvalue(L, 1);
-  if (lua_tostring(L, -1)) lua_secureget(L, LUA_GLOBALSINDEX);
-  lua_replace(L, 1);
   luaL_pusherrorhandler(L);
   lua_insert(L, 1);
   status = lua_securecall(L, lua_gettop(L) - 2, LUA_MULTRET, 1);

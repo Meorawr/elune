@@ -1215,27 +1215,10 @@ LUA_API void lua_setstacktaint (lua_State *L, int from, int to, lua_Taint *t) {
   lua_unlock(L);
 }
 
-LUA_API void lua_secureget (lua_State *L, int idx) {
-  StkId table;
-  lua_Taint* entrytaint;
-
-  lua_lock(L);
-  table = index2adr(L, idx);
-  api_checkvalidindex(L, table);
-
-  entrytaint = L->taint;
-  /* --- BEGIN TAINT BARRIER --- */
-  luaV_gettable(L, table, L->top - 1, L->top - 1);
-  /* --- END TAINT BARRIER --- */
-  L->taint = entrytaint;
-  luaV_writetaint(L, L->top - 1);  /* propagate taint to read value only */
-  lua_unlock(L);
-}
-
 LUA_API int lua_securecall (lua_State *L, int nargs, int nresults, int errfunc) {
   const lua_Taint *entrytaint;  /* taint before entering taint barrier */
   ptrdiff_t errpos;             /* relative position of errfunc from stack base */
-  ptrdiff_t retpos;             /* relative position of func _or_ first return */
+  ptrdiff_t funcpos;            /* relative position of func _or_ first return */
   struct CallS c;               /* function call data */
   int status;                   /* function call status result */
 
@@ -1251,24 +1234,26 @@ LUA_API int lua_securecall (lua_State *L, int nargs, int nresults, int errfunc) 
     errpos = savestack(L, o);
   }
 
-  c.func = L->top - (nargs + 1);
-  c.nresults = nresults;
-  retpos = savestack(L, c.func);
-
   entrytaint = L->taint;
   /* --- BEGIN TAINT BARRIER --- */
+
+  c.func = L->top - (nargs + 1);
+  c.nresults = nresults;
+
+  if (ttisstring(c.func) || luaV_tostring(L, c.func)) {
+    luaV_gettable(L, gt(L), c.func, c.func);
+  }
+
+  funcpos = savestack(L, c.func);
   status = luaD_pcall(L, f_call, &c, savestack(L, c.func), errpos);
   adjustresults(L, nresults);
+
   /* --- END TAINT BARRIER --- */
   L->taint = cast(lua_Taint *, entrytaint);
 
-  /**
-   * All values it returned need to have their taint cleared if the caller
-   * was secure.
-   */
-
+  /* Clear taint from return values if initially secure. */
   if (!entrytaint) {
-    StkId ret = restorestack(L, retpos);
+    StkId ret = restorestack(L, funcpos);
     StkId lastret = L->top - 1;
 
     while (ret <= lastret) {
@@ -1294,11 +1279,7 @@ LUA_API int lua_secureccall (lua_State *L, lua_CFunction func, void *ud) {
   /* --- END TAINT BARRIER --- */
   L->taint = cast(lua_Taint *, entrytaint);
 
-  /**
-   * Unlike lua_securecall the error information is kept on the stack as we
-   * don't take an error handling function, so it needs to have taint cleared.
-   */
-
+  /* Clear taint from return values if initially secure. */
   if (status != 0 && !entrytaint) {
     (L->top - 1)->taint = NULL;
   }
