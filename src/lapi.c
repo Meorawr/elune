@@ -1247,7 +1247,9 @@ LUA_API int lua_securecall (lua_State *L, int nargs, int nresults, int errfunc) 
   api_checknelems(L, nargs + 1);
   checkresults(L, nargs, nresults);
 
-  {
+  if (errfunc == 0) {
+    errpos = 0;
+  } else {
     StkId o = index2adr(L, errfunc);
     api_checkvalidindex(L, o);
     errpos = savestack(L, o);
@@ -1265,16 +1267,11 @@ LUA_API int lua_securecall (lua_State *L, int nargs, int nresults, int errfunc) 
   L->taint = cast(lua_Taint *, entrytaint);
 
   /**
-   * As an error handling function is required any error returns from
-   * luaD_pcall can be safely discarded.
-   *
-   * If the function actually succeeded, all values it returned need to have
-   * their taint cleared if the caller was secure.
+   * All values it returned need to have their taint cleared if the caller
+   * was secure.
    */
 
-  if (status != 0) {
-    L->top--;
-  } else if (!entrytaint && nresults != 0) {
+  if (!entrytaint) {
     StkId ret = restorestack(L, retpos);
     StkId lastret = L->top - 1;
 
