@@ -8,7 +8,7 @@
 /** Global Lua state initialized at the start of eacn new test. */
 extern lua_State *LT;
 
-/** Reusable taint info object that can be applied during testing. */
+/** Reusable taint object that can be applied during testing. */
 extern lua_Taint luaT_taint;
 
 /**

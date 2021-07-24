@@ -6,23 +6,23 @@
  * Basic State Taint Tests
  */
 
-void test_startup_taint(void) {
+static void test_startup_taint(void) {
   TEST_CHECK(lua_gettaint(LT) == NULL);
   TEST_CHECK(luaL_issecure(LT));
 }
 
-void test_tainted(void) {
+static void test_tainted(void) {
   lua_settaint(LT, &luaT_taint);
   TEST_CHECK(lua_gettaint(LT) == &luaT_taint);
   TEST_CHECK(!luaL_issecure(LT));
 }
 
-void test_forced_taint(void) {
+static void test_forced_taint(void) {
   luaL_forcetaint(LT);
   TEST_CHECK(lua_gettaint(LT) != NULL);
 }
 
-void test_forced_taint_override(void) {
+static void test_forced_taint_override(void) {
   lua_settaint(LT, &luaT_taint);
   luaL_forcetaint(LT);
   TEST_CHECK(lua_gettaint(LT) == &luaT_taint);
@@ -32,7 +32,7 @@ void test_forced_taint_override(void) {
  * State => Value and Object Taint Propagation Tests
  */
 
-void test_push_values_with_taint(void) {
+static void test_push_values_with_taint(void) {
   for (struct LuaValueVector *vec = luaT_value_vectors; vec->name; ++vec) {
     TEST_CASE(vec->name);
     luaT_test_reinit();
@@ -43,7 +43,7 @@ void test_push_values_with_taint(void) {
   }
 }
 
-void test_push_values_without_taint(void) {
+static void test_push_values_without_taint(void) {
   for (struct LuaValueVector *vec = luaT_value_vectors; vec->name; ++vec) {
     TEST_CASE(vec->name);
     luaT_test_reinit();
@@ -53,7 +53,7 @@ void test_push_values_without_taint(void) {
   }
 }
 
-void test_push_objects_with_taint(void) {
+static void test_push_objects_with_taint(void) {
   for (struct LuaValueVector *vec = luaT_object_vectors; vec->name; ++vec) {
     TEST_CASE(vec->name);
     luaT_test_reinit();
@@ -64,7 +64,7 @@ void test_push_objects_with_taint(void) {
   }
 }
 
-void test_push_objects_without_taint(void) {
+static void test_push_objects_without_taint(void) {
   for (struct LuaValueVector *vec = luaT_object_vectors; vec->name; ++vec) {
     TEST_CASE(vec->name);
     luaT_test_reinit();
@@ -74,7 +74,7 @@ void test_push_objects_without_taint(void) {
   }
 }
 
-void test_tainted_table_structures(void) {
+static void test_tainted_table_structures(void) {
   lua_settaint(LT, &luaT_taint);
 
   // Create a color-like table on the stack.
@@ -113,7 +113,7 @@ void test_tainted_table_structures(void) {
  * Value => State Taint Propagation Tests
  */
 
-void test_secure_value_reads(void) {
+static void test_secure_value_reads(void) {
   lua_pushboolean(LT, 1);
   lua_setfield(LT, LUA_GLOBALSINDEX, "SecureGlobal");
 
@@ -128,7 +128,7 @@ void test_secure_value_reads(void) {
  * Script Constant Tests
  */
 
-void test_secure_constants(void) {
+static void test_secure_constants(void) {
   /**
    * This test is a bit of an anomaly in the whole taint handling process
    * and largely dictates why things have been implemented the way that they
@@ -191,7 +191,7 @@ void test_secure_constants(void) {
  * Script Tests
  */
 
-void test_issecurevariable(void) {
+static void test_issecurevariable(void) {
   luaT_loadfixture(LT, luac_issecurevariable);
 }
 
