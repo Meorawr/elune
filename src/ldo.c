@@ -291,7 +291,7 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
     ci = inc_ci(L);  /* now `enter' new function */
     ci->func = func;
     L->base = ci->base = base;
-    luaV_writegcotaint(L, obj2gco(cl));  /* propagate internal closure taint to state */
+    luaV_readgcotaint(L, obj2gco(cl));  /* propagate internal closure taint to state */
     ci->top = L->base + p->maxstacksize;
     lua_assert(ci->top <= L->stack_last);
     L->savedpc = p->code;  /* starting point */
@@ -321,7 +321,7 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
     ci = inc_ci(L);  /* now `enter' new function */
     ci->func = restorestack(L, funcr);
     L->base = ci->base = ci->func + 1;
-    luaV_writegcotaint(L, obj2gco(cl));  /* propagate internal closure taint to state */
+    luaV_readgcotaint(L, obj2gco(cl));  /* propagate internal closure taint to state */
     ci->top = L->top + LUA_MINSTACK;
     lua_assert(ci->top <= L->stack_last);
     ci->nresults = nresults;
