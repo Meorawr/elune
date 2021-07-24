@@ -318,6 +318,9 @@ LUA_API lua_Taint *lua_getobjecttaint (lua_State *L, int idx);
 LUA_API void       lua_setobjecttaint (lua_State *L, int idx, lua_Taint *t);
 LUA_API void       lua_setstacktaint (lua_State *L, int from, int to, lua_Taint *t);
 
+LUA_API void       lua_secureget (lua_State *L, int idx);
+LUA_API int        lua_securecall (lua_State *L, int nargs, int nresults, int errfunc);
+LUA_API int        lua_secureccall (lua_State *L, lua_CFunction func, void *ud);
 
 /* }====================================================================== */
 

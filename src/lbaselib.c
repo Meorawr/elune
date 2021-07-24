@@ -478,34 +478,13 @@ static int luaB_issecurevariable (lua_State *L) {
 }
 
 static int luaB_securecall (lua_State *L) {
-  const lua_Taint *entrytaint;
-  int status;
-  int st;
-
-  entrytaint = lua_gettaint(L);
-
-  /* --- BEGIN TAINT BOUNDARY --- */
-
-  lua_pushvalue(L, 1);                                         /* Copy first parameter to top of stack */
-  if (lua_tostring(L, -1)) lua_gettable(L, LUA_GLOBALSINDEX);  /* Global lookup if given a string/number */
-  lua_replace(L, 1);                                           /* Move and replace function at bottom of stack */
-  luaL_pusherrorhandler(L);                                    /* Push error handler to top of stack */
-  lua_insert(L, 1);                                            /* Move and insert error handler at bottom of stack */
-  status = lua_pcall(L, lua_gettop(L) - 2, LUA_MULTRET, 1);    /* Invoke function */
-  if (status != 0) lua_pop(L, 1);                              /* On failure, discard error message */
-  lua_remove(L, 1);                                            /* Remove error handler from bottom of stack */
-
-  /* --- END TAINT BOUNDARY --- */
-
-  lua_settaint(L, (lua_Taint *) entrytaint);
-
-  /* Values returned to a secure caller should be cleared of taint. */
-
-  if (!entrytaint) {
-    for (st = 1; st <= lua_gettop(L); ++st) {
-      lua_setvaluetaint(L, st, NULL);
-    }
-  }
+  lua_pushvalue(L, 1);
+  if (lua_tostring(L, -1)) lua_secureget(L, LUA_GLOBALSINDEX);
+  lua_replace(L, 1);
+  luaL_pusherrorhandler(L);
+  lua_insert(L, 1);
+  lua_securecall(L, lua_gettop(L) - 2, LUA_MULTRET, 1);
+  lua_remove(L, 1);
 
   return lua_gettop(L);
 }

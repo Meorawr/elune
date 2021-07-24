@@ -1215,4 +1215,103 @@ LUA_API void lua_setstacktaint (lua_State *L, int from, int to, lua_Taint *t) {
   lua_unlock(L);
 }
 
+LUA_API void lua_secureget (lua_State *L, int idx) {
+  StkId table;
+  lua_Taint* entrytaint;
+
+  lua_lock(L);
+  table = index2adr(L, idx);
+  api_checkvalidindex(L, table);
+
+  entrytaint = L->taint;
+  /* --- BEGIN TAINT BARRIER --- */
+  luaV_gettable(L, table, L->top - 1, L->top - 1);
+  /* --- END TAINT BARRIER --- */
+  L->taint = entrytaint;
+
+  if (!entrytaint) {
+    (L->top - 1)->taint = NULL;  /* clear taint if initially secure */
+  }
+
+  lua_unlock(L);
+}
+
+LUA_API int lua_securecall (lua_State *L, int nargs, int nresults, int errfunc) {
+  const lua_Taint *entrytaint;  /* taint before entering taint barrier */
+  ptrdiff_t errpos;             /* relative position of errfunc from stack base */
+  ptrdiff_t retpos;             /* relative position of func _or_ first return */
+  struct CallS c;               /* function call data */
+  int status;                   /* function call status result */
+
+  lua_lock(L);
+  api_checknelems(L, nargs + 1);
+  checkresults(L, nargs, nresults);
+
+  {
+    StkId o = index2adr(L, errfunc);
+    api_checkvalidindex(L, o);
+    errpos = savestack(L, o);
+  }
+
+  c.func = L->top - (nargs + 1);
+  c.nresults = nresults;
+  retpos = savestack(L, c.func);
+
+  entrytaint = L->taint;
+  /* --- BEGIN TAINT BARRIER --- */
+  status = luaD_pcall(L, f_call, &c, savestack(L, c.func), errpos);
+  adjustresults(L, nresults);
+  /* --- END TAINT BARRIER --- */
+  L->taint = cast(lua_Taint *, entrytaint);
+
+  /**
+   * As an error handling function is required any error returns from
+   * luaD_pcall can be safely discarded.
+   *
+   * If the function actually succeeded, all values it returned need to have
+   * their taint cleared if the caller was secure.
+   */
+
+  if (status != 0) {
+    L->top--;
+  } else if (!entrytaint && nresults != 0) {
+    StkId ret = restorestack(L, retpos);
+    StkId lastret = L->top - 1;
+
+    while (ret <= lastret) {
+      (ret++)->taint = NULL;
+    }
+  }
+
+  lua_unlock(L);
+  return status;
+}
+
+LUA_API int lua_secureccall (lua_State *L, lua_CFunction func, void *ud) {
+  const lua_Taint *entrytaint;  /* taint before entering taint barrier */
+  struct CCallS c;              /* function call data */
+  int status;                   /* function call status result */
+
+  lua_lock(L);
+  c.func = func;
+  c.ud = ud;
+  entrytaint = L->taint;
+  /* --- BEGIN TAINT BARRIER --- */
+  status = luaD_pcall(L, f_Ccall, &c, savestack(L, L->top), 0);
+  /* --- END TAINT BARRIER --- */
+  L->taint = cast(lua_Taint *, entrytaint);
+
+  /**
+   * Unlike lua_securecall the error information is kept on the stack as we
+   * don't take an error handling function, so it needs to have taint cleared.
+   */
+
+  if (status != 0 && !entrytaint) {
+    (L->top - 1)->taint = NULL;
+  }
+
+  lua_unlock(L);
+  return status;
+}
+
 /* }====================================================================== */
