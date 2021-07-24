@@ -265,7 +265,6 @@ static StkId tryfuncTM (lua_State *L, StkId func) {
 int luaD_precall (lua_State *L, StkId func, int nresults) {
   LClosure *cl;
   ptrdiff_t funcr;
-  int nargs;
   if (!ttisfunction(func)) /* `func' is not a function? */
     func = tryfuncTM(L, func);  /* check the `function' tag method */
   funcr = savestack(L, func);
@@ -279,12 +278,11 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
     func = restorestack(L, funcr);
     if (!p->is_vararg) {  /* no varargs? */
       base = func + 1;
-      nargs = p->numparams;
-      if (L->top > base + nargs)
-        L->top = base + nargs;
+      if (L->top > base + p->numparams)
+        L->top = base + p->numparams;
     }
     else {  /* vararg function */
-      nargs = cast_int(L->top - func) - 1;
+      int nargs = cast_int(L->top - func) - 1;
       base = adjust_varargs(L, p, nargs);
       func = restorestack(L, funcr);  /* previous call may change the stack */
     }
@@ -301,7 +299,7 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
       setnilvalue(st);
       luaV_writetaint(L, st);
     }
-    for (st = ci->base; st < ci->base + nargs; st++) {  /* propagate taint to stack */
+    for (st = ci->base; st < L->top; st++) {  /* propagate taint to stack */
       luaV_writetaint(L, st);
     }
     L->top = ci->top;
@@ -317,7 +315,6 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
     StkId st;
     int n;
     luaD_checkstack(L, LUA_MINSTACK);  /* ensure minimum stack size */
-    nargs = cast_int(L->top - func) - 1;
     ci = inc_ci(L);  /* now `enter' new function */
     ci->func = restorestack(L, funcr);
     L->base = ci->base = ci->func + 1;
@@ -325,7 +322,7 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
     ci->top = L->top + LUA_MINSTACK;
     lua_assert(ci->top <= L->stack_last);
     ci->nresults = nresults;
-    for (st = ci->base; st < ci->base + nargs; st++) {  /* propagate taint to stack */
+    for (st = ci->base; st < L->top; st++) {  /* propagate taint to stack */
       luaV_writetaint(L, st);
     }
     if (L->hookmask & LUA_MASKCALL)
