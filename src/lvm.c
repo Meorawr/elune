@@ -472,6 +472,7 @@ void luaV_execute (lua_State *L, int nexeccalls) {
         sethvalue(L, &g, cl->env);
         lua_assert(ttisstring(rb));
         Protect(luaV_gettable(L, &g, rb, ra));
+        luaV_readtaint(L, &g);
         luaV_taint(L, ra);
         continue;
       }
