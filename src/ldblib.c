@@ -515,9 +515,11 @@ static int db_setlocaltaint (lua_State *L) {
     return luaL_argerror(L, arg + 2, "index out of range");
   }
 
-  const char *name = luaL_optstring(L, arg + 3, NULL);
-  lua_setvaluetaint(L, -1, findtaint(L, name));
-  lua_setlocal(L1, &ar, arg + 2);
+  lua_Taint *taint = findtaint(L, luaL_optstring(L, arg + 3, NULL));
+
+  lua_remove(L, arg + 3);
+  lua_setvaluetaint(L, -1, taint);
+  lua_setlocal(L1, &ar, luaL_checkint(L, arg + 2));
 
   return 0;
 }
@@ -534,7 +536,6 @@ static int db_setthreadtaint (lua_State *L) {
 static int db_setupvaluetaint (lua_State *L) {
   luaL_checktype(L, 1, LUA_TFUNCTION);
   int n = luaL_checkint(L, 2);
-  const char *name = luaL_optstring(L, 3, NULL);
 
   if (lua_iscfunction(L, 1)) {
     return luaL_argerror(L, 1, "cannot modify upvalues of C functions");
@@ -542,7 +543,10 @@ static int db_setupvaluetaint (lua_State *L) {
     return luaL_argerror(L, 2, "index out of range");
   }
 
-  lua_setvaluetaint(L, -1, findtaint(L, name));
+  lua_Taint *taint = findtaint(L, luaL_optstring(L, 3, NULL));
+
+  lua_remove(L, 3);
+  lua_setvaluetaint(L, -1, taint);
   lua_setupvalue(L, 1, n);
 
   return 0;

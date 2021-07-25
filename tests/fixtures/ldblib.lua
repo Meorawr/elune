@@ -177,7 +177,7 @@ TestUpvalueFunction();
 ------------------------------------------------------------------------------
 
 local function TestLocalFunction()
-  local TestLocal = 100;
+  local _ = 100;
   assert(debug.issecurelocal(1, 1), "expected 'TestLocal' to be initially secure");
   debug.setlocaltaint(1, 1, "Bad");
   assert(not debug.issecurelocal(1, 1), "expected 'TestLocal' to be become insecure");
