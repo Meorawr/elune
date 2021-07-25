@@ -199,8 +199,6 @@ static int db_setupvalue (lua_State *L) {
   return auxupvalue(L, 0);
 }
 
-
-
 static const char KEY_HOOK = 'h';
 
 
@@ -430,6 +428,53 @@ static int db_gettaintsource (lua_State *L) {
   return 1;
 }
 
+static int db_issecurelocal (lua_State *L) {
+  int arg;
+  lua_State *L1 = getthread(L, &arg);
+  lua_Debug ar;
+
+  if (!lua_getstack(L1, luaL_checkint(L, arg + 1), &ar)) {
+    return luaL_argerror(L, arg + 1, "level out of range");
+  } else if (lua_getlocal(L1, &ar, luaL_checkint(L, arg + 2)) == NULL) {
+    return luaL_argerror(L, arg + 2, "index out of range");
+  }
+
+  const lua_Taint *taint = lua_getvaluetaint(L, -1);
+
+  if (taint) {
+    lua_pushboolean(L, 0);
+    lua_pushstring(L, taint->source);
+  } else {
+    lua_pushboolean(L, 1);
+    lua_pushnil(L);
+  }
+
+  return 2;
+}
+
+static int db_issecureupvalue (lua_State *L) {
+  luaL_checktype(L, 1, LUA_TFUNCTION);
+  int n = luaL_checkint(L, 2);
+
+  if (lua_iscfunction(L, 1)) {
+    return luaL_argerror(L, 1, "cannot query upvalues of C functions");
+  } else if (lua_getupvalue(L, 1, n) == NULL) {
+    return luaL_argerror(L, 2, "index out of range");
+  }
+
+  const lua_Taint *taint = lua_getvaluetaint(L, -1);
+
+  if (taint) {
+    lua_pushboolean(L, 0);
+    lua_pushstring(L, taint->source);
+  } else {
+    lua_pushboolean(L, 1);
+    lua_pushnil(L);
+  }
+
+  return 2;
+}
+
 static const luaL_Reg dblib[] = {
   {"debug", db_debug},
   {"forcesecure", db_forcesecure},
@@ -442,6 +487,8 @@ static const luaL_Reg dblib[] = {
   {"gettaintsource", db_gettaintsource},
   {"gettrapmask", db_gettrapmask},
   {"getupvalue", db_getupvalue},
+  {"issecurelocal", db_issecurelocal},
+  {"issecureupvalue", db_issecureupvalue},
   {"setfenv", db_setfenv},
   {"sethook", db_sethook},
   {"setlocal", db_setlocal},
