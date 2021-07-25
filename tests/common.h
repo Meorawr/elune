@@ -70,6 +70,9 @@ extern const luaT_Fixture luac_mixin;
 extern const luaT_Fixture luac_rectanglemixin;
 extern const luaT_Fixture luac_issecurevariable;
 extern const luaT_Fixture luac_securecallaux;
+extern const luaT_Fixture luac_lvmutil;
+extern const luaT_Fixture luac_lvmglobals;
+extern const luaT_Fixture luac_lvmupvalues;
 
 /**
  * Test Initialization/Teardown
