@@ -93,6 +93,7 @@ generate_test_fixture(NAME "luac_rectanglemixin" SOURCE "fixtures/rectanglemixin
 generate_test_fixture(NAME "luac_issecurevariable" SOURCE "fixtures/issecurevariable.lua")
 generate_test_fixture(NAME "luac_securecallaux" SOURCE "fixtures/securecallaux.lua")
 generate_test_fixture(NAME "luac_lvmutil" SOURCE "fixtures/lvmutil.lua")
+generate_test_fixture(NAME "luac_lvmarith" SOURCE "fixtures/lvmarith.lua")
 generate_test_fixture(NAME "luac_lvmfields" SOURCE "fixtures/lvmfields.lua")
 generate_test_fixture(NAME "luac_lvmglobals" SOURCE "fixtures/lvmglobals.lua")
 generate_test_fixture(NAME "luac_lvmlocals" SOURCE "fixtures/lvmlocals.lua")
