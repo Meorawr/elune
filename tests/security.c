@@ -381,6 +381,11 @@ static void test_securecall_forceinsecureerror(void) {
  * VM Script Tests
  */
 
+static void test_vm_fields(void) {
+  luaT_loadfixture(LT, luac_lvmutil);
+  luaT_loadfixture(LT, luac_lvmfields);
+}
+
 static void test_vm_globals(void) {
   luaT_loadfixture(LT, luac_lvmutil);
   luaT_loadfixture(LT, luac_lvmglobals);
@@ -422,6 +427,7 @@ TEST_LIST = {
   { "lua_securecall: secure error handling", &test_securecall_secureerror },
   { "lua_securecall: insecure error handling", &test_securecall_insecureerror },
   { "lua_securecall: forceinsecure error handling", &test_securecall_forceinsecureerror },
+  { "vm: field taint", &test_vm_fields },
   { "vm: global variable taint", &test_vm_globals },
   { "vm: local value taint", &test_vm_locals },
   { "vm: upvalue taint", &test_vm_upvalues },
