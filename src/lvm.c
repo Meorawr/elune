@@ -36,7 +36,9 @@ const TValue *luaV_tonumber (const TValue *obj, TValue *n) {
   lua_Number num;
   if (ttisnumber(obj)) return obj;
   if (ttisstring(obj) && luaO_str2d(svalue(obj), &num)) {
+    lua_Taint *taint = n->taint;
     setnvalue(n, num);
+    n->taint = taint;
     return n;
   }
   else
@@ -51,7 +53,9 @@ int luaV_tostring (lua_State *L, StkId obj) {
     char s[LUAI_MAXNUMBER2STR];
     lua_Number n = nvalue(obj);
     lua_number2str(s, n);
+    lua_Taint *taint = obj->taint;
     setsvalue2s(L, obj, luaS_new(L, s));
+    if (!obj->taint) obj->taint = taint;
     return 1;
   }
 }
