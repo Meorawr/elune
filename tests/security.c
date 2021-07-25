@@ -200,7 +200,7 @@ static void test_issecurevariable(void) {
  */
 
 static void test_securecall_initiallysecure(void) {
-  luaT_loadfixture(LT, luac_securecallutil);
+  luaT_loadfixture(LT, luac_securecallaux);
 
   lua_pushliteral(LT, "securecall_identity");
   luaT_pushstring(LT);
@@ -218,7 +218,7 @@ static void test_securecall_initiallysecure(void) {
 }
 
 static void test_securecall_initiallyinsecure(void) {
-  luaT_loadfixture(LT, luac_securecallutil);
+  luaT_loadfixture(LT, luac_securecallaux);
 
   lua_settaint(LT, &luaT_taint);            /* Taint execution */
   lua_pushliteral(LT, "securecall_identity");
@@ -238,7 +238,7 @@ static void test_securecall_initiallyinsecure(void) {
 
 static void test_securecall_insecurefunction(void) {
   lua_settaint(LT, &luaT_taint);            /* Load fixture insecurely. */
-  luaT_loadfixture(LT, luac_securecallutil);
+  luaT_loadfixture(LT, luac_securecallaux);
   lua_settaint(LT, NULL);
 
   TEST_CHECK(luaL_issecure(LT));            /* Should be secure at this point. */
@@ -259,7 +259,7 @@ static void test_securecall_insecurefunction(void) {
 }
 
 static void test_securecall_forceinsecure(void) {
-  luaT_loadfixture(LT, luac_securecallutil);
+  luaT_loadfixture(LT, luac_securecallaux);
 
   lua_pushliteral(LT, "securecall_forceinsecure");
   luaT_pushstring(LT);
@@ -277,7 +277,7 @@ static void test_securecall_forceinsecure(void) {
 }
 
 static void test_securecall_directsecurefunction(void) {
-  luaT_loadfixture(LT, luac_securecallutil);
+  luaT_loadfixture(LT, luac_securecallaux);
 
   TEST_CHECK(luaL_issecure(LT));            /* Should be secure at this point. */
 
@@ -302,7 +302,7 @@ static void test_securecall_directsecurefunction(void) {
 
 static void test_securecall_directinsecurefunction(void) {
   lua_settaint(LT, &luaT_taint);            /* Load fixture insecurely. */
-  luaT_loadfixture(LT, luac_securecallutil);
+  luaT_loadfixture(LT, luac_securecallaux);
 
   lua_pushvalue(LT, LUA_GLOBALSINDEX);
   lua_pushliteral(LT, "securecall_identity");
@@ -334,7 +334,7 @@ static int secureerrorhandler(lua_State *L) {
 }
 
 static void test_securecall_secureerror(void) {
-  luaT_loadfixture(LT, luac_securecallutil);
+  luaT_loadfixture(LT, luac_securecallaux);
 
   lua_pushcclosure(LT, secureerrorhandler, 0);    /* See securerrrorhandler for additional checks. */
   lua_pushliteral(LT, "securecall_error");
@@ -353,7 +353,7 @@ static int insecureerrorhandler(lua_State *L) {
 }
 
 static void test_securecall_insecureerror(void) {
-  luaT_loadfixture(LT, luac_securecallutil);
+  luaT_loadfixture(LT, luac_securecallaux);
 
   lua_settaint(LT, &luaT_taint);
   lua_pushcclosure(LT, insecureerrorhandler, 0);  /* See insecurerrorhandler for additional checks. */
@@ -366,7 +366,7 @@ static void test_securecall_insecureerror(void) {
 }
 
 static void test_securecall_forceinsecureerror(void) {
-  luaT_loadfixture(LT, luac_securecallutil);
+  luaT_loadfixture(LT, luac_securecallaux);
 
   lua_pushcclosure(LT, insecureerrorhandler, 0);  /* See insecurerrorhandler for additional checks. */
   lua_pushliteral(LT, "securecall_insecureerror");
