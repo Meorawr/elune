@@ -301,15 +301,16 @@ static void test_securecall_directsecurefunction(void) {
 }
 
 static void test_securecall_directinsecurefunction(void) {
+  lua_settaint(LT, &luaT_taint);            /* Load fixture insecurely. */
   luaT_loadfixture(LT, luac_securecallutil);
-
-  TEST_CHECK(luaL_issecure(LT));            /* Should be secure at this point. */
 
   lua_pushvalue(LT, LUA_GLOBALSINDEX);
   lua_pushliteral(LT, "securecall_identity");
   lua_gettable(LT, -2);
-  lua_setvaluetaint(LT, -1, &luaT_taint);   /* Taint read function value. */
   lua_remove(LT, 1);                        /* Leave only the function on the stack. */
+  lua_settaint(LT, NULL);
+  TEST_CHECK(luaL_issecure(LT));            /* Should be secure at this point. */
+  TEST_CHECK(!luaL_issecurevalue(LT, -1));  /* Function value should be insecure. */
 
   luaT_pushstring(LT);
   luaT_pushnumber(LT);
