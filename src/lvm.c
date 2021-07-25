@@ -443,7 +443,7 @@ void luaV_execute (lua_State *L, int nexeccalls) {
       }
       case OP_LOADK: {
         setobj2s(L, ra, KBx(i));
-        luaV_writetaint(L, ra);
+        luaV_taint(L, ra);
         continue;
       }
       case OP_LOADBOOL: {
