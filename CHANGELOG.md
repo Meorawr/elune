@@ -6,6 +6,13 @@
   - When this flag is specified, any modules loaded via `-l` will still be loaded securely.
 - Added a `debug.gettaintsource([thread])` function which returns the string identifier of any taint source current for the supplied thread, or the current if none is supplied.
   - This replaces the `"s"` field usable with `debug.getinfo`, which has now been removed.
+- Added a `debug.issecurelocal([thread,] level, local)` function that works similarly to `issecurevariable`.
+- Added a `debug.issecureupvalue(func, up)` function that works similarly to `issecurevariable`.
+
+### Changed
+- Reworked taint propagation to work at a C API/VM opcode level instead of object macro level.
+- Fixed various initialization issues with taint that could cause some values to incorrectly be considered tainted upon creation.
+- Build process now requires CMake 3.20 and makes use of CMake presets for common build targets. See README for more information.
 
 ### Removed
 - Removed the taint field on the `lua_Debug` to fix potential binary incompatibilities.
