@@ -202,6 +202,7 @@ static inline bool luaL_issecurefield (lua_State *L, int idx, const char *k) {
   return lua_getfieldtaint(L, idx, k) == NULL;
 }
 
+LUALIB_API lua_Taint *luaL_findtaint (lua_State *L, const char *name);
 LUALIB_API void       luaL_forcetaintthread (lua_State *L);
 LUALIB_API void       luaL_forcetaintvalue (lua_State *L, int idx);
 LUALIB_API void       luaL_forcetaintobject (lua_State *L, int idx);

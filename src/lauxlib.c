@@ -664,6 +664,28 @@ LUALIB_API lua_State *luaL_newstate (void) {
 
 static lua_Taint luaO_forcedtaint = {"*** TaintForced ***", NULL};
 
+LUALIB_API lua_Taint *luaL_findtaint (lua_State *L, const char *name) {
+  lua_Taint *taint;
+
+  luaL_findtable(L, LUA_REGISTRYINDEX, "_TAINTOBJS", 16);
+  lua_pushstring(L, name);
+  lua_gettable(L, -3);
+
+  if (!lua_isuserdata(L, -1)) {
+    lua_pushstring(L, name);
+    taint = (lua_Taint *) lua_newuserdata(L, sizeof(lua_Taint));
+    taint->source = name;
+    taint->data = NULL;
+
+    lua_settable(L, -4);
+  } else {
+    taint = lua_touserdata(L, -1);
+  }
+
+  lua_pop(L, 2);
+  return taint;
+}
+
 LUALIB_API void luaL_forcetaintthread (lua_State *L) {
   if (!lua_getthreadtaint(L)) {
     lua_setthreadtaint(L, &luaO_forcedtaint);
