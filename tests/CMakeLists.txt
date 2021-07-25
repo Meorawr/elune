@@ -94,4 +94,5 @@ generate_test_fixture(NAME "luac_issecurevariable" SOURCE "fixtures/issecurevari
 generate_test_fixture(NAME "luac_securecallaux" SOURCE "fixtures/securecallaux.lua")
 generate_test_fixture(NAME "luac_lvmutil" SOURCE "fixtures/lvmutil.lua")
 generate_test_fixture(NAME "luac_lvmglobals" SOURCE "fixtures/lvmglobals.lua")
+generate_test_fixture(NAME "luac_lvmlocals" SOURCE "fixtures/lvmlocals.lua")
 generate_test_fixture(NAME "luac_lvmupvalues" SOURCE "fixtures/lvmupvalues.lua")
