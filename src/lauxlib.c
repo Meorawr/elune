@@ -669,7 +669,7 @@ LUALIB_API lua_Taint *luaL_findtaint (lua_State *L, const char *name) {
 
   luaL_findtable(L, LUA_REGISTRYINDEX, "_TAINTOBJS", 16);
   lua_pushstring(L, name);
-  lua_gettable(L, -3);
+  lua_gettable(L, -2);
 
   if (!lua_isuserdata(L, -1)) {
     lua_pushstring(L, name);
