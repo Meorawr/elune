@@ -136,14 +136,14 @@ static int getargs (lua_State *L, char **argv, int n) {
 
 
 static int dofile (lua_State *L, const char *name) {
-  lua_settaint(L, runtainted ? &taint : NULL);
+  lua_setthreadtaint(L, runtainted ? &taint : NULL);
   int status = luaL_loadfile(L, name) || docall(L, 0, 1);
   return report(L, status);
 }
 
 
 static int dostring (lua_State *L, const char *s, const char *name) {
-  lua_settaint(L, runtainted ? &taint : NULL);
+  lua_setthreadtaint(L, runtainted ? &taint : NULL);
   int status = luaL_loadbuffer(L, s, strlen(s), name) || docall(L, 0, 1);
   return report(L, status);
 }
@@ -250,7 +250,7 @@ static int handle_script (lua_State *L, char **argv, int n) {
   fname = argv[n];
   if (strcmp(fname, "-") == 0 && strcmp(argv[n-1], "--") != 0)
     fname = NULL;  /* stdin */
-  lua_settaint(L, runtainted ? &taint : NULL);
+  lua_setthreadtaint(L, runtainted ? &taint : NULL);
   status = luaL_loadfile(L, fname);
   lua_insert(L, -(narg+1));
   if (status == 0)

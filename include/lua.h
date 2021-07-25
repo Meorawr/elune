@@ -308,12 +308,14 @@ typedef struct lua_Taint {
   void *data;          /* custom userdata field */
 } lua_Taint;
 
-LUA_API lua_Taint *lua_gettaint (lua_State *L);
-LUA_API void       lua_settaint (lua_State *L, lua_Taint *t);
+LUA_API lua_Taint *lua_getthreadtaint (lua_State *L);
+LUA_API void       lua_setthreadtaint (lua_State *L, lua_Taint *t);
 LUA_API lua_Taint *lua_getvaluetaint (lua_State *L, int idx);
 LUA_API void       lua_setvaluetaint (lua_State *L, int idx, lua_Taint *t);
 LUA_API lua_Taint *lua_gettabletaint (lua_State *L, int idx);
+LUA_API void       lua_settabletaint (lua_State *L, int idx, lua_Taint *t);
 LUA_API lua_Taint *lua_getfieldtaint (lua_State *L, int idx, const char *k);
+LUA_API void       lua_setfieldtaint (lua_State *L, int idx, const char *k, lua_Taint *t);
 LUA_API lua_Taint *lua_getobjecttaint (lua_State *L, int idx);
 LUA_API void       lua_setobjecttaint (lua_State *L, int idx, lua_Taint *t);
 LUA_API void       lua_setstacktaint (lua_State *L, int from, int to, lua_Taint *t);

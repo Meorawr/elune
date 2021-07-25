@@ -1103,7 +1103,7 @@ LUA_API const char *lua_setupvalue (lua_State *L, int funcindex, int n) {
 ** =======================================================================
 */
 
-LUA_API lua_Taint *lua_gettaint (lua_State *L) {
+LUA_API lua_Taint *lua_getthreadtaint (lua_State *L) {
   lua_Taint *t;
 
   lua_lock(L);
@@ -1113,7 +1113,7 @@ LUA_API lua_Taint *lua_gettaint (lua_State *L) {
   return t;
 }
 
-LUA_API void lua_settaint (lua_State *L, lua_Taint *t) {
+LUA_API void lua_setthreadtaint (lua_State *L, lua_Taint *t) {
   lua_lock(L);
   L->taint = t;
   lua_unlock(L);
@@ -1142,27 +1142,6 @@ LUA_API void lua_setvaluetaint (lua_State *L, int idx, lua_Taint *t) {
   lua_unlock(L);
 }
 
-LUA_API lua_Taint *lua_getobjecttaint (lua_State *L, int idx) {
-  lua_Taint *t;
-  GCObject *gco;
-
-  lua_lock(L);
-  gco = gcvalue(index2adr(L, idx));
-  t = gco->gch.taint;
-  lua_unlock(L);
-
-  return t;
-}
-
-LUA_API void lua_setobjecttaint (lua_State *L, int idx, lua_Taint *t) {
-  GCObject *gco;
-
-  lua_lock(L);
-  gco = gcvalue(index2adr(L, idx));
-  gco->gch.taint = t;
-  lua_unlock(L);
-}
-
 LUA_API lua_Taint *lua_gettabletaint (lua_State *L, int idx) {
   StkId table;
   TValue value;
@@ -1170,12 +1149,25 @@ LUA_API lua_Taint *lua_gettabletaint (lua_State *L, int idx) {
 
   lua_lock(L);
   table = index2adr(L, idx);
-  api_checkvalidindex(L, table);
-  luaV_gettable(L, table, L->top - 1, &value);
+  api_check(L, ttistable(table));
+  luaV_taintbarrier(L, luaV_gettable(L, table, L->top - 1, &value));
   taint = value.taint;
   lua_unlock(L);
 
   return taint;
+}
+
+LUA_API void lua_settabletaint (lua_State *L, int idx, lua_Taint *t) {
+  StkId table;
+  TValue value;
+
+  lua_lock(L);
+  table = index2adr(L, idx);
+  api_check(L, ttistable(table));
+  luaV_taintbarrier(L, luaV_gettable(L, table, L->top - 1, &value));
+  value.taint = t;
+  luaV_taintbarrier(L, luaV_settable(L, table, L->top - 1, &value));
+  lua_unlock(L);
 }
 
 LUA_API lua_Taint *lua_getfieldtaint (lua_State *L, int idx, const char *k) {
@@ -1186,15 +1178,52 @@ LUA_API lua_Taint *lua_getfieldtaint (lua_State *L, int idx, const char *k) {
 
   lua_lock(L);
   table = index2adr(L, idx);
-  api_checkvalidindex(L, table);
+  api_check(L, ttistable(table));
   setsvalue(L, &key, luaS_new(L, k));
-  luaV_gettable(L, table, &key, &value);
+  luaV_taintbarrier(L, luaV_gettable(L, table, &key, &value));
   taint = value.taint;
   lua_unlock(L);
 
   return taint;
 }
 
+LUA_API void lua_setfieldtaint (lua_State *L, int idx, const char *k, lua_Taint *t) {
+  StkId table;
+  TValue key;
+  TValue value;
+
+  lua_lock(L);
+  table = index2adr(L, idx);
+  api_check(L, ttistable(table));
+  setsvalue(L, &key, luaS_new(L, k));
+  luaV_taintbarrier(L, luaV_gettable(L, table, &key, &value));
+  value.taint = t;
+  luaV_taintbarrier(L, luaV_settable(L, table, &key, &value));
+  lua_unlock(L);
+}
+
+LUA_API lua_Taint *lua_getobjecttaint (lua_State *L, int idx) {
+  lua_Taint *t;
+  StkId v;
+
+  lua_lock(L);
+  v = index2adr(L, idx);
+  api_check(L, iscollectable(v));
+  t = gcvalue(v)->gch.taint;
+  lua_unlock(L);
+
+  return t;
+}
+
+LUA_API void lua_setobjecttaint (lua_State *L, int idx, lua_Taint *t) {
+  StkId v;
+
+  lua_lock(L);
+  v = index2adr(L, idx);
+  api_check(L, iscollectable(v));
+  gcvalue(v)->gch.taint = t;
+  lua_unlock(L);
+}
 
 LUA_API void lua_setstacktaint (lua_State *L, int from, int to, lua_Taint *t) {
   lua_lock(L);

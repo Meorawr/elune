@@ -445,13 +445,13 @@ static int luaB_newproxy (lua_State *L) {
 
 static int luaB_forceinsecure (lua_State *L) {
   lua_settop(L, 0);
-  luaL_forcetaint(L);
+  luaL_forcetaintthread(L);
   return 0;
 }
 
 static int luaB_issecure (lua_State *L) {
   lua_settop(L, 0);
-  lua_pushboolean(L, luaL_issecure(L));
+  lua_pushboolean(L, luaL_issecurethread(L));
   return 1;
 }
 
@@ -523,7 +523,7 @@ static int securehook (lua_State *L) {
   const int argc = lua_gettop(L);
   int argi;
   int retc;
-  const lua_Taint *entry_taint = lua_gettaint(L);
+  const lua_Taint *entry_taint = lua_getthreadtaint(L);
   const lua_Taint *posthook_taint = (const lua_Taint *) lua_touserdata(L, TAINT_INDEX);
   int status;
 
@@ -551,8 +551,8 @@ static int securehook (lua_State *L) {
    * is invoked by insecure code.
    */
 
-  if ((entry_taint = lua_gettaint(L)) == NULL) {
-    lua_settaint(L, (lua_Taint *) posthook_taint);
+  if ((entry_taint = lua_getthreadtaint(L)) == NULL) {
+    lua_setthreadtaint(L, (lua_Taint *) posthook_taint);
   }
 
   /* --- BEGIN TAINTED EXECUTION --- */
@@ -577,7 +577,7 @@ static int securehook (lua_State *L) {
 
   /* --- END TAINTED EXECUTION --- */
 
-  lua_settaint(L, (lua_Taint *) entry_taint);
+  lua_setthreadtaint(L, (lua_Taint *) entry_taint);
   return retc;
 }
 
@@ -625,8 +625,8 @@ static int luaB_hooksecurefunc (lua_State *L) {
    * shouldn't inherit the taint of our own caller.
    */
 
-  entry_taint = lua_gettaint(L);
-  lua_settaint(L, NULL);
+  entry_taint = lua_getthreadtaint(L);
+  lua_setthreadtaint(L, NULL);
   lua_setstacktaint(L, 1, -1, NULL);
 
   /* --- BEGIN SECURE EXECUTION --- */
@@ -639,7 +639,7 @@ static int luaB_hooksecurefunc (lua_State *L) {
 
   /* --- END SECURE EXECUTION --- */
 
-  lua_settaint(L, (lua_Taint *) entry_taint);
+  lua_setthreadtaint(L, (lua_Taint *) entry_taint);
   return 0;
 }
 

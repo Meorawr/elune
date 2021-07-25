@@ -7,25 +7,25 @@
  */
 
 static void test_startup_taint(void) {
-  TEST_CHECK(lua_gettaint(LT) == NULL);
-  TEST_CHECK(luaL_issecure(LT));
+  TEST_CHECK(lua_getthreadtaint(LT) == NULL);
+  TEST_CHECK(luaL_issecurethread(LT));
 }
 
 static void test_tainted(void) {
-  lua_settaint(LT, &luaT_taint);
-  TEST_CHECK(lua_gettaint(LT) == &luaT_taint);
-  TEST_CHECK(!luaL_issecure(LT));
+  lua_setthreadtaint(LT, &luaT_taint);
+  TEST_CHECK(lua_getthreadtaint(LT) == &luaT_taint);
+  TEST_CHECK(!luaL_issecurethread(LT));
 }
 
 static void test_forced_taint(void) {
-  luaL_forcetaint(LT);
-  TEST_CHECK(lua_gettaint(LT) != NULL);
+  luaL_forcetaintthread(LT);
+  TEST_CHECK(lua_getthreadtaint(LT) != NULL);
 }
 
 static void test_forced_taint_override(void) {
-  lua_settaint(LT, &luaT_taint);
-  luaL_forcetaint(LT);
-  TEST_CHECK(lua_gettaint(LT) == &luaT_taint);
+  lua_setthreadtaint(LT, &luaT_taint);
+  luaL_forcetaintthread(LT);
+  TEST_CHECK(lua_getthreadtaint(LT) == &luaT_taint);
 }
 
 /**
@@ -36,7 +36,7 @@ static void test_push_values_with_taint(void) {
   for (struct LuaValueVector *vec = luaT_value_vectors; vec->name; ++vec) {
     TEST_CASE(vec->name);
     luaT_test_reinit();
-    lua_settaint(LT, &luaT_taint);
+    lua_setthreadtaint(LT, &luaT_taint);
     vec->func(LT);
     TEST_CHECK(lua_getvaluetaint(LT, 1) != NULL);
     TEST_CHECK(!luaL_issecurevalue(LT, 1));
@@ -57,7 +57,7 @@ static void test_push_objects_with_taint(void) {
   for (struct LuaValueVector *vec = luaT_object_vectors; vec->name; ++vec) {
     TEST_CASE(vec->name);
     luaT_test_reinit();
-    lua_settaint(LT, &luaT_taint);
+    lua_setthreadtaint(LT, &luaT_taint);
     vec->func(LT);
     TEST_CHECK(lua_getobjecttaint(LT, 1) != NULL);
     TEST_CHECK(!luaL_issecureobject(LT, 1));
@@ -75,7 +75,7 @@ static void test_push_objects_without_taint(void) {
 }
 
 static void test_tainted_table_structures(void) {
-  lua_settaint(LT, &luaT_taint);
+  lua_setthreadtaint(LT, &luaT_taint);
 
   // Create a color-like table on the stack.
   lua_createtable(LT, 0, 3);
@@ -90,21 +90,21 @@ static void test_tainted_table_structures(void) {
   // C_ClassColor.GetClassColor ingame which returns a table with tainted
   // keys.
 
-  lua_settaint(LT, NULL);
+  lua_setthreadtaint(LT, NULL);
   lua_getfield(LT, 1, "r");
-  TEST_CHECK(!luaL_issecure(LT));
+  TEST_CHECK(!luaL_issecurethread(LT));
   TEST_CHECK(!luaL_issecurevalue(LT, -1));
   lua_pop(LT, 1);
 
-  lua_settaint(LT, NULL);
+  lua_setthreadtaint(LT, NULL);
   lua_getfield(LT, 1, "g");
-  TEST_CHECK(!luaL_issecure(LT));
+  TEST_CHECK(!luaL_issecurethread(LT));
   TEST_CHECK(!luaL_issecurevalue(LT, -1));
   lua_pop(LT, 1);
 
-  lua_settaint(LT, NULL);
+  lua_setthreadtaint(LT, NULL);
   lua_getfield(LT, 1, "b");
-  TEST_CHECK(!luaL_issecure(LT));
+  TEST_CHECK(!luaL_issecurethread(LT));
   TEST_CHECK(!luaL_issecurevalue(LT, -1));
   lua_pop(LT, 1);
 }
@@ -117,10 +117,10 @@ static void test_secure_value_reads(void) {
   lua_pushboolean(LT, 1);
   lua_setfield(LT, LUA_GLOBALSINDEX, "SecureGlobal");
 
-  luaL_forcetaint(LT);
+  luaL_forcetaintthread(LT);
   lua_getfield(LT, LUA_GLOBALSINDEX, "SecureGlobal");
 
-  TEST_CHECK(!luaL_issecure(LT));
+  TEST_CHECK(!luaL_issecurethread(LT));
   TEST_CHECK(!luaL_issecurevalue(LT, 1));
 }
 
@@ -170,7 +170,7 @@ static void test_secure_constants(void) {
   luaT_loadfixture(LT, luac_mixin);
   luaT_loadfixture(LT, luac_rectanglemixin);
 
-  lua_settaint(LT, &luaT_taint);
+  lua_setthreadtaint(LT, &luaT_taint);
 
   lua_getfield(LT, LUA_GLOBALSINDEX, "CreateFromMixins");
   lua_getfield(LT, LUA_GLOBALSINDEX, "RectangleMixin");
@@ -209,7 +209,7 @@ static void test_securecall_initiallysecure(void) {
   luaT_pushtable(LT);
   TEST_CHECK(lua_securecall(LT, 4, LUA_MULTRET, 0) == 0);
 
-  TEST_CHECK(luaL_issecure(LT));            /* Should still be secure. */
+  TEST_CHECK(luaL_issecurethread(LT));      /* Should still be secure. */
   TEST_CHECK(lua_gettop(LT) == 4);          /* Should have four return values. */
   TEST_CHECK(luaL_issecurevalue(LT, -1));   /* All function returns should be secure. */
   TEST_CHECK(luaL_issecurevalue(LT, -1));
@@ -220,7 +220,7 @@ static void test_securecall_initiallysecure(void) {
 static void test_securecall_initiallyinsecure(void) {
   luaT_loadfixture(LT, luac_securecallaux);
 
-  lua_settaint(LT, &luaT_taint);            /* Taint execution */
+  lua_setthreadtaint(LT, &luaT_taint);      /* Taint execution */
   lua_pushliteral(LT, "securecall_identity");
   luaT_pushstring(LT);
   luaT_pushnumber(LT);
@@ -228,7 +228,7 @@ static void test_securecall_initiallyinsecure(void) {
   luaT_pushtable(LT);
   TEST_CHECK(lua_securecall(LT, 4, LUA_MULTRET, 0) == 0);
 
-  TEST_CHECK(!luaL_issecure(LT));           /* Should not be secure. */
+  TEST_CHECK(!luaL_issecurethread(LT));     /* Should not be secure. */
   TEST_CHECK(lua_gettop(LT) == 4);          /* Should have four return values. */
   TEST_CHECK(!luaL_issecurevalue(LT, -1));  /* All function returns should be insecure. */
   TEST_CHECK(!luaL_issecurevalue(LT, -1));
@@ -237,11 +237,11 @@ static void test_securecall_initiallyinsecure(void) {
 }
 
 static void test_securecall_insecurefunction(void) {
-  lua_settaint(LT, &luaT_taint);            /* Load fixture insecurely. */
+  lua_setthreadtaint(LT, &luaT_taint);            /* Load fixture insecurely. */
   luaT_loadfixture(LT, luac_securecallaux);
-  lua_settaint(LT, NULL);
+  lua_setthreadtaint(LT, NULL);
 
-  TEST_CHECK(luaL_issecure(LT));            /* Should be secure at this point. */
+  TEST_CHECK(luaL_issecurethread(LT));      /* Should be secure at this point. */
 
   lua_pushliteral(LT, "securecall_identity");
   luaT_pushstring(LT);
@@ -250,7 +250,7 @@ static void test_securecall_insecurefunction(void) {
   luaT_pushtable(LT);
   TEST_CHECK(lua_securecall(LT, 4, LUA_MULTRET, 0) == 0);
 
-  TEST_CHECK(luaL_issecure(LT));            /* Should still be secure. */
+  TEST_CHECK(luaL_issecurethread(LT));      /* Should still be secure. */
   TEST_CHECK(lua_gettop(LT) == 4);          /* Should have four return values. */
   TEST_CHECK(luaL_issecurevalue(LT, -1));   /* All function returns should be secure. */
   TEST_CHECK(luaL_issecurevalue(LT, -1));
@@ -268,7 +268,7 @@ static void test_securecall_forceinsecure(void) {
   luaT_pushtable(LT);
   TEST_CHECK(lua_securecall(LT, 4, LUA_MULTRET, 0) == 0);
 
-  TEST_CHECK(luaL_issecure(LT));            /* Should still be secure. */
+  TEST_CHECK(luaL_issecurethread(LT));      /* Should still be secure. */
   TEST_CHECK(lua_gettop(LT) == 4);          /* Should have four return values. */
   TEST_CHECK(luaL_issecurevalue(LT, -1));   /* All function returns should be secure. */
   TEST_CHECK(luaL_issecurevalue(LT, -1));
@@ -279,7 +279,7 @@ static void test_securecall_forceinsecure(void) {
 static void test_securecall_directsecurefunction(void) {
   luaT_loadfixture(LT, luac_securecallaux);
 
-  TEST_CHECK(luaL_issecure(LT));            /* Should be secure at this point. */
+  TEST_CHECK(luaL_issecurethread(LT));      /* Should be secure at this point. */
 
   lua_pushvalue(LT, LUA_GLOBALSINDEX);
   lua_pushliteral(LT, "securecall_identity");
@@ -292,7 +292,7 @@ static void test_securecall_directsecurefunction(void) {
   luaT_pushtable(LT);
   TEST_CHECK(lua_securecall(LT, 4, LUA_MULTRET, 0) == 0);
 
-  TEST_CHECK(luaL_issecure(LT));            /* Should still be secure. */
+  TEST_CHECK(luaL_issecurethread(LT));      /* Should still be secure. */
   TEST_CHECK(lua_gettop(LT) == 4);          /* Should have four return values. */
   TEST_CHECK(luaL_issecurevalue(LT, -1));   /* All function returns should be secure. */
   TEST_CHECK(luaL_issecurevalue(LT, -1));
@@ -301,15 +301,15 @@ static void test_securecall_directsecurefunction(void) {
 }
 
 static void test_securecall_directinsecurefunction(void) {
-  lua_settaint(LT, &luaT_taint);            /* Load fixture insecurely. */
+  lua_setthreadtaint(LT, &luaT_taint);            /* Load fixture insecurely. */
   luaT_loadfixture(LT, luac_securecallaux);
 
   lua_pushvalue(LT, LUA_GLOBALSINDEX);
   lua_pushliteral(LT, "securecall_identity");
   lua_gettable(LT, -2);
   lua_remove(LT, 1);                        /* Leave only the function on the stack. */
-  lua_settaint(LT, NULL);
-  TEST_CHECK(luaL_issecure(LT));            /* Should be secure at this point. */
+  lua_setthreadtaint(LT, NULL);
+  TEST_CHECK(luaL_issecurethread(LT));      /* Should be secure at this point. */
   TEST_CHECK(!luaL_issecurevalue(LT, -1));  /* Function value should be insecure. */
 
   luaT_pushstring(LT);
@@ -318,7 +318,7 @@ static void test_securecall_directinsecurefunction(void) {
   luaT_pushtable(LT);
   TEST_CHECK(lua_securecall(LT, 4, LUA_MULTRET, 0) == 0);
 
-  TEST_CHECK(luaL_issecure(LT));            /* Should still be secure. */
+  TEST_CHECK(luaL_issecurethread(LT));      /* Should still be secure. */
   TEST_CHECK(lua_gettop(LT) == 4);          /* Should have four return values. */
   TEST_CHECK(luaL_issecurevalue(LT, -1));   /* All function returns should be secure. */
   TEST_CHECK(luaL_issecurevalue(LT, -1));
@@ -328,7 +328,7 @@ static void test_securecall_directinsecurefunction(void) {
 
 static int secureerrorhandler(lua_State *L) {
   TEST_CHECK(lua_gettop(L) == 1);          /* Expect only error information on the stack */
-  TEST_CHECK(luaL_issecure(L));            /* Expect to have been called securely... */
+  TEST_CHECK(luaL_issecurethread(L));      /* Expect to have been called securely... */
   TEST_CHECK(luaL_issecurevalue(L, 1));    /* ...And that our one argument is secure. */
   return 1;
 }
@@ -340,14 +340,14 @@ static void test_securecall_secureerror(void) {
   lua_pushliteral(LT, "securecall_error");
   lua_pushliteral(LT, "test error message");
   TEST_CHECK(lua_securecall(LT, 1, 0, 1) != 0);   /* Expect call to fail. */
-  TEST_CHECK(luaL_issecure(LT));                  /* Expect to remain secure. */
+  TEST_CHECK(luaL_issecurethread(LT));                  /* Expect to remain secure. */
   TEST_CHECK(lua_gettop(LT) == 2);                /* Expect two values on stack; errfunc and err */
   TEST_CHECK(luaL_issecurevalue(LT, -1));         /* Error object should be secure */
 }
 
 static int insecureerrorhandler(lua_State *L) {
   TEST_CHECK(lua_gettop(L) == 1);          /* Expect only error information on the stack */
-  TEST_CHECK(!luaL_issecure(L));           /* Expect to have been called insecurely... */
+  TEST_CHECK(!luaL_issecurethread(L));     /* Expect to have been called insecurely... */
   TEST_CHECK(!luaL_issecurevalue(L, 1));   /* ...And that our one argument is insecure. */
   return 1;
 }
@@ -355,12 +355,12 @@ static int insecureerrorhandler(lua_State *L) {
 static void test_securecall_insecureerror(void) {
   luaT_loadfixture(LT, luac_securecallaux);
 
-  lua_settaint(LT, &luaT_taint);
+  lua_setthreadtaint(LT, &luaT_taint);
   lua_pushcclosure(LT, insecureerrorhandler, 0);  /* See insecurerrorhandler for additional checks. */
   lua_pushliteral(LT, "securecall_error");
   lua_pushliteral(LT, "test error message");
   TEST_CHECK(lua_securecall(LT, 1, 0, 1) != 0);   /* Expect call to fail. */
-  TEST_CHECK(!luaL_issecure(LT));                 /* Expect to remain insecure. */
+  TEST_CHECK(!luaL_issecurethread(LT));            /* Expect to remain insecure. */
   TEST_CHECK(lua_gettop(LT) == 2);                /* Expect two values on stack; errfunc and err */
   TEST_CHECK(!luaL_issecurevalue(LT, -1));        /* Error object should be insecure */
 }
@@ -372,7 +372,7 @@ static void test_securecall_forceinsecureerror(void) {
   lua_pushliteral(LT, "securecall_insecureerror");
   lua_pushliteral(LT, "test error message");
   TEST_CHECK(lua_securecall(LT, 1, 0, 1) != 0);   /* Expect call to fail. */
-  TEST_CHECK(luaL_issecure(LT));                  /* Expect to remain secure. */
+  TEST_CHECK(luaL_issecurethread(LT));            /* Expect to remain secure. */
   TEST_CHECK(lua_gettop(LT) == 2);                /* Expect two values on stack; errfunc and err */
   TEST_CHECK(luaL_issecurevalue(LT, -1));         /* Error object should be secure */
 }

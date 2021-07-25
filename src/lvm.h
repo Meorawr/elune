@@ -33,6 +33,13 @@ LUAI_FUNC void luaV_settable (lua_State *L, const TValue *t, TValue *key,
 LUAI_FUNC void luaV_execute (lua_State *L, int nexeccalls);
 LUAI_FUNC void luaV_concat (lua_State *L, int total, int last);
 
+#define luaV_taintbarrier(L, x) \
+  do { \
+    lua_Taint *lt_ = L->taint; \
+    { x; } \
+    L->taint = lt_; \
+  } while(0)
+
 static inline void luaV_taint (lua_State *L, TValue *v) {
   if (!v->taint) v->taint = L->taint;
   else if (!L->taint) L->taint = v->taint;

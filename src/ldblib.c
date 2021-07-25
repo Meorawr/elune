@@ -372,7 +372,7 @@ static int db_errorfb (lua_State *L) {
 }
 
 static int db_forcesecure (lua_State* L) {
-  lua_settaint(L, NULL);
+  lua_setthreadtaint(L, NULL);
   return 0;
 }
 
@@ -417,7 +417,7 @@ static int db_gettaintsource (lua_State *L) {
     L1 = L;
   }
 
-  const lua_Taint *taint = lua_gettaint(L1);
+  const lua_Taint *taint = lua_getthreadtaint(L1);
 
   if (taint) {
     lua_pushstring(L, taint->source);

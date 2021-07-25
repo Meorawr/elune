@@ -11,6 +11,7 @@
 
 #include <stddef.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "lua.h"
 
@@ -181,18 +182,31 @@ LUALIB_API void (luaL_pushresult) (luaL_Buffer *B);
 ** =======================================================================
 */
 
-#define luaL_issecure(L) (lua_gettaint(L) == NULL)
-#define luaL_issecurevalue(L, idx) (lua_getvaluetaint(L, idx) == NULL)
-#define luaL_issecuretable(L, idx) (lua_gettabletaint(L, idx) == NULL)
-#define luaL_issecurefield(L, idx, k) (lua_getfieldtaint(L, idx, k) == NULL)
-#define luaL_issecureobject(L, idx) (lua_getobjecttaint(L, idx) == NULL)
+static inline bool luaL_issecurethread (lua_State *L) {
+  return lua_getthreadtaint(L) == NULL;
+}
 
-LUALIB_API void luaL_forcetaint (lua_State *L);
-LUALIB_API void luaL_forcetaintvalue (lua_State *L, int idx);
-LUALIB_API void luaL_forcetaintobject (lua_State *L, int idx);
+static inline bool luaL_issecurevalue (lua_State *L, int idx) {
+  return lua_getvaluetaint(L, idx) == NULL;
+}
 
-LUALIB_API void luaL_seterrorhandler (lua_State *L);
-LUALIB_API void luaL_pusherrorhandler (lua_State *L);
+static inline bool luaL_issecureobject (lua_State *L, int idx) {
+  return lua_getobjecttaint(L, idx) == NULL;
+}
+
+static inline bool luaL_issecuretable (lua_State *L, int idx) {
+  return lua_gettabletaint(L, idx) == NULL;
+}
+
+static inline bool luaL_issecurefield (lua_State *L, int idx, const char *k) {
+  return lua_getfieldtaint(L, idx, k) == NULL;
+}
+
+LUALIB_API void       luaL_forcetaintthread (lua_State *L);
+LUALIB_API void       luaL_forcetaintvalue (lua_State *L, int idx);
+LUALIB_API void       luaL_forcetaintobject (lua_State *L, int idx);
+LUALIB_API void       luaL_seterrorhandler (lua_State *L);
+LUALIB_API void       luaL_pusherrorhandler (lua_State *L);
 
 /* }====================================================================== */
 
