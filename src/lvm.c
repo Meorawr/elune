@@ -477,9 +477,9 @@ void luaV_execute (lua_State *L, int nexeccalls) {
       }
       case OP_GETTABLE: {
         TValue *rc = RKC(i);
-        luaV_readtaint(L, rc);
         Protect(luaV_gettable(L, RB(i), rc, ra));
-        luaV_writetaint(L, ra);
+        luaV_readtaint(L, rc);
+        luaV_taint(L, ra);
         continue;
       }
       case OP_SETGLOBAL: {
