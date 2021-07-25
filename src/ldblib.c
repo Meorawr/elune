@@ -408,24 +408,40 @@ static int db_settrapmask (lua_State *L) {
   return 0;
 }
 
-static int db_gettaintsource (lua_State *L) {
-  lua_State *L1;
-
-  if (lua_isthread(L, 1)) {
-    L1 = lua_tothread(L, 1);
+static int pushtaintinfo (lua_State *L, const lua_Taint *t) {
+  if (t) {
+    lua_pushboolean(L, 0);
+    lua_pushstring(L, t->source);
   } else {
-    L1 = L;
-  }
-
-  const lua_Taint *taint = lua_getthreadtaint(L1);
-
-  if (taint) {
-    lua_pushstring(L, taint->source);
-  } else {
+    lua_pushboolean(L, 1);
     lua_pushnil(L);
   }
 
-  return 1;
+  return 2;
+}
+
+static lua_Taint *findtaint (lua_State *L, const char *name) {
+  if (name) {
+    return luaL_findtaint(L, name);
+  } else {
+    return NULL;
+  }
+}
+
+static int db_issecureclosure (lua_State *L) {
+  luaL_checktype(L, 1, LUA_TFUNCTION);
+  return pushtaintinfo(L, lua_getobjecttaint(L, 1));
+}
+
+static int db_issecurefield (lua_State *L) {
+  luaL_checkany(L, 1);
+
+  if (lua_istable(L, 1)) {
+    luaL_checkany(L, 2);
+    return pushtaintinfo(L, lua_gettabletaint(L, 1));
+  } else {
+    return pushtaintinfo(L, lua_gettabletaint(L, LUA_GLOBALSINDEX));
+  }
 }
 
 static int db_issecurelocal (lua_State *L) {
@@ -439,17 +455,13 @@ static int db_issecurelocal (lua_State *L) {
     return luaL_argerror(L, arg + 2, "index out of range");
   }
 
-  const lua_Taint *taint = lua_getvaluetaint(L, -1);
+  return pushtaintinfo(L, lua_getvaluetaint(L, -1));
+}
 
-  if (taint) {
-    lua_pushboolean(L, 0);
-    lua_pushstring(L, taint->source);
-  } else {
-    lua_pushboolean(L, 1);
-    lua_pushnil(L);
-  }
-
-  return 2;
+static int db_issecurethread (lua_State *L) {
+  int arg;
+  lua_State *L1 = getthread(L, &arg);
+  return pushtaintinfo(L, lua_getthreadtaint(L1));
 }
 
 static int db_issecureupvalue (lua_State *L) {
@@ -462,17 +474,78 @@ static int db_issecureupvalue (lua_State *L) {
     return luaL_argerror(L, 2, "index out of range");
   }
 
-  const lua_Taint *taint = lua_getvaluetaint(L, -1);
+  return pushtaintinfo(L, lua_getvaluetaint(L, -1));
+}
 
-  if (taint) {
-    lua_pushboolean(L, 0);
-    lua_pushstring(L, taint->source);
+static int db_setclosuretaint (lua_State *L) {
+  luaL_checktype(L, 1, LUA_TFUNCTION);
+  const char *name = luaL_optstring(L, 2, NULL);
+  lua_setobjecttaint(L, 1, findtaint(L, name));
+  return 0;
+}
+
+static int db_setfieldtaint (lua_State *L) {
+  lua_Taint *taint;
+  int idx;
+
+  if (lua_gettop(L) == 2) {
+    luaL_checkany(L, 1);
+    idx = LUA_GLOBALSINDEX;
+    taint = findtaint(L, luaL_optstring(L, 2, NULL));
   } else {
-    lua_pushboolean(L, 1);
-    lua_pushnil(L);
+    luaL_checktype(L, 1, LUA_TTABLE);
+    luaL_checkany(L, 2);
+    idx = 1;
+    taint = findtaint(L, luaL_optstring(L, 3, NULL));
   }
 
-  return 2;
+  lua_pop(L, 1);
+  lua_settabletaint(L, idx, taint);
+  return 0;
+}
+
+static int db_setlocaltaint (lua_State *L) {
+  int arg;
+  lua_State *L1 = getthread(L, &arg);
+  lua_Debug ar;
+
+  if (!lua_getstack(L1, luaL_checkint(L, arg + 1), &ar)) {
+    return luaL_argerror(L, arg + 1, "level out of range");
+  } else if (lua_getlocal(L1, &ar, luaL_checkint(L, arg + 2)) == NULL) {
+    return luaL_argerror(L, arg + 2, "index out of range");
+  }
+
+  const char *name = luaL_optstring(L, arg + 3, NULL);
+  lua_setvaluetaint(L, -1, findtaint(L, name));
+  lua_setlocal(L1, &ar, arg + 2);
+
+  return 0;
+}
+
+static int db_setthreadtaint (lua_State *L) {
+  int arg;
+  lua_State *L1 = getthread(L, &arg);
+  const char *name = luaL_optstring(L, arg + 1, NULL);
+
+  lua_setthreadtaint(L1, findtaint(L1, name));
+  return 0;
+}
+
+static int db_setupvaluetaint (lua_State *L) {
+  luaL_checktype(L, 1, LUA_TFUNCTION);
+  int n = luaL_checkint(L, 2);
+  const char *name = luaL_optstring(L, 3, NULL);
+
+  if (lua_iscfunction(L, 1)) {
+    return luaL_argerror(L, 1, "cannot modify upvalues of C functions");
+  } else if (lua_getupvalue(L, 1, n) == NULL) {
+    return luaL_argerror(L, 2, "index out of range");
+  }
+
+  lua_setvaluetaint(L, -1, findtaint(L, name));
+  lua_setupvalue(L, 1, n);
+
+  return 0;
 }
 
 static const luaL_Reg dblib[] = {
@@ -484,17 +557,24 @@ static const luaL_Reg dblib[] = {
   {"getlocal", db_getlocal},
   {"getmetatable", db_getmetatable},
   {"getregistry", db_getregistry},
-  {"gettaintsource", db_gettaintsource},
   {"gettrapmask", db_gettrapmask},
   {"getupvalue", db_getupvalue},
+  {"issecureclosure", db_issecureclosure},
+  {"issecurefield", db_issecurefield},
   {"issecurelocal", db_issecurelocal},
+  {"issecurethread", db_issecurethread},
   {"issecureupvalue", db_issecureupvalue},
+  {"setclosuretaint", db_setclosuretaint},
   {"setfenv", db_setfenv},
+  {"setfieldtaint", db_setfieldtaint},
   {"sethook", db_sethook},
   {"setlocal", db_setlocal},
+  {"setlocaltaint", db_setlocaltaint},
   {"setmetatable", db_setmetatable},
+  {"setthreadtaint", db_setthreadtaint},
   {"settrapmask", db_settrapmask},
   {"setupvalue", db_setupvalue},
+  {"setupvaluetaint", db_setupvaluetaint},
   {"traceback", db_errorfb},
   {NULL, NULL}
 };

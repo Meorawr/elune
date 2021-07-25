@@ -4,10 +4,16 @@
 ### Added
 - Added a `-t` flag to the interpreter to run inline scripts (`-e`) or load files insecurely.
   - When this flag is specified, any modules loaded via `-l` will still be loaded securely.
-- Added a `debug.gettaintsource([thread])` function which returns the string identifier of any taint source current for the supplied thread, or the current if none is supplied.
-  - This replaces the `"s"` field usable with `debug.getinfo`, which has now been removed.
-- Added a `debug.issecurelocal([thread,] level, local)` function that works similarly to `issecurevariable`.
-- Added a `debug.issecureupvalue(func, up)` function that works similarly to `issecurevariable`.
+- Added `debug.issecureclosure(func)`
+- Added `debug.issecurefield([table,] key)`
+- Added `debug.issecurelocal([thread,] level, local)`
+- Added `debug.issecurethread([thread])`
+- Added `debug.issecureupvalue(func, up)`
+- Added `debug.setclosuretaint(func, source)`
+- Added `debug.setfieldtaint([table,] key, source)`
+- Added `debug.setlocaltaint([thread,] level, local, source)`
+- Added `debug.setthreadtaint([thread,] source)`
+- Added `debug.setupvaluetaint(func, up, source)`
 
 ### Changed
 - Reworked taint propagation to work at a C API/VM opcode level instead of object macro level.
@@ -16,7 +22,7 @@
 
 ### Removed
 - Removed the taint field on the `lua_Debug` to fix potential binary incompatibilities.
-- Removed the `"s"` field from `debug.getinfo` to return taint information.
+- Removed the `"s"` field from `debug.getinfo`. Use `debug.issecurethread()` instead.
 
 ## [v1]
 ### Added

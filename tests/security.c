@@ -407,6 +407,15 @@ static void test_vm_upvalues(void) {
 }
 
 /**
+ * Library Extension Tests
+ */
+
+static void test_script_dblib(void) {
+  luaT_loadfixture(LT, luac_lvmutil);
+  luaT_loadfixture(LT, luac_ldblib);
+}
+
+/**
  * Test Listing
  */
 
@@ -437,5 +446,6 @@ TEST_LIST = {
   { "vm: global variable taint", &test_vm_globals },
   { "vm: local value taint", &test_vm_locals },
   { "vm: upvalue taint", &test_vm_upvalues },
+  { "lib: debug library extensions", &test_script_dblib },
   { NULL, NULL }
 };

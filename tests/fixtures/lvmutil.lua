@@ -32,3 +32,6 @@ end
 function identity(...)
   return ...;
 end
+
+function nop()
+end
