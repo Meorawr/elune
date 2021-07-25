@@ -228,7 +228,6 @@ LUA_API void lua_replace (lua_State *L, int idx) {
 LUA_API void lua_pushvalue (lua_State *L, int idx) {
   lua_lock(L);
   setobj2s(L, L->top, index2adr(L, idx));
-  luaV_taint(L, L->top);
   api_incr_top(L);
   lua_unlock(L);
 }
