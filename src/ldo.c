@@ -232,6 +232,10 @@ static StkId adjust_varargs (lua_State *L, Proto *p, int actual) {
     setobjs2s(L, L->top++, fixed+i);
     setnilvalue(fixed+i);
   }
+  /* apply taint to varargs */
+  for (i = 1; i <= actual; ++i) {
+    luaV_writetaint(L, base - i);
+  }
   /* add `arg' parameter */
   if (htab) {
     sethvalue(L, L->top++, htab);

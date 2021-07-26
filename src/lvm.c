@@ -802,6 +802,7 @@ void luaV_execute (lua_State *L, int nexeccalls) {
           else {
             setnilvalue(ra + j);
           }
+          luaV_writetaint(L, ra+j);
         }
         continue;
       }
