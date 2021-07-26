@@ -114,10 +114,10 @@ static void LoadConstants(LoadState* S, Proto* f)
 	setnilvalue(o);
 	break;
    case LUA_TBOOLEAN:
-	setbvalue(o,LoadChar(S)!=0);
+	setbvalue(S->L,o,LoadChar(S)!=0);
 	break;
    case LUA_TNUMBER:
-	setnvalue(o,LoadNumber(S));
+	setnvalue(S->L,o,LoadNumber(S));
 	break;
    case LUA_TSTRING:
 	setsvalue2n(S->L,o,LoadString(S));

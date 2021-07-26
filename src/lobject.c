@@ -131,12 +131,12 @@ const char *luaO_pushvfstring (lua_State *L, const char *fmt, va_list argp) {
         break;
       }
       case 'd': {
-        setnvalue(L->top, cast_num(va_arg(argp, int)));
+        setnvalue(L, L->top, cast_num(va_arg(argp, int)));
         incr_top(L);
         break;
       }
       case 'f': {
-        setnvalue(L->top, cast_num(va_arg(argp, l_uacNumber)));
+        setnvalue(L, L->top, cast_num(va_arg(argp, l_uacNumber)));
         incr_top(L);
         break;
       }

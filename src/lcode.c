@@ -237,7 +237,7 @@ static int addk (FuncState *fs, TValue *k, TValue *v) {
     return cast_int(nvalue(idx));
   }
   else {  /* constant not found; create a new entry */
-    setnvalue(idx, cast_num(fs->nk));
+    setnvalue(L, idx, cast_num(fs->nk));
     luaM_growvector(L, f->k, fs->nk, f->sizek, TValue,
                     MAXARG_Bx, "constant table overflow");
     while (oldsize < f->sizek) setnilvalue(&f->k[oldsize++]);
@@ -258,14 +258,14 @@ int luaK_stringK (FuncState *fs, TString *s) {
 
 int luaK_numberK (FuncState *fs, lua_Number r) {
   TValue o;
-  setnvalue(&o, r);
+  setnvalue(fs->L, &o, r);
   return addk(fs, &o, &o);
 }
 
 
 static int boolK (FuncState *fs, int b) {
   TValue o;
-  setbvalue(&o, b);
+  setbvalue(fs->L, &o, b);
   return addk(fs, &o, &o);
 }
 

@@ -118,14 +118,14 @@ typedef struct lua_TValue {
 #define setnilvalue(obj) \
   do { TValue *i_o=(obj); i_o->tt=LUA_TNIL; i_o->taint=NULL; } while(0)
 
-#define setnvalue(obj,x) \
-  do { TValue *i_o=(obj); i_o->value.n=(x); i_o->tt=LUA_TNUMBER; i_o->taint=NULL; } while(0)
+#define setnvalue(L,obj,x) \
+  do { TValue *i_o=(obj); i_o->value.n=(x); i_o->tt=LUA_TNUMBER; i_o->taint=L->taint; } while(0)
 
-#define setpvalue(obj,x) \
-  do { TValue *i_o=(obj); i_o->value.p=(x); i_o->tt=LUA_TLIGHTUSERDATA; i_o->taint=NULL; } while(0)
+#define setpvalue(L,obj,x) \
+  do { TValue *i_o=(obj); i_o->value.p=(x); i_o->tt=LUA_TLIGHTUSERDATA; i_o->taint=L->taint; } while(0)
 
-#define setbvalue(obj,x) \
-  do { TValue *i_o=(obj); i_o->value.b=(x); i_o->tt=LUA_TBOOLEAN; i_o->taint=NULL; } while(0)
+#define setbvalue(L,obj,x) \
+  do { TValue *i_o=(obj); i_o->value.b=(x); i_o->tt=LUA_TBOOLEAN; i_o->taint=L->taint; } while(0)
 
 #define setsvalue(L,obj,x) \
   do { TValue *i_o=(obj); \
