@@ -516,6 +516,7 @@ static void f_parser (lua_State *L, void *ud) {
                                                              &p->buff, p->name);
   cl = luaF_newLclosure(L, tf->nups, hvalue(gt(L)));
   cl->l.p = tf;
+  cl->l.taint = (cl->l.taint) ? cl->l.taint : tf->taint;  /* taint closure if prototype was tainted */
   for (i = 0; i < tf->nups; i++)  /* initialize eventual upvalues */
     cl->l.upvals[i] = luaF_newupval(L);
   setclvalue(L, L->top, cl);
