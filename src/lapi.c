@@ -1238,7 +1238,6 @@ LUA_API void lua_setstacktaint (lua_State *L, int from, int to, lua_Taint *t) {
 }
 
 LUA_API int lua_securecall (lua_State *L, int nargs, int nresults, int errfunc) {
-  const lua_Taint *entrytaint;  /* taint before entering taint barrier */
   ptrdiff_t errpos;             /* relative position of errfunc from stack base */
   ptrdiff_t funcpos;            /* relative position of func _or_ first return */
   struct CallS c;               /* function call data */
@@ -1256,25 +1255,21 @@ LUA_API int lua_securecall (lua_State *L, int nargs, int nresults, int errfunc) 
     errpos = savestack(L, o);
   }
 
-  entrytaint = L->taint;
-  /* --- BEGIN TAINT BARRIER --- */
+  luaV_taintbarrier(L, {
+    c.func = L->top - (nargs + 1);
+    c.nresults = nresults;
 
-  c.func = L->top - (nargs + 1);
-  c.nresults = nresults;
+    if (ttisstring(c.func) || luaV_tostring(L, c.func)) {
+      luaV_gettable(L, gt(L), c.func, c.func);
+    }
 
-  if (ttisstring(c.func) || luaV_tostring(L, c.func)) {
-    luaV_gettable(L, gt(L), c.func, c.func);
-  }
-
-  funcpos = savestack(L, c.func);
-  status = luaD_pcall(L, f_call, &c, savestack(L, c.func), errpos);
-  adjustresults(L, nresults);
-
-  /* --- END TAINT BARRIER --- */
-  L->taint = cast(lua_Taint *, entrytaint);
+    funcpos = savestack(L, c.func);
+    status = luaD_pcall(L, f_call, &c, savestack(L, c.func), errpos);
+    adjustresults(L, nresults);
+  });
 
   /* Clear taint from return values if initially secure. */
-  if (!entrytaint) {
+  if (!L->taint) {
     StkId ret = restorestack(L, funcpos);
     StkId lastret = L->top - 1;
 
@@ -1288,21 +1283,19 @@ LUA_API int lua_securecall (lua_State *L, int nargs, int nresults, int errfunc) 
 }
 
 LUA_API int lua_secureccall (lua_State *L, lua_CFunction func, void *ud) {
-  const lua_Taint *entrytaint;  /* taint before entering taint barrier */
   struct CCallS c;              /* function call data */
   int status;                   /* function call status result */
 
   lua_lock(L);
   c.func = func;
   c.ud = ud;
-  entrytaint = L->taint;
-  /* --- BEGIN TAINT BARRIER --- */
-  status = luaD_pcall(L, f_Ccall, &c, savestack(L, L->top), 0);
-  /* --- END TAINT BARRIER --- */
-  L->taint = cast(lua_Taint *, entrytaint);
+
+  luaV_taintbarrier(L, {
+    status = luaD_pcall(L, f_Ccall, &c, savestack(L, L->top), 0);
+  });
 
   /* Clear taint from return values if initially secure. */
-  if (status != 0 && !entrytaint) {
+  if (status != 0 && !L->taint) {
     (L->top - 1)->taint = NULL;
   }
 
