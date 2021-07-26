@@ -90,9 +90,10 @@ target_sources(lua-tests
 
 generate_test_fixture(NAME "luac_mixin" SOURCE "fixtures/mixin.lua")
 generate_test_fixture(NAME "luac_rectanglemixin" SOURCE "fixtures/rectanglemixin.lua")
-generate_test_fixture(NAME "luac_issecurevariable" SOURCE "fixtures/issecurevariable.lua")
 generate_test_fixture(NAME "luac_securecallaux" SOURCE "fixtures/securecallaux.lua")
+generate_test_fixture(NAME "luac_lconstantassignments" SOURCE "fixtures/lconstantassignments.lua")
 generate_test_fixture(NAME "luac_ldblib" SOURCE "fixtures/ldblib.lua")
+generate_test_fixture(NAME "luac_lissecurevariable" SOURCE "fixtures/lissecurevariable.lua")
 generate_test_fixture(NAME "luac_lvmutil" SOURCE "fixtures/lvmutil.lua")
 generate_test_fixture(NAME "luac_lvmarith" SOURCE "fixtures/lvmarith.lua")
 generate_test_fixture(NAME "luac_lvmfields" SOURCE "fixtures/lvmfields.lua")
