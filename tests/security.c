@@ -128,6 +128,51 @@ static void test_secure_value_reads(void) {
  * Lua Security API tests
  */
 
+static void test_getfenv_metatable(void) {
+  /**
+   * Given a function with an environment that has a metatable applied, the
+   * return of lua_getfenv should be that of the '__environment' key if
+   * present on the metatable.
+   */
+
+  static const int ENVIRONMENT_INDEX = 1;
+  static const int METATABLE_INDEX = 2;
+  static const int FUNCTION_INDEX = 3;
+
+  lua_createtable(LT, 0, 0);                         /* environment */
+  lua_createtable(LT, 0, 1);                         /* metatable */
+  TEST_ASSERT(luaL_loadstring(LT, "return 1") == 0); /* function */
+
+  /* Querying environment should return the global environment. */
+  lua_getfenv(LT, FUNCTION_INDEX);
+  TEST_CHECK(lua_rawequal(LT, -1, LUA_GLOBALSINDEX));
+  lua_pop(LT, 1);
+
+  /* Apply metatable to environment. */
+  lua_pushvalue(LT, METATABLE_INDEX);
+  TEST_ASSERT(lua_setmetatable(LT, ENVIRONMENT_INDEX) == 1);
+
+  /* Apply environment to function. */
+  lua_pushvalue(LT, ENVIRONMENT_INDEX);
+  TEST_ASSERT(lua_setfenv(LT, FUNCTION_INDEX) == 1);
+  TEST_ASSERT(lua_gettop(LT) == 3);
+
+  /* Querying environment should return the expected table. */
+  lua_getfenv(LT, FUNCTION_INDEX);
+  TEST_CHECK(lua_rawequal(LT, -1, ENVIRONMENT_INDEX));
+  lua_pop(LT, 1);
+
+  /* Set '__environment' key to false. */
+  lua_pushboolean(LT, 0);
+  lua_setfield(LT, METATABLE_INDEX, "__environment");
+
+  /* Querying environment should now return false. */
+  lua_getfenv(LT, FUNCTION_INDEX);
+  lua_pushboolean(LT, 0);
+  TEST_CHECK(lua_rawequal(LT, -2, -1));
+  lua_pop(LT, 2);
+}
+
 static void test_securecall_initiallysecure(void) {
   luaT_loadfixture(LT, luac_securecallaux);
 
@@ -376,6 +421,7 @@ TEST_LIST = {
   { "pushed objects aren't tainted by default", test_push_objects_without_taint },
   { "tainted table structures", test_tainted_table_structures },
   { "read secure values while tainted", test_secure_value_reads },
+  { "lua_getfenv: __environment metatable field", &test_getfenv_metatable },
   { "lua_securecall: named call while secure", &test_securecall_initiallysecure },
   { "lua_securecall: named call while insecure", &test_securecall_initiallyinsecure },
   { "lua_securecall: named call insecure function", &test_securecall_insecurefunction },

@@ -637,7 +637,15 @@ LUA_API void lua_getfenv (lua_State *L, int idx) {
       setnilvalue(L->top);
       break;
   }
-  luaV_taint(L, L->top);  /* propagate taint to/from read value */
+
+  /* consult __environment metatable field if present */
+  if (ttistable(L->top)) {
+    const TValue *e = luaT_gettmbyobj(L, L->top, TM_ENVIRONMENT);
+
+    if (!ttisnil(e))
+      setobj2s(L, L->top, e);
+  }
+
   api_incr_top(L);
   lua_unlock(L);
 }

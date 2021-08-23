@@ -14,6 +14,7 @@
 - Added `debug.setlocaltaint([thread,] level, local, source)`
 - Added `debug.setthreadtaint([thread,] source)`
 - Added `debug.setupvaluetaint(func, up, source)`
+- Added support for the `__environment` metatable key to `getfenv`.
 
 ### Changed
 - Reworked taint propagation to work at a C API/VM opcode level instead of object macro level.
