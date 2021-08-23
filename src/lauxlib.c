@@ -677,6 +677,7 @@ LUALIB_API lua_Taint *luaL_findtaint (lua_State *L, const char *name) {
     taint->source = lua_tostring(L, -2);
     taint->data = NULL;
 
+    lua_setstacktaint(L, -2, -1, NULL);
     lua_settable(L, -4);
   } else {
     taint = lua_touserdata(L, -1);

@@ -610,7 +610,6 @@ LUA_API int lua_getmetatable (lua_State *L, int objindex) {
     res = 0;
   else {
     sethvalue(L, L->top, mt);
-    luaV_taint(L, L->top);  /* propagate taint to/from read value */
     api_incr_top(L);
     res = 1;
   }
@@ -1068,7 +1067,7 @@ LUA_API const char *lua_getupvalue (lua_State *L, int funcindex, int n) {
   lua_lock(L);
   name = aux_upvalue(index2adr(L, funcindex), n, &val);
   if (name) {
-    setobj2s(L, L->top, val);   /* don't propagate taint as this is a debug API */
+    luaV_taintbarrier(L, setobj2s(L, L->top, val));   /* don't propagate taint as this is a debug API */
     api_incr_top(L);
   }
   lua_unlock(L);

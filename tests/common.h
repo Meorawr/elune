@@ -77,6 +77,7 @@ extern const luaT_Fixture luac_lvmarith;
 extern const luaT_Fixture luac_lvmfields;
 extern const luaT_Fixture luac_lvmglobals;
 extern const luaT_Fixture luac_lvmlocals;
+extern const luaT_Fixture luac_lvmmisc;
 extern const luaT_Fixture luac_lvmupvalues;
 
 /**

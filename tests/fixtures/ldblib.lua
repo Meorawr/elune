@@ -163,11 +163,13 @@ local TestUpvalue = 100;
 
 local function TestUpvalueFunction()
   local _ = TestUpvalue;
+  assert(issecure(), "expected thread to be initially secure");
   assert(debug.issecureupvalue(TestUpvalueFunction, 1), "expected 'TestUpvalue' to be initially secure");
   debug.setupvaluetaint(TestUpvalueFunction, 1, "Bad");
   assert(not debug.issecureupvalue(TestUpvalueFunction, 1), "expected 'TestUpvalue' to be become insecure");
   debug.setupvaluetaint(TestUpvalueFunction, 1, nil);
   assert(debug.issecureupvalue(TestUpvalueFunction, 1), "expected 'TestUpvalue' to be become secure");
+  assert(issecure(), "expected thread to remain secure");
 end
 
 TestUpvalueFunction();
@@ -178,11 +180,13 @@ TestUpvalueFunction();
 
 local function TestLocalFunction()
   local _ = 100;
+  assert(issecure(), "expected thread to be initially secure");
   assert(debug.issecurelocal(1, 1), "expected 'TestLocal' to be initially secure");
   debug.setlocaltaint(1, 1, "Bad");
   assert(not debug.issecurelocal(1, 1), "expected 'TestLocal' to be become insecure");
   debug.setlocaltaint(1, 1, nil);
   assert(debug.issecurelocal(1, 1), "expected 'TestLocal' to be become secure");
+  assert(issecure(), "expected thread to remain secure");
 end
 
 TestLocalFunction();

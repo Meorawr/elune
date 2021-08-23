@@ -330,6 +330,11 @@ static void test_vm_locals(void) {
   luaT_loadfixture(LT, luac_lvmlocals);
 }
 
+static void test_vm_misc(void) {
+  luaT_loadfixture(LT, luac_lvmutil);
+  luaT_loadfixture(LT, luac_lvmmisc);
+}
+
 static void test_vm_upvalues(void) {
   luaT_loadfixture(LT, luac_lvmutil);
   luaT_loadfixture(LT, luac_lvmupvalues);
@@ -381,10 +386,11 @@ TEST_LIST = {
   { "lua_securecall: insecure error handling", &test_securecall_insecureerror },
   { "lua_securecall: forceinsecure error handling", &test_securecall_forceinsecureerror },
   { "vm: arithmetic ops", &test_vm_arith },
-  { "vm: field taint", &test_vm_fields },
-  { "vm: global variable taint", &test_vm_globals },
-  { "vm: local value taint", &test_vm_locals },
-  { "vm: upvalue taint", &test_vm_upvalues },
+  { "vm: table fields", &test_vm_fields },
+  { "vm: global variables", &test_vm_globals },
+  { "vm: local values", &test_vm_locals },
+  { "vm: misc opcodes", &test_vm_misc },
+  { "vm: upvalues", &test_vm_upvalues },
   { "script: constant assignments", &test_script_constantassignments },
   { "script: debug library extensions", &test_script_dblib },
   { "script: issecurevariable", &test_script_issecurevariable },
