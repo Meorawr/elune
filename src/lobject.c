@@ -16,6 +16,7 @@
 #include "lua.h"
 
 #include "ldo.h"
+#include "lmanip.h"
 #include "lmem.h"
 #include "lobject.h"
 #include "lstate.h"

@@ -10,6 +10,7 @@
 
 #include <limits.h>
 #include <stddef.h>
+#include <stdint.h>
 
 
 /*
@@ -33,15 +34,10 @@
 #define LUA_WIN
 #endif
 
-#if defined(LUA_USE_LINUX)
+#if defined(LUA_USE_LINUX) || defined(LUA_USE_MACOSX)
 #define LUA_USE_POSIX
 #define LUA_USE_DLOPEN		/* needs an extra library: -ldl */
 #define LUA_USE_READLINE	/* needs some extra libraries */
-#endif
-
-#if defined(LUA_USE_MACOSX)
-#define LUA_USE_POSIX
-#define LUA_DL_DYLD		/* does not need extra library */
 #endif
 
 
@@ -208,12 +204,8 @@
 @@ LUA_NORETURN hints to the compiler that a decorated function cannot return.
 ** CHANGE it as needed for your compiler.
 */
-#if defined(__GNUC__) || defined(__clang__)
-#define LUA_NORETURN __attribute__((noreturn))
-#elif defined(_MSC_VER)
-#define LUA_NORETURN __declspec(noreturn)
-#else
-#define LUA_NORETURN
+#if !defined(LUA_NORETURN)
+#define LUA_NORETURN _Noreturn
 #endif
 
 
@@ -437,6 +429,8 @@
 
 /*
 @@ LUAI_UINT32 is an unsigned integer with at least 32 bits.
+@@ LUAI_UINT64 is an unsigned integer with at least 64 bits.
+@@ LUAI_UINTPTR is an unsigned integer capable of holding a pointer value.
 @@ LUAI_INT32 is an signed integer with at least 32 bits.
 @@ LUAI_UMEM is an unsigned integer big enough to count the total
 @* memory used by Lua.
@@ -447,20 +441,13 @@
 ** part always works, but may waste space on machines with 64-bit
 ** longs.) Probably you do not need to change this.
 */
-#if LUAI_BITSINT >= 32
-#define LUAI_UINT32	unsigned int
-#define LUAI_INT32	int
-#define LUAI_MAXINT32	INT_MAX
+#define LUAI_UINT32	uint_least32_t
+#define LUAI_UINT64 uint_least64_t
+#define LUAI_UINTPTR uintptr_t
+#define LUAI_INT32	int_least32_t
+#define LUAI_MAXINT32	INT_LEAST32_MAX
 #define LUAI_UMEM	size_t
 #define LUAI_MEM	ptrdiff_t
-#else
-/* 16-bit ints */
-#define LUAI_UINT32	unsigned long
-#define LUAI_INT32	long
-#define LUAI_MAXINT32	LONG_MAX
-#define LUAI_UMEM	unsigned long
-#define LUAI_MEM	long
-#endif
 
 
 /*
@@ -478,7 +465,7 @@
 ** CHANGE it if you need lots of (Lua) stack space for your C
 ** functions. This limit is arbitrary; its only purpose is to stop C
 ** functions to consume unlimited stack space. (must be smaller than
-** -LUA_REGISTRYINDEX)
+** -LUA_ERRORHANDLERINDEX)
 */
 #define LUAI_MAXCSTACK	8000
 
@@ -774,21 +761,45 @@ union luai_Cast { double l_d; long l_l; };
 */
 
 #if defined(LUA_USELONGLONG)
-
 #define LUA_INTFRMLEN		"ll"
 #define LUA_INTFRM_T		long long
-#define LUA_INTFRM_MIN	LLONG_MIN
-#define LUA_INTFRM_MAX	LLONG_MAX
-
 #else
-
 #define LUA_INTFRMLEN		"l"
 #define LUA_INTFRM_T		long
-#define LUA_INTFRM_MIN	LONG_MIN
-#define LUA_INTFRM_MAX	LONG_MAX
-
 #endif
 
+
+/*
+@@ LUA_INTEGER_MIN is the minimum bound of an integer for underflow checks.
+@@ LUA_INTEGER_MAX is the maximum bound of an integer for overflow checks.
+** CHANGE them to control the bounds checked in double-to-integer casts.
+*/
+
+#define LUA_INTEGER_MIN INT_MIN
+#define LUA_INTEGER_MAX INT_MAX
+
+
+/*
+@@ LUALIB_FORCEINSECURE_TAINT is the string name of the taint applied by Lua
+@@ when taint needs to be forcibly applied from an anonymous source.
+**
+** CHANGE this to another string if desired.
+*/
+#if !defined(LUALIB_FORCEINSECURE_TAINT)
+#define LUALIB_FORCEINSECURE_TAINT "*** TaintForced ***"
+#endif
+
+
+/*
+@@ LUALIB_LOADSTRING_TAINT is the string name of the taint source applied
+@@ by Lua when taint is forcibly applied for dynamically loaded code through
+@@ the loadstring function.
+**
+** CHANGE this to another string if desired.
+*/
+#if !defined(LUALIB_LOADSTRING_TAINT)
+#define LUALIB_LOADSTRING_TAINT "*** ForceTaint_Strong ***"
+#endif
 
 
 /* =================================================================== */

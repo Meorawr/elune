@@ -1,33 +1,48 @@
 {
-  "version": 2,
+  "version": 3,
   "cmakeMinimumRequired": {
     "major": 3,
-    "minor": 20,
-    "patch": 0
+    "minor": 21
   },
   "configurePresets": [
     {
       "name": "base",
-      "description": "Base preset used to set up common options",
       "hidden": true,
       "generator": "Ninja Multi-Config",
       "binaryDir": "${sourceDir}/build/${presetName}",
+      "installDir": "${sourceDir}/build/${presetName}/install",
       "cacheVariables": {
-        "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/${presetName}/install",
+        "CMAKE_CONFIGURATION_TYPES": "Debug;Release",
+        "CMAKE_CROSS_CONFIGS": "all",
+        "CMAKE_DEFAULT_BUILD_TYPE": "Debug",
         "CMAKE_EXPORT_COMPILE_COMMANDS": true
       }
     },
     {
-      "name": "msvc",
-      "description": "Preset for configuring a build with MSVC",
-      "hidden": true,
+      "name": "windows",
+      "displayName": "Windows",
+      "inherits": [
+        "base"
+      ],
       "cacheVariables": {
         "CMAKE_C_COMPILER": "cl.exe",
         "CMAKE_C_FLAGS": "/D_CRT_SECURE_NO_WARNINGS /fp:fast /W4 /wd4324 /wd4334 /utf-8",
-        "CMAKE_C_FLAGS_RELEASE": "/GL /Gw /Gy /O2 /Ob3 /Oi /Zi",
-        "CMAKE_EXE_LINKER_FLAGS_RELEASE": "/DEBUG:FULL /LTCG /INCREMENTAL:NO /OPT:REF /OPT:ICF /PDBALTPATH:%_PDB% /MANIFEST:NO",
-        "CMAKE_SHARED_LINKER_FLAGS_RELEASE": "/DEBUG:FULL /LTCG /INCREMENTAL:NO /OPT:REF /OPT:ICF /PDBALTPATH:%_PDB% /MANIFEST:NO"
-      },
+        "CMAKE_C_FLAGS_DEBUG": "/Od /Ob1 /ZI",
+        "CMAKE_C_FLAGS_RELEASE": "/GL /Gw /O2 /Ob3 /Zi",
+        "CMAKE_EXE_LINKER_FLAGS": "/DEBUG:FULL /MANIFEST:NO /PDBALTPATH:%_PDB%",
+        "CMAKE_EXE_LINKER_FLAGS_DEBUG": "/INCREMENTAL /OPT:NOREF,NOICF /EDITANDCONTINUE",
+        "CMAKE_EXE_LINKER_FLAGS_RELEASE": "/INCREMENTAL:NO /LTCG /OPT:REF /OPT:ICF",
+        "CMAKE_SHARED_LINKER_FLAGS": "/DEBUG:FULL /MANIFEST:NO /PDBALTPATH:%_PDB%",
+        "CMAKE_SHARED_LINKER_FLAGS_DEBUG": "/INCREMENTAL /OPT:NOREF,NOICF /EDITANDCONTINUE",
+        "CMAKE_SHARED_LINKER_FLAGS_RELEASE": "/INCREMENTAL:NO /LTCG /OPT:REF /OPT:ICF"
+      }
+    },
+    {
+      "name": "windows-amd64",
+      "displayName": "Windows (amd64)",
+      "inherits": [
+        "windows"
+      ],
       "toolset": {
         "strategy": "external",
         "value": "host=x64"
@@ -38,9 +53,26 @@
       }
     },
     {
-      "name": "gcc",
-      "description": "Preset for configuring a build with GCC",
-      "hidden": true,
+      "name": "windows-x86",
+      "displayName": "Windows (x86)",
+      "inherits": [
+        "windows"
+      ],
+      "toolset": {
+        "strategy": "external",
+        "value": "host=x86"
+      },
+      "architecture": {
+        "strategy": "external",
+        "value": "x86"
+      }
+    },
+    {
+      "name": "linux",
+      "displayName": "Linux",
+      "inherits": [
+        "base"
+      ],
       "cacheVariables": {
         "CMAKE_C_COMPILER": "gcc",
         "CMAKE_C_FLAGS": "-D_GNU_SOURCE -ffast-math -Wall -Wextra",
@@ -48,105 +80,78 @@
       }
     },
     {
-      "name": "clang",
-      "description": "Preset for configuring a build with Clang",
-      "hidden": true,
+      "name": "macos",
+      "displayName": "macOS",
+      "inherits": [
+        "base"
+      ],
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_C_FLAGS": "-D_GNU_SOURCE -ffast-math -Wall -Wextra",
         "CMAKE_C_FLAGS_RELEASE": "-DNDEBUG -flto -O3"
       }
-    },
-    {
-      "name": "windows",
-      "displayName": "Windows",
-      "description": "Configuration for Windows using MSVC (x64)",
-      "inherits": [
-        "base",
-        "msvc"
-      ]
-    },
-    {
-      "name": "linux",
-      "displayName": "Linux",
-      "description": "Configuration for Linux using GCC",
-      "inherits": [
-        "base",
-        "gcc"
-      ]
-    },
-    {
-      "name": "macos",
-      "displayName": "macOS",
-      "description": "Configuration for macOS using Clang",
-      "inherits": [
-        "base",
-        "clang"
-      ]
     }
   ],
   "buildPresets": [
     {
-      "name": "base",
-      "description": "Base preset for common build options",
-      "hidden": true,
-      "configurePreset": "base",
-      "configuration": "Release",
-      "inheritConfigureEnvironment": true
-    },
-    {
       "name": "windows",
       "displayName": "Release",
-      "description": "Release build for Windows (MSVC x64)",
       "configurePreset": "windows",
-      "inherits": [
-        "base"
-      ]
+      "configuration": "Release"
     },
     {
       "name": "windows-debug",
+      "inherits": "windows",
       "displayName": "Debug",
-      "description": "Debug build for Windows (MSVC x64)",
-      "configuration": "Debug",
-      "inherits": [
-        "windows"
-      ]
+      "configuration": "Debug"
     },
     {
-      "name": "linux",
+      "name": "windows-amd64",
+      "configurePreset": "windows-amd64",
       "displayName": "Release",
-      "description": "Release build for Linux (GCC)",
-      "configurePreset": "linux",
-      "inherits": [
-        "base"
-      ]
+      "configuration": "Release"
     },
     {
-      "name": "linux-debug",
+      "name": "windows-amd64-debug",
+      "inherits": "windows-amd64",
       "displayName": "Debug",
-      "description": "Debug build for Linux (GCC)",
-      "configuration": "Debug",
-      "inherits": [
-        "linux"
-      ]
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-x86",
+      "displayName": "Release",
+      "configurePreset": "windows-x86",
+      "configuration": "Release"
+    },
+    {
+      "name": "windows-x86-debug",
+      "inherits": "windows-x86",
+      "displayName": "Debug",
+      "configuration": "Debug"
     },
     {
       "name": "macos",
       "displayName": "Release",
-      "description": "Release build for macOS (Clang)",
       "configurePreset": "macos",
-      "inherits": [
-        "base"
-      ]
+      "configuration": "Release"
     },
     {
       "name": "macos-debug",
+      "inherits": "macos",
       "displayName": "Debug",
-      "description": "Debug build for macOS (Clang)",
-      "configuration": "Debug",
-      "inherits": [
-        "macos"
-      ]
+      "configuration": "Debug"
+    },
+    {
+      "name": "linux",
+      "displayName": "Release",
+      "configurePreset": "linux",
+      "configuration": "Release"
+    },
+    {
+      "name": "linux-debug",
+      "inherits": "linux",
+      "displayName": "Debug",
+      "configuration": "Debug"
     }
   ]
 }

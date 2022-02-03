@@ -18,6 +18,7 @@
 #include "ldo.h"
 #include "lfunc.h"
 #include "lgc.h"
+#include "lmanip.h"
 #include "lobject.h"
 #include "lopcodes.h"
 #include "lstate.h"
@@ -36,9 +37,7 @@ const TValue *luaV_tonumber (lua_State *L, const TValue *obj, TValue *n) {
   lua_Number num;
   if (ttisnumber(obj)) return obj;
   if (ttisstring(obj) && luaO_str2d(svalue(obj), &num)) {
-    lua_Taint *taint = n->taint;
     setnvalue(L, n, num);
-    n->taint = taint;
     return n;
   }
   else
@@ -53,9 +52,7 @@ int luaV_tostring (lua_State *L, StkId obj) {
     char s[LUAI_MAXNUMBER2STR];
     lua_Number n = nvalue(obj);
     lua_number2str(s, n);
-    lua_Taint *taint = obj->taint;
     setsvalue2s(L, obj, luaS_new(L, s));
-    if (!obj->taint) obj->taint = taint;
     return 1;
   }
 }
@@ -82,12 +79,8 @@ static void traceexec (lua_State *L, const Instruction *pc) {
 
 
 static void tracesecurity(lua_State *L, const Instruction *pc) {
-  const Proto *proto = ci_func(L->ci)->l.p;
-  int relpc = pcRel(pc, proto);
-  int line = getline(proto, relpc);
-
   L->savedpc = pc;
-  luaD_callhook(L, LUA_HOOKSECURITY, line);
+  luaD_callhook(L, LUA_HOOKSECURITY, -1);
 }
 
 
@@ -132,9 +125,9 @@ void luaV_gettable (lua_State *L, const TValue *t, TValue *key, StkId val) {
         return;
       }
       /* else will try the tag method */
-    }
-    else if (ttisnil(tm = luaT_gettmbyobj(L, t, TM_INDEX)))
+    } else if (ttisnil(tm = luaT_gettmbyobj(L, t, TM_INDEX))) {
       luaG_typeerror(L, t, "index");
+    }
     if (ttisfunction(tm)) {
       callTMres(L, val, tm, t, key);
       return;
@@ -161,9 +154,10 @@ void luaV_settable (lua_State *L, const TValue *t, TValue *key, StkId val) {
         return;
       }
       /* else will try the tag method */
-    }
-    else if (ttisnil(tm = luaT_gettmbyobj(L, t, TM_NEWINDEX)))
+    } else if (ttisnil(tm = luaT_gettmbyobj(L, t, TM_NEWINDEX))) {
       luaG_typeerror(L, t, "index");
+    }
+    luaE_taintstack(L, tm->taint);  /* propagate 'tm' taint to stack */
     if (ttisfunction(tm)) {
       callTM(L, tm, t, key, val);
       return;
@@ -328,9 +322,18 @@ void luaV_concat (lua_State *L, int total, int last) {
 }
 
 
-static void checkdivisiontrap (lua_State *L, lua_Number nc) {
-  if (lua_checktrap(L, LUA_TRAPDIVIDEBYZERO) && nc == 0) {
-    luaG_runerror(L, "division by zero");
+static void checkdivoperands (lua_State *L, lua_Number nb, lua_Number nc) {
+  int fb = fpclassify(nb);
+  int fc = fpclassify(nc);
+
+  if (fc == FP_ZERO) {
+    luaG_runerror(L, "Division by zero");
+  } else if (fb == FP_NAN) {
+    luaG_runerror(L, "Numerator is not a number");
+  } else if (fc == FP_NAN) {
+    luaG_runerror(L, "Denominator is not a number");
+  } else if (fb == FP_INFINITE && fc == FP_INFINITE) {
+    luaG_runerror(L, "Infinity divided by infinity");
   }
 }
 
@@ -346,8 +349,16 @@ static void Arith (lua_State *L, StkId ra, const TValue *rb,
       case TM_ADD: setnvalue(L, ra, luai_numadd(nb, nc)); break;
       case TM_SUB: setnvalue(L, ra, luai_numsub(nb, nc)); break;
       case TM_MUL: setnvalue(L, ra, luai_nummul(nb, nc)); break;
-      case TM_DIV: checkdivisiontrap(L, nc); setnvalue(L, ra, luai_numdiv(nb, nc)); break;
-      case TM_MOD: checkdivisiontrap(L, nc); setnvalue(L, ra, luai_nummod(nb, nc)); break;
+      case TM_DIV: {
+        checkdivoperands(L, nb, nc);
+        setnvalue(L, ra, luai_numdiv(nb, nc));
+        break;
+      }
+      case TM_MOD: {
+        checkdivoperands(L, nb, nc);
+        setnvalue(L, ra, luai_nummod(nb, nc));
+        break;
+      }
       case TM_POW: setnvalue(L, ra, luai_numpow(nb, nc)); break;
       case TM_UNM: setnvalue(L, ra, luai_numunm(nb)); break;
       default: lua_assert(0); break;
@@ -400,36 +411,36 @@ void luaV_execute (lua_State *L, int nexeccalls) {
   StkId base;
   TValue *k;
   const Instruction *pc;
-  int secure = l_issecure(L);  /* only set on initial entry */
  reentry:  /* entry point */
   lua_assert(isLua(L->ci));
   pc = L->savedpc;
   cl = &clvalue(L->ci->func)->l;
   base = L->base;
   k = cl->p->k;
+
+  /* propagate closure taint upon (re)entering a lua stack frame */
+  L->ts.vmexecmask = LUA_TAINTALLOWED;
+  luaE_taintstack(L, cl->taint);
+  L->ts.vmexecmask = ((cl->taint != NULL) ? LUA_TAINTBLOCKED : LUA_TAINTALLOWED);
+
   /* main loop of interpreter */
   for (;;) {
     const Instruction i = *pc++;
     StkId ra;
 
-    if (L->hookmask & (LUA_MASKLINE | LUA_MASKCOUNT | LUA_MASKSECURITY)) {
-      if (secure != l_issecure(L)) {  /* did security state of VM toggle? */
-        tracesecurity(L, pc - 1);
-      }
-
-      if (--L->hookcount == 0 || L->hookmask & LUA_MASKLINE) {
+    if (L->hookmask & (LUA_MASKLINE | LUA_MASKCOUNT)) {
+      if ((L->hookmask & LUA_MASKLINE) || ((L->hookmask & LUA_MASKCOUNT) && --L->hookcount == 0)) {
         traceexec(L, pc);
       }
 
       if (L->status == LUA_YIELD) {  /* did any hook yield? */
         L->savedpc = pc - 1;
+        luaD_preyield(L);
         return;
       }
 
       base = L->base;
     }
-
-    secure = l_issecure(L);  /* record security state for hooks */
 
     /* warning!! several calls may realloc the stack and invalidate `ra' */
     ra = RA(i);
@@ -439,12 +450,10 @@ void luaV_execute (lua_State *L, int nexeccalls) {
     switch (GET_OPCODE(i)) {
       case OP_MOVE: {
         setobjs2s(L, ra, RB(i));
-        luaV_taint(L, ra);
         continue;
       }
       case OP_LOADK: {
         setobj2s(L, ra, KBx(i));
-        luaV_taint(L, ra);
         continue;
       }
       case OP_LOADBOOL: {
@@ -455,15 +464,13 @@ void luaV_execute (lua_State *L, int nexeccalls) {
       case OP_LOADNIL: {
         TValue *rb = RB(i);
         do {
-          setnilvalue(rb);
-          luaV_writetaint(L, rb--);
+          setnilvalue(L, rb--);
         } while (rb >= ra);
         continue;
       }
       case OP_GETUPVAL: {
         int b = GETARG_B(i);
         setobj2s(L, ra, cl->upvals[b]->v);
-        luaV_taint(L, ra);
         continue;
       }
       case OP_GETGLOBAL: {
@@ -472,13 +479,10 @@ void luaV_execute (lua_State *L, int nexeccalls) {
         sethvalue(L, &g, cl->env);
         lua_assert(ttisstring(rb));
         Protect(luaV_gettable(L, &g, rb, ra));
-        luaV_taint(L, ra);
         continue;
       }
       case OP_GETTABLE: {
-        TValue *rc = RKC(i);
-        Protect(luaV_gettable(L, RB(i), rc, ra));
-        luaV_taint(L, ra);
+        Protect(luaV_gettable(L, RB(i), RKC(i), ra));
         continue;
       }
       case OP_SETGLOBAL: {
@@ -509,8 +513,6 @@ void luaV_execute (lua_State *L, int nexeccalls) {
         StkId rb = RB(i);
         setobjs2s(L, ra+1, rb);
         Protect(luaV_gettable(L, rb, RKC(i), ra));
-        luaV_taint(L, ra);
-        luaV_taint(L, ra+1);
         continue;
       }
       case OP_ADD: {
@@ -526,12 +528,14 @@ void luaV_execute (lua_State *L, int nexeccalls) {
         continue;
       }
       case OP_DIV: {
-        checkdivisiontrap(L, nvalue(RKC(i)));
+        /* TODO: Add a toggle for these. */
+        /* checkdivoperands(L, nvalue(RKB(i)), nvalue(RKC(i))); */
         arith_op(luai_numdiv, TM_DIV);
         continue;
       }
       case OP_MOD: {
-        checkdivisiontrap(L, nvalue(RKC(i)));
+        /* TODO: Add a toggle for these. */
+        /* checkdivoperands(L, nvalue(RKB(i)), nvalue(RKC(i))); */
         arith_op(luai_nummod, TM_MOD);
         continue;
       }
@@ -644,6 +648,7 @@ void luaV_execute (lua_State *L, int nexeccalls) {
             continue;
           }
           default: {
+            luaD_preyield(L);
             return;  /* yield */
           }
         }
@@ -666,6 +671,7 @@ void luaV_execute (lua_State *L, int nexeccalls) {
               setobjs2s(L, func+aux, pfunc+aux);
             ci->top = L->top = func+aux;  /* correct top */
             lua_assert(L->top == L->base + clvalue(func)->l.p->maxstacksize);
+            ci->savedtaint = (ci+1)->savedtaint;
             ci->savedpc = L->savedpc;
             ci->tailcalls++;  /* one more call lost */
             L->ci--;  /* remove new frame */
@@ -676,6 +682,7 @@ void luaV_execute (lua_State *L, int nexeccalls) {
             continue;
           }
           default: {
+            luaD_preyield(L);
             return;  /* yield */
           }
         }
@@ -686,9 +693,10 @@ void luaV_execute (lua_State *L, int nexeccalls) {
         if (L->openupval) luaF_close(L, base);
         L->savedpc = pc;
         b = luaD_poscall(L, ra);
-        if (--nexeccalls == 0)  /* was previous function running `here'? */
+        if (--nexeccalls == 0) { /* was previous function running `here'? */
+          luaD_preyield(L);
           return;  /* no: return */
-        else {  /* yes: continue its execution */
+        } else {  /* yes: continue its execution */
           if (b) L->top = L->ci->top;
           lua_assert(isLua(L->ci));
           lua_assert(GET_OPCODE(*((L->ci)->savedpc - 1)) == OP_CALL);
@@ -800,9 +808,8 @@ void luaV_execute (lua_State *L, int nexeccalls) {
             setobjs2s(L, ra + j, ci->base - n + j);
           }
           else {
-            setnilvalue(ra + j);
+            setnilvalue(L, ra + j);
           }
-          luaV_writetaint(L, ra+j);
         }
         continue;
       }

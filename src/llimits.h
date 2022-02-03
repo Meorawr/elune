@@ -16,6 +16,8 @@
 
 
 typedef LUAI_UINT32 lu_int32;
+typedef LUAI_UINT64 lu_int64;
+typedef LUAI_UINTPTR lu_intptr;
 
 typedef LUAI_UMEM lu_mem;
 

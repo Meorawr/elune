@@ -19,6 +19,7 @@
 
 
 LUAI_FUNC Proto *luaF_newproto (lua_State *L);
+LUAI_FUNC ClosureStats *luaF_newclosurestats (lua_State *L);
 LUAI_FUNC Closure *luaF_newCclosure (lua_State *L, int nelems, Table *e);
 LUAI_FUNC Closure *luaF_newLclosure (lua_State *L, int nelems, Table *e);
 LUAI_FUNC UpVal *luaF_newupval (lua_State *L);

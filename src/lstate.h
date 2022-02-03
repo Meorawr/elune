@@ -50,10 +50,10 @@ typedef struct CallInfo {
   StkId func;  /* function index in the stack */
   StkId	top;  /* top for this function */
   const Instruction *savedpc;
+  TString *savedtaint;  /* saved taint for this call; informational only */
   int nresults;  /* expected number of results from this function */
   int tailcalls;  /* number of tail calls lost under this entry */
 } CallInfo;
-
 
 
 #define curr_func(L)	(clvalue(L->ci->func))
@@ -63,12 +63,24 @@ typedef struct CallInfo {
 
 
 /*
+** Profiling Stats
+*/
+typedef struct SourceStats {
+  TString *owner;
+  lu_int64 execticks;  /* ticks spent executing owned functions */
+  lu_mem bytesowned;  /* total size of owned allocations */
+  struct SourceStats *next;
+} SourceStats;
+
+
+/*
 ** `global state', shared by all threads of this state
 */
 typedef struct global_State {
   stringtable strt;  /* hash table for strings */
   lua_Alloc frealloc;  /* function to reallocate memory */
   void *ud;         /* auxiliary data to `frealloc' */
+  lu_byte enablestats;
   lu_byte currentwhite;
   lu_byte gcstate;  /* state of garbage collector */
   int sweepstrgc;  /* position of sweep in `strt' */
@@ -85,14 +97,35 @@ typedef struct global_State {
   lu_mem gcdept;  /* how much GC is `behind schedule' */
   int gcpause;  /* size of pause between successive GCs */
   int gcstepmul;  /* GC `granularity' */
+  lu_int64 startticks;  /* tick count on startup */
+  lu_int64 execticks;  /* ticks spent executing all functions */
+  lu_mem bytesallocated;  /* total number of bytes allocated */
+  SourceStats *sourcestats;  /* list of source-specific statistics */
   lua_CFunction panic;  /* to be called in unprotected errors */
   TValue l_registry;
+  TValue l_errfunc;  /* global error handler */
   struct lua_State *mainthread;
   UpVal uvhead;  /* head of double-linked list of all open upvalues */
   struct Table *mt[NUM_TAGS];  /* metatables for basic types */
   TString *tmname[TM_N];  /* array with tag-method names */
-  lu_byte trapmask;  /* mask of enabled runtime traps */
 } global_State;
+
+
+
+/*
+** per-thread taint state
+*/
+typedef struct TaintState {
+  lu_intptr readmask;  /* user-controlled mask applied to taint on reads */
+  lu_intptr vmexecmask;  /* read-mask enabled only when executing an insecure Lua closure */
+  lu_intptr writemask;  /* user-controlled mask applied to taint on writes */
+  TString *stacktaint;  /* current stack taint */
+  TString *newgctaint;  /* taint applied to newly allocated objects */
+  TString *newcltaint;  /* taint applied to newly allocated closures */
+} TaintState;
+
+static const lu_intptr LUA_TAINTALLOWED = UINTPTR_MAX;
+static const lu_intptr LUA_TAINTBLOCKED = 0;
 
 
 /*
@@ -101,6 +134,7 @@ typedef struct global_State {
 struct lua_State {
   CommonHeader;
   lu_byte status;
+  TaintState ts;
   StkId top;  /* first free slot in the stack */
   StkId base;  /* base of current function */
   global_State *l_G;
@@ -165,6 +199,70 @@ union GCObject {
 
 LUAI_FUNC lua_State *luaE_newthread (lua_State *L);
 LUAI_FUNC void luaE_freethread (lua_State *L, lua_State *L1);
+
+
+static inline TString *luaE_maskreadtaint (lua_State *L, TString *taint) {
+  return cast(TString *, (cast(lu_intptr, taint) & (L->ts.readmask | L->ts.vmexecmask)));
+}
+
+
+static inline TString *luaE_maskwritetaint (lua_State *L) {
+  return cast(TString *, (cast(lu_intptr, L->ts.stacktaint) & (L->ts.writemask)));
+}
+
+
+static inline TString *luaE_maskalloctaint (lua_State *L, int tt) {
+  TString *taint = NULL;
+
+  if (L->ts.newgctaint != NULL) {
+    taint = L->ts.newgctaint;
+  } else if (L->ts.stacktaint != NULL) {
+    taint = L->ts.stacktaint;
+  } else if (tt == LUA_TFUNCTION) {
+    taint = L->ts.newcltaint;
+  }
+
+  return cast(TString *, (cast(lu_intptr, taint) & (L->ts.writemask)));
+}
+
+
+static inline int luaE_istaintexpected (lua_State *L) {
+  return ((L->ts.readmask | L->ts.vmexecmask) == 0);
+}
+
+
+static inline void luaE_taintstack (lua_State *L, TString *taint) {
+  taint = luaE_maskreadtaint(L, taint);
+
+  if (taint != NULL) {
+    L->ts.stacktaint = taint;
+  }
+}
+
+
+static inline void luaE_taintvalue (lua_State *L, TValue *o) {
+  TString *taint = luaE_maskwritetaint(L);
+
+  if (taint != NULL) {
+    o->taint = taint;
+  }
+}
+
+
+static inline void luaE_taintobject (lua_State *L, GCObject *o) {
+  TString *taint = luaE_maskwritetaint(L);
+
+  if (taint != NULL) {
+    o->gch.taint = taint;
+  }
+}
+
+
+static inline void luaE_taintthread (lua_State *L, const lua_State *from) {
+  lua_assert(from->ts.vmexecmask == LUA_TAINTALLOWED);
+  L->ts = from->ts;
+}
+
 
 #endif
 

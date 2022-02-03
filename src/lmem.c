@@ -80,6 +80,7 @@ void *luaM_realloc_ (lua_State *L, void *block, size_t osize, size_t nsize) {
     luaD_throw(L, LUA_ERRMEM);
   lua_assert((nsize == 0) == (block == NULL));
   g->totalbytes = (g->totalbytes - osize) + nsize;
+  if (nsize > osize) g->bytesallocated += (nsize - osize);
   return block;
 }
 

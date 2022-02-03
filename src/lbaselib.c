@@ -136,6 +136,11 @@ static int luaB_getfenv (lua_State *L) {
     lua_pushvalue(L, LUA_GLOBALSINDEX);  /* return the thread's global env. */
   else
     lua_getfenv(L, -1);
+
+  if (luaL_getmetafield(L, -1, "__environment") == 0) {
+    lua_taintstack(L, lua_getobjecttaint(L, -2));
+  }
+
   return 1;
 }
 
@@ -143,6 +148,7 @@ static int luaB_getfenv (lua_State *L) {
 static int luaB_setfenv (lua_State *L) {
   luaL_checktype(L, 2, LUA_TTABLE);
   getfunc(L, 0);
+  lua_taintobject(L, -1);
   lua_pushvalue(L, 2);
   if (lua_isnumber(L, 1) && lua_tonumber(L, 1) == 0) {
     /* change environment of current thread */
@@ -383,10 +389,12 @@ static int luaB_pcall (lua_State *L) {
 
 static int luaB_xpcall (lua_State *L) {
   int status;
+  int n = lua_gettop(L);
   luaL_checkany(L, 2);
-  lua_settop(L, 2);
-  lua_insert(L, 1);  /* put error function under function to be called */
-  status = lua_pcall(L, 0, LUA_MULTRET, 1);
+  lua_pushvalue(L, 1);  /* exchange function... */
+  lua_copy(L, 2, 1);  /* ...and error handler */
+  lua_replace(L, 2);
+  status = lua_pcall(L, n - 2, LUA_MULTRET, 1);
   lua_pushboolean(L, (status == 0));
   lua_replace(L, 1);
   return lua_gettop(L);  /* return status + all results */
@@ -443,32 +451,36 @@ static int luaB_newproxy (lua_State *L) {
   return 1;
 }
 
+
 static int luaB_forceinsecure (lua_State *L) {
-  lua_settop(L, 0);
-  luaL_forcetaintthread(L);
+  luaL_forceinsecure(L);
   return 0;
 }
 
+
 static int luaB_issecure (lua_State *L) {
   lua_settop(L, 0);
-  lua_pushboolean(L, luaL_issecurethread(L));
+  lua_pushboolean(L, luaL_issecure(L));
   return 1;
 }
 
-static int luaB_issecurevariable (lua_State *L) {
-  const lua_Taint* taint;
 
+static int luaB_issecurevariable (lua_State *L) {
   if (lua_tostring(L, 1)) {
-    taint = lua_gettabletaint(L, LUA_GLOBALSINDEX);
-  } else if (lua_tostring(L, 2)) {
-    taint = lua_gettabletaint(L, 1);
-  } else {
+    lua_pushvalue(L, LUA_GLOBALSINDEX);
+    lua_insert(L, 1);
+  }
+
+  if (!lua_istable(L, 1) || !lua_tostring(L, 2)) {
     return luaL_error(L, "Usage: issecurevariable([table,] \"variable\")");
   }
 
+  lua_settop(L, 2);
+  const char *taint = luaL_gettabletaint(L, 1);
+
   if (taint) {
     lua_pushboolean(L, 0);
-    lua_pushstring(L, taint->source ? taint->source : "");
+    lua_pushstring(L, taint);
   } else {
     lua_pushboolean(L, 1);
     lua_pushnil(L);
@@ -477,171 +489,114 @@ static int luaB_issecurevariable (lua_State *L) {
   return 2;
 }
 
+
 static int luaB_securecall (lua_State *L) {
+  lua_TaintState savedts;
   int status;
 
-  luaL_pusherrorhandler(L);
-  lua_insert(L, 1);
-  status = lua_securecall(L, lua_gettop(L) - 2, LUA_MULTRET, 1);
+  lua_savetaint(L, &savedts);
+
+  /* If the supplied function is a string then look up the function in _G. */
+  if (lua_tostring(L, 1)) {
+    lua_pushvalue(L, 1);
+    lua_rawget(L, LUA_GLOBALSINDEX);
+    lua_replace(L, 1);
+  }
+
+  status = lua_pcall(L, (lua_gettop(L) - 1), LUA_MULTRET, LUA_ERRORHANDLERINDEX);
   if (status != 0) lua_pop(L, 1);
-  lua_remove(L, 1);
+  lua_restoretaint(L, &savedts);
+  lua_settoptaint(L, lua_gettop(L), lua_getstacktaint(L));
 
   return lua_gettop(L);
 }
 
-static int luaB_geterrorhandler (lua_State *L) {
-  lua_settop(L, 0);
-  luaL_pusherrorhandler(L);
-  return 1;
+
+static int luaB_securecallfunction (lua_State *L) {
+  luaL_securecall(L, (lua_gettop(L) - 1), LUA_MULTRET, LUA_ERRORHANDLERINDEX);
+  return lua_gettop(L);
 }
 
-static int luaB_seterrorhandler (lua_State *L) {
-  if (!lua_isfunction(L, 1))
-    return luaL_error(L, "Usage: seterrorhandler(errfunc)");
 
-  lua_settop(L, 1);
-  luaL_seterrorhandler(L);
+static int luaB_secureexecuterange (lua_State *L) {
+  luaL_checktype(L, 1, LUA_TTABLE);
+  luaL_checktype(L, 2, LUA_TFUNCTION);
+  lua_settop(L, 2);
+  luaL_secureforeach(L, 1, LUA_ERRORHANDLERINDEX);
   return 0;
 }
 
-static int securehook (lua_State *L) {
-  /**
-   * This function is exposed as a C closure for any post-hooks installed
-   * via hooksecurefunc and has three upvalues bound;
-   *
-   *  - The post function to call
-   *  - The original function to call
-   *  - The taint to apply to the post function
-   *
-   * These are given constants for our reading pleasure.
-   */
 
-  static const int POSTFUNC_INDEX = lua_upvalueindex(1);
-  static const int ORIGFUNC_INDEX = lua_upvalueindex(2);
-  static const int TAINT_INDEX = lua_upvalueindex(3);
-
-  const int argc = lua_gettop(L);
-  int argi;
-  int retc;
-  const lua_Taint *entry_taint = lua_getthreadtaint(L);
-  const lua_Taint *posthook_taint = (const lua_Taint *) lua_touserdata(L, TAINT_INDEX);
-  int status;
-
-  /**
-   * Invoke the original function, this is straightforward - all errors
-   * should propagate back to the caller and no taint manipulation is
-   * required.
-   */
-
-  lua_pushvalue(L, ORIGFUNC_INDEX);       /* Push original function */
-  for (argi = 1; argi <= argc; ++argi) {  /* Push copy of arguments */
-    lua_pushvalue(L, argi);
-  }
-
-  lua_call(L, argc, LUA_MULTRET);         /* Invoke original function */
-  retc = lua_gettop(L) - argc;
-
-  /**
-   * Invoke the post function. This should be encapsulated in a taint barrier
-   * to not disturb the calling context. Returns should be discarded.
-   *
-   * For security, the taint on the state is only modified if we're being
-   * called from securely. This matches the implementation whereby a secure
-   * hook installed by secure code will be invoked insecurely if the closure
-   * is invoked by insecure code.
-   */
-
-  if ((entry_taint = lua_getthreadtaint(L)) == NULL) {
-    lua_setthreadtaint(L, (lua_Taint *) posthook_taint);
-  }
-
-  /* --- BEGIN TAINTED EXECUTION --- */
-
-  luaL_pusherrorhandler(L);               /* Push error handling function */
-  lua_pushvalue(L, POSTFUNC_INDEX);       /* Push post function */
-  for (argi = 1; argi <= argc; ++argi) {  /* Push copy of arguments */
-    lua_pushvalue(L, argi);
-  }
-
-  /* Taint will be applied to all arguments in the call automatically. */
-  status = lua_pcall(L, argc, 0, -(argc + 2));
-
-  if (status != 0) {
-    lua_pop(L, 2);                        /* Error; pop message and error function. */
-  } else {
-    lua_pop(L, 1);                        /* Success; pop error function. */
-  }
-
-  /* Should only have original arguments and returns on stack. */
-  lua_assert(lua_gettop(L) == retc + argc);
-
-  /* --- END TAINTED EXECUTION --- */
-
-  lua_setthreadtaint(L, (lua_Taint *) entry_taint);
-  return retc;
+static int luaB_geterrorhandler (lua_State *L) {
+  lua_pushvalue(L, LUA_ERRORHANDLERINDEX);
+  return 1;
 }
 
+
+static int f_errorhandler (lua_State *L) {
+  if (!lua_isstring(L, 1)) {
+    lua_pushliteral(L, "UNKNOWN ERROR");
+    lua_replace(L, 1);
+  }
+
+  lua_settop(L, 1);
+  lua_pushvalue(L, lua_upvalueindex(1));
+  lua_insert(L, 1);
+  lua_call(L, 1, 1);
+  return 1;
+}
+
+
+static int luaB_seterrorhandler (lua_State *L) {
+  if (!lua_isfunction(L, 1)) {
+    return luaL_error(L, "Usage: seterrorhandler(errfunc)");
+  }
+
+  lua_settop(L, 1);
+  lua_pushcclosure(L, f_errorhandler, 1);
+  lua_replace(L, LUA_ERRORHANDLERINDEX);
+  return 0;
+}
+
+
+static void aux_getorigfunc_untainted (lua_State *L, void *ud) {
+  ((void) ud);  /* unused */
+  lua_setstacktaint(L, NULL);
+  lua_gettable(L, 1);
+}
+
+
 static int luaB_hooksecurefunc (lua_State *L) {
-  const lua_Taint *entry_taint;
+  lua_TaintState savedts;
 
-  /**
-   * The signature of the function allows an optional table as the first
-   * parameter; if not supplied we'll push _G to the base of the stack and
-   * proceed as if the function was invoked with all parameters supplied.
-   */
-
-  if (lua_tostring(L, 1)) {
+  if (!lua_istable(L, 1)) {
     lua_pushvalue(L, LUA_GLOBALSINDEX);
     lua_insert(L, 1);
   }
 
-  if (!lua_istable(L, 1) || !lua_tostring(L, 2) || !lua_isfunction(L, 3)) {
+  if (!lua_tostring(L, 2) || !lua_isfunction(L, 3)) {
     return luaL_error(L, "Usage: hooksecurefunc([table,] \"function\", hookfunc)");
   }
 
   lua_settop(L, 3);
-
-  /**
-   * The lookup for table["function"] is permitted to touch metatables so
-   * rawget is avoided here; this has error and security implications so we
-   * remain in (possibly insecure) mode while doing this lookup.
-   */
-
-  lua_pushvalue(L, 2);  /* Push key. */
-  lua_gettable(L, 1);   /* Exchange key for value. */
+  lua_savetaint(L, &savedts);
+  lua_pushvalue(L, 2);  /* [4] = "function" */
+  lua_protecttaint(L, aux_getorigfunc_untainted, NULL);  /* [4] = origfunc */
+  lua_exchangetaint(L, &savedts);
 
   if (!lua_isfunction(L, 4)) {
     return luaL_error(L, "hooksecurefunc(): %s is not a function", lua_tostring(L, 2));
   }
 
-  /**
-   * Set up a C closure with the posthook and original functions bound as well
-   * as our current taint source. The closure will invoke the "securehook"
-   * function when called. This closure then needs placing back in the source
-   * table, however unlike the lookup phase this should be done with rawset
-   * and avoid metatables.
-   *
-   * This needs to be done securely as the closure and resulting assignment
-   * shouldn't inherit the taint of our own caller.
-   */
+  lua_insert(L, 3);  /* [3] = origfunc, [4] = hookfunc */
+  lua_setvaluetaint(L, 3, savedts.stacktaint);  /* lua_insert may taint origfunc */
+  luaL_createsecurehook(L);  /* [3] = securehook */
+  lua_setvaluetaint(L, 3, NULL);
+  lua_rawset(L, 1);  /* table["function"] = securehook */
 
-  entry_taint = lua_getthreadtaint(L);
-  lua_setthreadtaint(L, NULL);
-  lua_setstacktaint(L, 1, -1, NULL);
-
-  /* --- BEGIN SECURE EXECUTION --- */
-
-  luai_apicheck(L, lua_gettop(L) == 4);  /* Following operations will push one and pop four. */
-  lua_pushlightuserdata(L, (void *) entry_taint);
-  lua_pushcclosure(L, &securehook, 3);
-  lua_rawset(L, 1);
-  luai_apicheck(L, lua_gettop(L) == 1);  /* Should only have the table left on the stack. */
-
-  /* --- END SECURE EXECUTION --- */
-
-  lua_setthreadtaint(L, (lua_Taint *) entry_taint);
   return 0;
 }
+
 
 static int luaB_scrub (lua_State *L) {
   const int argc = lua_gettop(L);
@@ -660,40 +615,43 @@ static int luaB_scrub (lua_State *L) {
   return argc;
 }
 
+
 static const luaL_Reg base_funcs[] = {
-  {"assert", luaB_assert},
-  {"collectgarbage", luaB_collectgarbage},
-  {"dofile", luaB_dofile},
-  {"error", luaB_error},
-  {"forceinsecure", luaB_forceinsecure},
-  {"gcinfo", luaB_gcinfo},
-  {"geterrorhandler", luaB_geterrorhandler},
-  {"getfenv", luaB_getfenv},
-  {"getmetatable", luaB_getmetatable},
-  {"hooksecurefunc", luaB_hooksecurefunc},
-  {"issecure", luaB_issecure},
-  {"issecurevariable", luaB_issecurevariable},
-  {"load", luaB_load},
-  {"loadfile", luaB_loadfile},
-  {"loadstring", luaB_loadstring},
-  {"next", luaB_next},
-  {"pcall", luaB_pcall},
-  {"print", luaB_print},
-  {"rawequal", luaB_rawequal},
-  {"rawget", luaB_rawget},
-  {"rawset", luaB_rawset},
-  {"scrub", luaB_scrub},
-  {"securecall", luaB_securecall},
-  {"select", luaB_select},
-  {"seterrorhandler", luaB_seterrorhandler},
-  {"setfenv", luaB_setfenv},
-  {"setmetatable", luaB_setmetatable},
-  {"tonumber", luaB_tonumber},
-  {"tostring", luaB_tostring},
-  {"type", luaB_type},
-  {"unpack", luaB_unpack},
-  {"xpcall", luaB_xpcall},
-  {NULL, NULL}
+  { .name = "assert", .func = luaB_assert },
+  { .name = "collectgarbage", .func = luaB_collectgarbage },
+  { .name = "dofile", .func = luaB_dofile },
+  { .name = "error", .func = luaB_error },
+  { .name = "forceinsecure", .func = luaB_forceinsecure },
+  { .name = "gcinfo", .func = luaB_gcinfo },
+  { .name = "geterrorhandler", .func = luaB_geterrorhandler },
+  { .name = "getfenv", .func = luaB_getfenv },
+  { .name = "getmetatable", .func = luaB_getmetatable },
+  { .name = "hooksecurefunc", .func = luaB_hooksecurefunc },
+  { .name = "issecure", .func = luaB_issecure },
+  { .name = "issecurevariable", .func = luaB_issecurevariable },
+  { .name = "load", .func = luaB_load },
+  { .name = "loadfile", .func = luaB_loadfile },
+  { .name = "loadstring", .func = luaB_loadstring },
+  { .name = "next", .func = luaB_next },
+  { .name = "pcall", .func = luaB_pcall },
+  { .name = "print", .func = luaB_print },
+  { .name = "rawequal", .func = luaB_rawequal },
+  { .name = "rawget", .func = luaB_rawget },
+  { .name = "rawset", .func = luaB_rawset },
+  { .name = "scrub", .func = luaB_scrub },
+  { .name = "securecall", .func = luaB_securecall },
+  { .name = "securecallfunction", .func = luaB_securecallfunction },
+  { .name = "secureexecuterange", .func = luaB_secureexecuterange },
+  { .name = "select", .func = luaB_select },
+  { .name = "seterrorhandler", .func = luaB_seterrorhandler },
+  { .name = "setfenv", .func = luaB_setfenv },
+  { .name = "setmetatable", .func = luaB_setmetatable },
+  { .name = "tonumber", .func = luaB_tonumber },
+  { .name = "tostring", .func = luaB_tostring },
+  { .name = "type", .func = luaB_type },
+  { .name = "unpack", .func = luaB_unpack },
+  { .name = "xpcall", .func = luaB_xpcall },
+  { .name = NULL, .func = NULL },
 };
 
 
@@ -748,8 +706,7 @@ static int auxresume (lua_State *L, lua_State *co, int narg) {
     return -1;  /* error flag */
   }
   lua_xmove(L, co, narg);
-  lua_setlevel(L, co);
-  status = lua_resume(co, narg);
+  status = lua_resumefrom(co, L, narg);
   if (status == 0 || status == LUA_YIELD) {
     int nres = lua_gettop(co);
     if (!lua_checkstack(L, nres + 1))

@@ -17,6 +17,7 @@
 #include "ldo.h"
 #include "lfunc.h"
 #include "llex.h"
+#include "lmanip.h"
 #include "lmem.h"
 #include "lobject.h"
 #include "lopcodes.h"

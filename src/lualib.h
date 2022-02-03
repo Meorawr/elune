@@ -42,6 +42,12 @@ LUALIB_API int (luaopen_package) (lua_State *L);
 #define LUA_BITLIBNAME	"bit"
 LUALIB_API int (luaopen_bit) (lua_State *L);
 
+#define LUA_COMPATLIBNAME	"compat"
+LUALIB_API int (luaopen_compat) (lua_State *L);
+
+#define LUA_SECLIBNAME	"security"
+LUALIB_API int (luaopen_security) (lua_State *L);
+
 
 /* open all previous libraries */
 LUALIB_API void (luaL_openlibs) (lua_State *L);

@@ -22,9 +22,13 @@ LUAI_FUNC LUA_NORETURN void luaG_typeerror (lua_State *L, const TValue *o, const
 LUAI_FUNC LUA_NORETURN void luaG_concaterror (lua_State *L, StkId p1, StkId p2);
 LUAI_FUNC LUA_NORETURN void luaG_aritherror (lua_State *L, const TValue *p1, const TValue *p2);
 LUAI_FUNC LUA_NORETURN void luaG_ordererror (lua_State *L, const TValue *p1, const TValue *p2);
+LUAI_FUNC LUA_NORETURN void luaG_overflowerror (lua_State *L, lua_Number n);
 LUAI_FUNC LUA_NORETURN void luaG_runerror (lua_State *L, const char *fmt, ...);
 LUAI_FUNC LUA_NORETURN void luaG_errormsg (lua_State *L);
 LUAI_FUNC int luaG_checkcode (const Proto *pt);
 LUAI_FUNC int luaG_checkopenop (Instruction i);
+LUAI_FUNC int luaG_getinfo (lua_State *L, CallInfo *ci, const char *what, lua_Debug *ar);
+LUAI_FUNC uint64_t luaG_gettickcount (void);
+LUAI_FUNC uint64_t luaG_gettickfrequency (void);
 
 #endif

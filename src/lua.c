@@ -23,10 +23,6 @@ static lua_State *globalL = NULL;
 
 static const char *progname = LUA_PROGNAME;
 
-static int runtainted = 0;
-
-static lua_Taint taint = { "*** TaintForced ***", NULL };
-
 
 static void lstop (lua_State *L, lua_Debug *ar) {
   (void)ar;  /* unused arg. */
@@ -99,13 +95,9 @@ static int traceback (lua_State *L) {
 
 static int docall (lua_State *L, int narg, int clear) {
   int status;
-  int base = lua_gettop(L) - narg;  /* function index */
-  lua_pushcfunction(L, traceback);  /* push traceback function */
-  lua_insert(L, base);  /* put it under chunk and args */
   signal(SIGINT, laction);
-  status = lua_pcall(L, narg, (clear ? 0 : LUA_MULTRET), base);
+  status = lua_pcall(L, narg, (clear ? 0 : LUA_MULTRET), LUA_ERRORHANDLERINDEX);
   signal(SIGINT, SIG_DFL);
-  lua_remove(L, base);  /* remove traceback function */
   /* force a complete garbage collection in case of errors */
   if (status != 0) lua_gc(L, LUA_GCCOLLECT, 0);
   return status;
@@ -136,14 +128,12 @@ static int getargs (lua_State *L, char **argv, int n) {
 
 
 static int dofile (lua_State *L, const char *name) {
-  lua_setthreadtaint(L, runtainted ? &taint : NULL);
   int status = luaL_loadfile(L, name) || docall(L, 0, 1);
   return report(L, status);
 }
 
 
 static int dostring (lua_State *L, const char *s, const char *name) {
-  lua_setthreadtaint(L, runtainted ? &taint : NULL);
   int status = luaL_loadbuffer(L, s, strlen(s), name) || docall(L, 0, 1);
   return report(L, status);
 }
@@ -227,9 +217,9 @@ static void dotty (lua_State *L) {
     if (status == 0) status = docall(L, 0, 0);
     report(L, status);
     if (status == 0 && lua_gettop(L) > 0) {  /* any result to print? */
-      lua_getglobal(L, "print");
+      lua_getfield(L, LUA_GLOBALSINDEX, "print");
       lua_insert(L, 1);
-      if (lua_pcall(L, lua_gettop(L)-1, 0, 0) != 0)
+      if (lua_pcall(L, lua_gettop(L)-1, 0, LUA_ERRORHANDLERINDEX) != 0)
         l_message(progname, lua_pushfstring(L,
                                "error calling " LUA_QL("print") " (%s)",
                                lua_tostring(L, -1)));
@@ -250,7 +240,6 @@ static int handle_script (lua_State *L, char **argv, int n) {
   fname = argv[n];
   if (strcmp(fname, "-") == 0 && strcmp(argv[n-1], "--") != 0)
     fname = NULL;  /* stdin */
-  lua_setthreadtaint(L, runtainted ? &taint : NULL);
   status = luaL_loadfile(L, fname);
   lua_insert(L, -(narg+1));
   if (status == 0)
@@ -286,7 +275,6 @@ static int collectargs (char **argv, int *pi, int *pv, int *pe) {
         break;
       case 't':
         notail(argv[i]);
-        runtainted = 1;
         break;
       case 'e':
         *pe = 1;  /* go through */
@@ -326,6 +314,10 @@ static int runargs (lua_State *L, char **argv, int n) {
           return 1;  /* stop if file fails */
         break;
       }
+      case 't': {
+        luaL_forceinsecure(L);
+        break;
+      }
       default: break;
     }
   }
@@ -359,6 +351,9 @@ static int pmain (lua_State *L) {
   if (argv[0] && argv[0][0]) progname = argv[0];
   lua_gc(L, LUA_GCSTOP, 0);  /* stop collector during initialization */
   luaL_openlibs(L);  /* open libraries */
+  lua_pushcfunction(L, traceback);  /* push traceback function */
+  lua_replace(L, LUA_ERRORHANDLERINDEX);  /* install it as global error handler */
+  lua_settaintmode(L, LUA_TAINT_RDRW);  /* enable taint propagation */
   lua_gc(L, LUA_GCRESTART, 0);
   s->status = handle_luainit(L);
   if (s->status != 0) return 0;

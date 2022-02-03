@@ -16,6 +16,7 @@
 
 #include "ldo.h"
 #include "llex.h"
+#include "lmanip.h"
 #include "lobject.h"
 #include "lparser.h"
 #include "lstate.h"

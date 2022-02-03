@@ -110,7 +110,7 @@ static int getfield (lua_State *L, const char *key, int d) {
   int res;
   lua_getfield(L, -1, key);
   if (lua_isnumber(L, -1))
-    res = (int)lua_tointeger(L, -1);
+    res = lua_toint(L, -1);
   else {
     if (d < 0)
       return luaL_error(L, "field " LUA_QS " missing in date table", key);
@@ -217,26 +217,28 @@ static int os_exit (lua_State *L) {
   exit(luaL_optint(L, 1, EXIT_SUCCESS));
 }
 
+
 static const luaL_Reg syslib[] = {
-  {"clock",     os_clock},
-  {"date",      os_date},
-  {"difftime",  os_difftime},
-  {"execute",   os_execute},
-  {"exit",      os_exit},
-  {"getenv",    os_getenv},
-  {"remove",    os_remove},
-  {"rename",    os_rename},
+  {"clock", os_clock},
+  {"date", os_date},
+  {"difftime", os_difftime},
+  {"execute", os_execute},
+  {"exit", os_exit},
+  {"getenv", os_getenv},
+  {"remove", os_remove},
+  {"rename", os_rename},
   {"setlocale", os_setlocale},
-  {"time",      os_time},
-  {"tmpname",   os_tmpname},
+  {"time", os_time},
+  {"tmpname", os_tmpname},
   {NULL, NULL}
 };
 
-static const luaL_RegAlias syslib_aliases[] = {
-  {"date",      "date"},
-  {"difftime",  "difftime"},
-  {"time",      "time"},
-  {NULL, NULL}
+
+static const luaL_Reg globalsyslib[] = {
+  { .name = "date", .func = os_date },
+  { .name = "difftime", .func = os_difftime },
+  { .name = "time", .func = os_time },
+  { .name = NULL, .func = NULL },
 };
 
 
@@ -245,8 +247,8 @@ static const luaL_RegAlias syslib_aliases[] = {
 
 
 LUALIB_API int luaopen_os (lua_State *L) {
+  luaL_register(L, "_G", globalsyslib);
   luaL_register(L, LUA_OSLIBNAME, syslib);
-  luaL_registeraliases(L, -1, syslib_aliases);
   return 1;
 }
 

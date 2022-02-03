@@ -20,6 +20,7 @@
 #include "ldebug.h"
 #include "ldo.h"
 #include "lfunc.h"
+#include "lmanip.h"
 #include "lobject.h"
 #include "lopcodes.h"
 #include "lstate.h"
@@ -28,6 +29,10 @@
 #include "ltm.h"
 #include "lvm.h"
 
+#if defined(LUA_USE_WINDOWS)
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
 
 
 static const char *getfuncname (lua_State *L, CallInfo *ci, const char **name);
@@ -129,7 +134,7 @@ LUA_API const char *lua_getlocal (lua_State *L, const lua_Debug *ar, int n) {
   const char *name = findlocal(L, ci, n);
   lua_lock(L);
   if (name)
-      luaV_taintbarrier(L, luaA_pushobject(L, ci->base + (n - 1)));
+      luaA_pushobject(L, ci->base + (n - 1));
   lua_unlock(L);
   return name;
 }
@@ -176,7 +181,7 @@ static void info_tailcall (lua_Debug *ar) {
 
 static void collectvalidlines (lua_State *L, Closure *f) {
   if (f == NULL || f->c.isC) {
-    setnilvalue(L->top);
+    setnilvalue(L, L->top);
   }
   else {
     Table *t = luaH_new(L, 0, 0);
@@ -229,6 +234,13 @@ static int auxgetinfo (lua_State *L, const char *what, lua_Debug *ar,
 }
 
 
+LUAI_FUNC int luaG_getinfo (lua_State *L, CallInfo *ci, const char *what, lua_Debug *ar) {
+  StkId func = ci->func;
+  Closure *f = ttisfunction(func) ? clvalue(func) : NULL;
+  return auxgetinfo(L, what, ar, f, ci);
+}
+
+
 LUA_API int lua_getinfo (lua_State *L, const char *what, lua_Debug *ar) {
   int status;
   Closure *f = NULL;
@@ -248,7 +260,7 @@ LUA_API int lua_getinfo (lua_State *L, const char *what, lua_Debug *ar) {
   }
   status = auxgetinfo(L, what, ar, f, ci);
   if (strchr(what, 'f')) {
-    if (f == NULL) setnilvalue(L->top);
+    if (f == NULL) setnilvalue(L, L->top);
     else setclvalue(L, L->top, f);
     incr_top(L);
   }
@@ -258,20 +270,6 @@ LUA_API int lua_getinfo (lua_State *L, const char *what, lua_Debug *ar) {
   return status;
 }
 
-
-LUA_API void lua_settrapmask (lua_State *L, int mask) {
-  G(L)->trapmask = cast_byte(mask);
-}
-
-
-LUA_API int lua_gettrapmask (lua_State *L) {
-  return G(L)->trapmask;
-}
-
-
-LUA_API int lua_checktrap (lua_State *L, int trap) {
-  return (G(L)->trapmask & trap) != 0;
-}
 
 /*
 ** {======================================================
@@ -618,6 +616,11 @@ void luaG_ordererror (lua_State *L, const TValue *p1, const TValue *p2) {
 }
 
 
+void luaG_overflowerror (lua_State *L, lua_Number n) {
+  luaG_runerror(L, "integer overflow attempting to store %f", n);
+}
+
+
 static void addinfo (lua_State *L, const char *msg) {
   CallInfo *ci = L->ci;
   if (isLua(ci)) {  /* is Lua code? */
@@ -629,15 +632,36 @@ static void addinfo (lua_State *L, const char *msg) {
 }
 
 
+void luaG_pusherrorhandler (lua_State *L) {
+  lua_assert(L->errfunc != 0);
+
+  if (L->errfunc == LUA_ERRORHANDLERINDEX) {
+    setobj2s(L, L->top - 1, &(G(L)->l_errfunc));
+  } else {
+    setobjs2s(L, L->top - 1, restorestack(L, L->errfunc));
+  }
+
+  incr_top(L);
+}
+
+
 void luaG_errormsg (lua_State *L) {
   if (L->errfunc != 0) {  /* is there an error handling function? */
-    StkId errfunc = restorestack(L, L->errfunc);
-    if (!ttisfunction(errfunc)) luaD_throw(L, LUA_ERRERR);
+    StkId errfunc;
+
     setobjs2s(L, L->top, L->top - 1);  /* move argument */
-    setobjs2s(L, L->top - 1, errfunc);  /* push function */
-    incr_top(L);
-    luaD_call(L, L->top - 2, 1);  /* call it */
+    luaG_pusherrorhandler(L);  /* push function */
+    errfunc = L->top - 2;
+
+    if (!ttisfunction(errfunc)) {
+      setobjs2s(L, errfunc, L->top - 1);  /* replace function with argument */
+      L->top--;  /* pop argument */
+      luaD_throw(L, LUA_ERRERR);
+    } else {
+      luaD_call(L, errfunc, 1);  /* call it */
+    }
   }
+
   luaD_throw(L, LUA_ERRRUN);
 }
 
@@ -648,5 +672,39 @@ void luaG_runerror (lua_State *L, const char *fmt, ...) {
   addinfo(L, luaO_pushvfstring(L, fmt, argp));
   va_end(argp);
   luaG_errormsg(L);
+}
+
+
+LUAI_FUNC uint64_t luaG_gettickcount (void) {
+#if defined(LUA_USE_WINDOWS)
+  /* Windows platform */
+  LARGE_INTEGER counter;
+  QueryPerformanceCounter(&counter);
+  return counter.QuadPart;
+#elif defined(LUA_USE_LINUX)
+  struct timespec time;
+  uint64_t ticks;
+  clock_gettime(CLOCK_MONOTONIC_RAW, &time);
+  ticks = (time.tv_sec * 1e9) + time.tv_nsec;
+  return ticks;
+#else
+  /* Generic platform */
+  return clock();
+#endif
+}
+
+
+LUAI_FUNC uint64_t luaG_gettickfrequency (void) {
+#if defined(LUA_USE_WINDOWS)
+  /* Windows platform */
+  LARGE_INTEGER frequency;
+  QueryPerformanceFrequency(&frequency);
+  return frequency.QuadPart;
+#elif defined(LUA_USE_LINUX)
+  return 1e9;  /* Always measured in nanoseconds. */
+#else
+  /* Generic platform */
+  return CLOCKS_PER_SEC;
+#endif
 }
 

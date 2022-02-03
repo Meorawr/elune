@@ -20,6 +20,7 @@
 #include "ldo.h"
 #include "lfunc.h"
 #include "lgc.h"
+#include "lmanip.h"
 #include "lmem.h"
 #include "lobject.h"
 #include "lstate.h"
@@ -53,11 +54,12 @@ static TValue *index2adr (lua_State *L, int idx) {
     if (o >= L->top) return cast(TValue *, luaO_nilobject);
     else return o;
   }
-  else if (idx > LUA_REGISTRYINDEX) {
+  else if (idx > LUA_ERRORHANDLERINDEX) {
     api_check(L, idx != 0 && -idx <= L->top - L->base);
     return L->top + idx;
   }
   else switch (idx) {  /* pseudo-indices */
+    case LUA_ERRORHANDLERINDEX: return &G(L)->l_errfunc;
     case LUA_REGISTRYINDEX: return registry(L);
     case LUA_ENVIRONINDEX: {
       Closure *func = curr_func(L);
@@ -86,7 +88,7 @@ static Table *getcurrenv (lua_State *L) {
 }
 
 
-void luaA_pushobject (lua_State *L, const TValue *o) {
+LUAI_FUNC void luaA_pushobject (lua_State *L, const TValue *o) {
   setobj2s(L, L->top, o);
   api_incr_top(L);
 }
@@ -156,6 +158,15 @@ LUA_API lua_State *lua_newthread (lua_State *L) {
 */
 
 
+LUA_API int lua_absindex (lua_State *L, int idx) {
+  if (idx > 0 || idx <= LUA_ERRORHANDLERINDEX) {
+    return idx;
+  } else {
+    return cast_int(L->top - L->base) + idx + 1;
+  }
+}
+
+
 LUA_API int lua_gettop (lua_State *L) {
   return cast_int(L->top - L->base);
 }
@@ -166,7 +177,7 @@ LUA_API void lua_settop (lua_State *L, int idx) {
   if (idx >= 0) {
     api_check(L, idx <= L->stack_last - L->base);
     while (L->top < L->base + idx)
-      setnilvalue(L->top++);
+      setnilvalue(L, L->top++);
     L->top = L->base + idx;
   }
   else {
@@ -200,27 +211,42 @@ LUA_API void lua_insert (lua_State *L, int idx) {
 }
 
 
+static void moveto (lua_State *L, StkId fr, int idx) {
+  if (idx == LUA_ENVIRONINDEX) {
+    Closure *func = curr_func(L);
+    api_check(L, ttistable(fr));
+    func->c.env = hvalue(fr);
+    luaC_barrier(L, func, fr);
+  } else {
+    StkId to = index2adr(L, idx);
+    api_checkvalidindex(L, to);
+    setobj(L, to, fr);
+
+    if (idx < LUA_GLOBALSINDEX) { /* function upvalue? */
+      luaC_barrier(L, curr_func(L), fr);
+    }
+  }
+}
+
+
 LUA_API void lua_replace (lua_State *L, int idx) {
-  StkId o;
   lua_lock(L);
   /* explicit test for incompatible code */
   if (idx == LUA_ENVIRONINDEX && L->ci == L->base_ci)
     luaG_runerror(L, "no calling environment");
   api_checknelems(L, 1);
-  o = index2adr(L, idx);
-  api_checkvalidindex(L, o);
-  if (idx == LUA_ENVIRONINDEX) {
-    Closure *func = curr_func(L);
-    api_check(L, ttistable(L->top - 1));
-    func->c.env = hvalue(L->top - 1);
-    luaC_barrier(L, func, L->top - 1);
-  }
-  else {
-    setobj(L, o, L->top - 1);
-    if (idx < LUA_GLOBALSINDEX)  /* function upvalue? */
-      luaC_barrier(L, curr_func(L), L->top - 1);
-  }
+  moveto(L, L->top - 1, idx);
   L->top--;
+  lua_unlock(L);
+}
+
+
+LUA_API void lua_copy (lua_State *L, int fromidx, int toidx) {
+  StkId fr;
+  lua_lock(L);
+  fr = index2adr(L, fromidx);
+  api_checkvalidindex(L, fr);
+  moveto(L, fr, toidx);
   lua_unlock(L);
 }
 
@@ -231,7 +257,6 @@ LUA_API void lua_pushvalue (lua_State *L, int idx) {
   api_incr_top(L);
   lua_unlock(L);
 }
-
 
 
 /*
@@ -334,6 +359,19 @@ LUA_API lua_Integer lua_tointeger (lua_State *L, int idx) {
 }
 
 
+LUA_API int lua_toint (lua_State *L, int idx) {
+  lua_Number n = lua_tonumber(L, idx);
+
+  if (n < LUA_INTEGER_MIN || n > LUA_INTEGER_MAX) {
+    lua_lock(L);
+    luaG_overflowerror(L, n);
+    lua_unlock(L);
+  }
+
+  return (int) n;
+}
+
+
 LUA_API int lua_toboolean (lua_State *L, int idx) {
   const TValue *o = index2adr(L, idx);
   return !l_isfalse(o);
@@ -373,6 +411,19 @@ LUA_API size_t lua_objlen (lua_State *L, int idx) {
     }
     default: return 0;
   }
+}
+
+
+LUA_API size_t lua_objsize (lua_State *L, int idx) {
+  StkId o;
+  size_t s;
+
+  lua_lock(L);
+  o = index2adr(L, idx);
+  s = (iscollectable(o) ? luaC_objectsize(gcvalue(o)) : 0);
+  lua_unlock(L);
+
+  return s;
 }
 
 
@@ -420,8 +471,7 @@ LUA_API const void *lua_topointer (lua_State *L, int idx) {
 
 LUA_API void lua_pushnil (lua_State *L) {
   lua_lock(L);
-  setnilvalue(L->top);
-  luaV_writetaint(L, L->top);
+  setnilvalue(L, L->top);
   api_incr_top(L);
   lua_unlock(L);
 }
@@ -538,7 +588,6 @@ LUA_API void lua_gettable (lua_State *L, int idx) {
   t = index2adr(L, idx);
   api_checkvalidindex(L, t);
   luaV_gettable(L, t, L->top - 1, L->top - 1);
-  luaV_taint(L, L->top - 1);  /* propagate taint to/from read value */
   lua_unlock(L);
 }
 
@@ -551,7 +600,6 @@ LUA_API void lua_getfield (lua_State *L, int idx, const char *k) {
   api_checkvalidindex(L, t);
   setsvalue(L, &key, luaS_new(L, k));
   luaV_gettable(L, t, &key, L->top);
-  luaV_taint(L, L->top);  /* propagate taint to/from read value */
   api_incr_top(L);
   lua_unlock(L);
 }
@@ -563,7 +611,6 @@ LUA_API void lua_rawget (lua_State *L, int idx) {
   t = index2adr(L, idx);
   api_check(L, ttistable(t));
   setobj2s(L, L->top - 1, luaH_get(hvalue(t), L->top - 1));
-  luaV_taint(L, L->top - 1);  /* propagate taint to/from read value */
   lua_unlock(L);
 }
 
@@ -574,7 +621,6 @@ LUA_API void lua_rawgeti (lua_State *L, int idx, int n) {
   o = index2adr(L, idx);
   api_check(L, ttistable(o));
   setobj2s(L, L->top, luaH_getnum(hvalue(o), n));
-  luaV_taint(L, L->top - 1);  /* propagate taint to/from read value */
   api_incr_top(L);
   lua_unlock(L);
 }
@@ -634,18 +680,9 @@ LUA_API void lua_getfenv (lua_State *L, int idx) {
       setobj2s(L, L->top,  gt(thvalue(o)));
       break;
     default:
-      setnilvalue(L->top);
+      setnilvalue(L, L->top);
       break;
   }
-
-  /* consult __environment metatable field if present */
-  if (ttistable(L->top)) {
-    const TValue *e = luaT_gettmbyobj(L, L->top, TM_ENVIRONMENT);
-
-    if (!ttisnil(e))
-      setobj2s(L, L->top, e);
-  }
-
   api_incr_top(L);
   lua_unlock(L);
 }
@@ -823,9 +860,9 @@ LUA_API int lua_pcall (lua_State *L, int nargs, int nresults, int errfunc) {
   lua_lock(L);
   api_checknelems(L, nargs+1);
   checkresults(L, nargs, nresults);
-  if (errfunc == 0)
-    func = 0;
-  else {
+  if (errfunc == 0 || errfunc == LUA_ERRORHANDLERINDEX) {
+    func = errfunc;
+  } else {
     StkId o = index2adr(L, errfunc);
     api_checkvalidindex(L, o);
     func = savestack(L, o);
@@ -969,7 +1006,6 @@ LUA_API int lua_gc (lua_State *L, int what, int data) {
 }
 
 
-
 /*
 ** miscellaneous functions
 */
@@ -991,8 +1027,6 @@ LUA_API int lua_next (lua_State *L, int idx) {
   api_check(L, ttistable(t));
   more = luaH_next(L, hvalue(t), L->top - 1);
   if (more) {
-    luaV_taint(L, L->top - 1);  /* propagate taint to/from read key */
-    luaV_taint(L, L->top);      /* propagate taint to/from read value */
     api_incr_top(L);
   }
   else  /* no more elements */
@@ -1075,7 +1109,7 @@ LUA_API const char *lua_getupvalue (lua_State *L, int funcindex, int n) {
   lua_lock(L);
   name = aux_upvalue(index2adr(L, funcindex), n, &val);
   if (name) {
-    luaV_taintbarrier(L, setobj2s(L, L->top, val));   /* don't propagate taint as this is a debug API */
+    setobj2s(L, L->top, val);
     api_incr_top(L);
   }
   lua_unlock(L);
@@ -1100,214 +1134,546 @@ LUA_API const char *lua_setupvalue (lua_State *L, int funcindex, int n) {
   return name;
 }
 
+
+/*
+** {======================================================================
+** Profiling API
+** =======================================================================
+*/
+
+
+static uint64_t tickstousecs (lu_int64 ticks) {
+  return (ticks * 1'000'000) / luaG_gettickfrequency();
+}
+
+
+LUA_API uint64_t lua_microclock (lua_State *L) {
+  global_State *g;
+  lu_int64 ticks;
+  lu_int64 usecs;
+
+  lua_lock(L);
+  g = G(L);
+  ticks = luaG_gettickcount();
+  usecs = tickstousecs(ticks - g->startticks);
+  lua_unlock(L);
+
+  return usecs;
+}
+
+
+static SourceStats *getsourcestats (global_State *g, TString *owner) {
+  SourceStats *st = g->sourcestats;
+  SourceStats *pt = NULL;
+
+  while (st != NULL && st->owner != owner) {
+    pt = st;
+    st = st->next;
+  }
+
+  if (st != NULL && pt != NULL) {
+    /* Re-link to place this object at the head of stats list. */
+    pt->next = st->next;
+    st->next = g->sourcestats;
+    g->sourcestats = st;
+  }
+
+  return st;
+}
+
+
+static SourceStats *newsourcestats (global_State *g, TString *owner) {
+  SourceStats *st = getsourcestats(g, owner);
+
+  if (st == NULL) {
+    st = luaM_new(g->mainthread, SourceStats);
+    st->owner = owner;
+    st->execticks = 0;
+    st->bytesowned = 0;
+    st->next = g->sourcestats;
+    g->sourcestats = st;
+  }
+
+  return st;
+}
+
+
+static void resetstats (global_State *g) {
+  SourceStats *st;
+  GCObject *o;
+
+  g->execticks = 0;
+
+  /* Reset source-owned statistics */
+  for (st = g->sourcestats; st != NULL; st = st->next) {
+    st->execticks = 0;
+    st->bytesowned = 0;
+  }
+
+  /* Reset function statistics */
+  for (o = g->rootgc; o != NULL; o = o->gch.next) {
+    if (ttisfunction(&o->gch)) {
+      ClosureStats *cs = gco2cl(o)->c.stats;
+
+      if (cs != NULL) {
+        cs->calls = 0;
+        cs->execticks = 0;
+        cs->subexecticks = 0;
+      }
+    }
+  }
+}
+
+
+LUA_API void lua_enablestats (lua_State *L, int enable) {
+  global_State *g;
+
+  lua_lock(L);
+  g = G(L);
+
+  if (enable && !g->enablestats) {  /* Enabling? */
+    GCObject *o;
+    luaC_checkGC(L);
+
+    /* Allocate closure statistics */
+    for (o = g->rootgc; o != NULL; o = o->gch.next) {
+      if (ttisfunction(&o->gch)) {
+        Closure *cl = gco2cl(o);
+
+        if (cl->c.stats == NULL) {
+          cl->c.stats = luaF_newclosurestats(g->mainthread);
+        }
+      }
+    }
+  }
+
+  g->enablestats = cast_byte(enable);
+  lua_unlock(L);
+}
+
+
+LUA_API void lua_collectstats (lua_State *L) {
+  global_State *g;
+  GCObject *o;
+
+  lua_lock(L);
+  g = G(L);
+
+  luaC_checkGC(L);
+  resetstats(g);
+
+  for (o = g->rootgc; o != NULL; o = o->gch.next) {
+    SourceStats *st = newsourcestats(g, o->gch.taint);
+
+    st->bytesowned += luaC_objectsize(o);
+
+    if (ttisfunction(&o->gch)) {
+      ClosureStats *cs = gco2cl(o)->c.stats;
+
+      if (cs != NULL) {
+        g->execticks += cs->execticks;
+        st->execticks += cs->execticks;
+      }
+    }
+  }
+
+  lua_unlock(L);
+}
+
+
+LUA_API void lua_resetstats (lua_State *L) {
+  lua_lock(L);
+  resetstats(G(L));
+  lua_unlock(L);
+}
+
+
+LUA_API void lua_getglobalstats (lua_State *L, lua_GlobalStats *stats) {
+  global_State *g;
+  lua_lock(L);
+  g = G(L);
+  stats->exectime = tickstousecs(g->execticks);
+  stats->bytesused = g->totalbytes;
+  stats->bytesallocated = g->bytesallocated;
+  lua_unlock(L);
+}
+
+
+LUA_API void lua_getsourcestats (lua_State *L, const char *source, lua_SourceStats *stats) {
+  TString *ts;
+  SourceStats *st;
+
+  lua_lock(L);
+  luaC_checkGC(L);
+  ts = ((source != NULL) ? luaS_new(L, source) : NULL);
+  st = getsourcestats(G(L), ts);
+
+  if (st != NULL) {
+    stats->exectime = tickstousecs(st->execticks);
+    stats->bytesowned = st->bytesowned;
+  } else {
+    stats->exectime = 0;
+    stats->bytesowned = 0;
+  }
+
+  lua_unlock(L);
+}
+
+
+LUA_API void lua_getfunctionstats (lua_State *L, int funcindex, lua_FunctionStats *stats) {
+  StkId o;
+  ClosureStats *cs;
+
+  lua_lock(L);
+  o = index2adr(L, funcindex);
+  api_checkvalidindex(L, o);
+  api_check(L, ttisfunction(o));
+  cs = clvalue(o)->c.stats;
+
+  if (cs != NULL) {
+    stats->calls = cs->calls;
+    stats->exectime = tickstousecs(cs->execticks);
+    stats->subexectime = tickstousecs(cs->subexecticks);
+  } else {
+    stats->calls = 0;
+    stats->exectime = 0;
+    stats->subexectime = 0;
+  }
+
+  lua_unlock(L);
+}
+
+
+/* }====================================================================== */
+
+
 /*
 ** {======================================================================
 ** Security API
 ** =======================================================================
 */
 
-LUA_API lua_Taint *lua_getthreadtaint (lua_State *L) {
-  lua_Taint *t;
 
-  lua_lock(L);
-  t = L->taint;
-  lua_unlock(L);
+static int gettaintmode (const lua_State *L) {
+  int mode = 0;
 
-  return t;
+  if (L->ts.readmask == LUA_TAINTALLOWED)
+    mode |= LUA_TAINT_RDONLY;
+
+  if (L->ts.writemask == LUA_TAINTALLOWED)
+    mode |= LUA_TAINT_WRONLY;
+
+  return mode;
 }
 
-LUA_API void lua_setthreadtaint (lua_State *L, lua_Taint *t) {
-  lua_lock(L);
-  L->taint = t;
-  lua_unlock(L);
+
+static void settaintmode (lua_State *L, int mode) {
+  L->ts.readmask = ((mode & LUA_TAINT_RDONLY) ? LUA_TAINTALLOWED : LUA_TAINTBLOCKED);
+  L->ts.writemask = ((mode & LUA_TAINT_WRONLY) ? LUA_TAINTALLOWED : LUA_TAINTBLOCKED);
 }
 
-LUA_API lua_Taint *lua_getvaluetaint (lua_State *L, int idx) {
-  lua_Taint *t;
-  StkId v;
 
-  lua_lock(L);
-  v = index2adr(L, idx);
-  api_checkvalidindex(L, v);
-  t = v->taint;
-  lua_unlock(L);
-
-  return t;
-}
-
-LUA_API void lua_setvaluetaint (lua_State *L, int idx, lua_Taint *t) {
-  StkId v;
-
-  lua_lock(L);
-  v = index2adr(L, idx);
-  api_checkvalidindex(L, v);
-  v->taint = t;
-  lua_unlock(L);
-}
-
-LUA_API lua_Taint *lua_gettabletaint (lua_State *L, int idx) {
-  StkId table;
-  TValue value;
-  lua_Taint *taint;
-
-  lua_lock(L);
-  table = index2adr(L, idx);
-  api_check(L, ttistable(table));
-  luaV_taintbarrier(L, luaV_gettable(L, table, L->top - 1, &value));
-  taint = value.taint;
-  lua_unlock(L);
-
-  return taint;
-}
-
-LUA_API void lua_settabletaint (lua_State *L, int idx, lua_Taint *t) {
-  StkId table;
-  TValue value;
-
-  lua_lock(L);
-  table = index2adr(L, idx);
-  api_check(L, ttistable(table));
-  luaV_taintbarrier(L, luaV_gettable(L, table, L->top - 1, &value));
-  value.taint = t;
-  luaV_taintbarrier(L, luaV_settable(L, table, L->top - 1, &value));
-  lua_unlock(L);
-}
-
-LUA_API lua_Taint *lua_getfieldtaint (lua_State *L, int idx, const char *k) {
-  StkId table;
-  TValue key;
-  TValue value;
-  lua_Taint *taint;
-
-  lua_lock(L);
-  table = index2adr(L, idx);
-  api_check(L, ttistable(table));
-  setsvalue(L, &key, luaS_new(L, k));
-  luaV_taintbarrier(L, luaV_gettable(L, table, &key, &value));
-  taint = value.taint;
-  lua_unlock(L);
-
-  return taint;
-}
-
-LUA_API void lua_setfieldtaint (lua_State *L, int idx, const char *k, lua_Taint *t) {
-  StkId table;
-  TValue key;
-  TValue value;
-
-  lua_lock(L);
-  table = index2adr(L, idx);
-  api_check(L, ttistable(table));
-  setsvalue(L, &key, luaS_new(L, k));
-  luaV_taintbarrier(L, luaV_gettable(L, table, &key, &value));
-  value.taint = t;
-  luaV_taintbarrier(L, luaV_settable(L, table, &key, &value));
-  lua_unlock(L);
-}
-
-LUA_API lua_Taint *lua_getobjecttaint (lua_State *L, int idx) {
-  lua_Taint *t;
-  StkId v;
-
-  lua_lock(L);
-  v = index2adr(L, idx);
-  api_check(L, iscollectable(v));
-  t = gcvalue(v)->gch.taint;
-  lua_unlock(L);
-
-  return t;
-}
-
-LUA_API void lua_setobjecttaint (lua_State *L, int idx, lua_Taint *t) {
-  StkId v;
-
-  lua_lock(L);
-  v = index2adr(L, idx);
-  api_check(L, iscollectable(v));
-  gcvalue(v)->gch.taint = t;
-  lua_unlock(L);
-}
-
-LUA_API void lua_setstacktaint (lua_State *L, int from, int to, lua_Taint *t) {
-  lua_lock(L);
-
-  StkId cur = index2adr(L, from);
-  StkId end = index2adr(L, to);
-
-  api_checkvalidindex(L, cur);
-  api_checkvalidindex(L, end);
-
-  for (; cur <= end; ++cur) {
-    cur->taint = t;
-  }
-
-  lua_unlock(L);
-}
-
-LUA_API int lua_securecall (lua_State *L, int nargs, int nresults, int errfunc) {
-  ptrdiff_t errpos;             /* relative position of errfunc from stack base */
-  ptrdiff_t funcpos;            /* relative position of func _or_ first return */
-  struct CallS c;               /* function call data */
-  int status;                   /* function call status result */
-
-  lua_lock(L);
-  api_checknelems(L, nargs + 1);
-  checkresults(L, nargs, nresults);
-
-  if (errfunc == 0) {
-    errpos = 0;
+static const char *gettaint (const TString* ts) {
+  if (ts != NULL) {
+    return getstr(ts);
   } else {
-    StkId o = index2adr(L, errfunc);
-    api_checkvalidindex(L, o);
-    errpos = savestack(L, o);
+    return NULL;
+  }
+}
+
+
+static void settaint (lua_State *L, TString **dst, const char *name) {
+  if (name != NULL) {
+    luaC_checkGC(L);
+    *dst = luaS_new(L, name);
+    luaS_fix(*dst);
+  } else {
+    *dst = NULL;
+  }
+}
+
+
+LUA_API int lua_gettaintmode (lua_State *L) {
+  return gettaintmode(L);
+}
+
+
+LUA_API void lua_settaintmode (lua_State *L, int mode) {
+  settaintmode(L, mode);
+}
+
+
+LUA_API int lua_istaintexpected (lua_State *L) {
+  return luaE_istaintexpected(L);
+}
+
+
+LUA_API void lua_taintstack (lua_State *L, const char *name) {
+  TString *ts;
+
+  lua_lock(L);
+  settaint(L, &ts, name);
+  luaE_taintstack(L, ts);
+  lua_unlock(L);
+}
+
+
+LUA_API void lua_taintvalue (lua_State *L, int idx) {
+  StkId o = index2adr(L, idx);
+  api_checkvalidindex(L, o);
+  luaE_taintvalue(L, o);
+}
+
+
+LUA_API void lua_taintobject (lua_State *L, int idx) {
+  StkId o = index2adr(L, idx);
+  api_checkvalidindex(L, o);
+
+  if (iscollectable(o)) {
+    lua_lock(L);
+    luaE_taintobject(L, gcvalue(o));
+    lua_unlock(L);
+  }
+}
+
+
+LUA_API void lua_tainttop (lua_State *L, int n) {
+  StkId o;
+  api_checknelems(L, n);
+
+  for (o = (L->top - n); o < L->top; ++o) {
+    luaE_taintvalue(L, o);
+  }
+}
+
+
+LUA_API const char *lua_getstacktaint (lua_State *L) {
+  return gettaint(L->ts.stacktaint);
+}
+
+
+LUA_API const char *lua_getvaluetaint (lua_State* L, int idx) {
+  StkId o = index2adr(L, idx);
+  api_checkvalidindex(L, o);
+  return gettaint(o->taint);
+}
+
+
+LUA_API const char *lua_getobjecttaint (lua_State *L, int idx) {
+  StkId o;
+  TString *ts;
+
+  lua_lock(L);
+  o = index2adr(L, idx);
+  api_checkvalidindex(L, o);
+  ts = (iscollectable(o) ? gcvalue(o)->gch.taint : NULL);
+  lua_unlock(L);
+
+  return gettaint(ts);
+}
+
+
+LUA_API const char *lua_getnewobjecttaint (lua_State *L) {
+  return gettaint(L->ts.newgctaint);
+}
+
+
+LUA_API const char *lua_getnewclosuretaint (lua_State *L) {
+  return gettaint(L->ts.newcltaint);
+}
+
+
+LUA_API const char *lua_getcalltaint (lua_State *L, const lua_Debug *ar) {
+  CallInfo *ci = (L->base_ci + ar->i_ci);
+  TString *ts;
+
+  if (ci == L->ci) {
+    ts = L->ts.stacktaint;
+  } else {
+    ts = ci->savedtaint;
   }
 
-  luaV_taintbarrier(L, {
-    c.func = L->top - (nargs + 1);
-    c.nresults = nresults;
+  return gettaint(ts);
+}
 
-    if (ttisstring(c.func) || luaV_tostring(L, c.func)) {
-      luaV_gettable(L, gt(L), c.func, c.func);
-    }
 
-    funcpos = savestack(L, c.func);
-    status = luaD_pcall(L, f_call, &c, savestack(L, c.func), errpos);
-    adjustresults(L, nresults);
-  });
+LUA_API void lua_setstacktaint (lua_State *L, const char *name) {
+  lua_lock(L);
+  settaint(L, &L->ts.stacktaint, name);
+  lua_unlock(L);
+}
 
-  /* Clear taint from return values if initially secure. */
-  if (!L->taint) {
-    StkId ret = restorestack(L, funcpos);
-    StkId lastret = L->top - 1;
 
-    while (ret <= lastret) {
-      (ret++)->taint = NULL;
-    }
+LUA_API void lua_setvaluetaint (lua_State *L, int idx, const char *name) {
+  StkId o = index2adr(L, idx);
+  api_checkvalidindex(L, o);
+  lua_lock(L);
+  settaint(L, &o->taint, name);
+  lua_unlock(L);
+}
+
+
+LUA_API void lua_setobjecttaint (lua_State *L, int idx, const char *name) {
+  StkId o;
+
+  lua_lock(L);
+  o = index2adr(L, idx);
+  api_checkvalidindex(L, o);
+
+  if (iscollectable(o)) {
+    lua_lock(L);
+    settaint(L, &gcvalue(o)->gch.taint, name);
+    lua_unlock(L);
   }
 
   lua_unlock(L);
-  return status;
 }
 
-LUA_API int lua_secureccall (lua_State *L, lua_CFunction func, void *ud) {
-  struct CCallS c;              /* function call data */
-  int status;                   /* function call status result */
+
+LUA_API void lua_settoptaint (lua_State *L, int n, const char *name) {
+  StkId o;
+  TString *ts;
+
+  lua_lock(L);
+  api_checknelems(L, n);
+  settaint(L, &ts, name);
+
+  for (o = (L->top - n); o < L->top; ++o) {
+    o->taint = ts;
+  }
+
+  lua_unlock(L);
+}
+
+
+LUA_API void lua_setnewobjecttaint (lua_State *L, const char *name) {
+  lua_lock(L);
+  settaint(L, &L->ts.newgctaint, name);
+  lua_unlock(L);
+}
+
+
+LUA_API void lua_setnewclosuretaint (lua_State *L, const char *name) {
+  lua_lock(L);
+  settaint(L, &L->ts.newcltaint, name);
+  lua_unlock(L);
+}
+
+
+LUA_API void lua_copytaint (lua_State *from, lua_State *to) {
+  luaE_taintthread(to, from);
+}
+
+
+LUA_API void lua_savetaint (lua_State *L, lua_TaintState *ts) {
+  ts->mode = gettaintmode(L);
+  ts->stacktaint = gettaint(L->ts.stacktaint);
+  ts->newobjecttaint = gettaint(L->ts.newgctaint);
+  ts->newclosuretaint = gettaint(L->ts.newcltaint);
+}
+
+
+LUA_API void lua_restoretaint (lua_State *L, const lua_TaintState *ts) {
+  TString *stacktaint;
+  TString *newgctaint;
+  TString *newcltaint;
+
+  /* The settaint calls can trigger garbage collection steps individually.
+   * To ensure that the load operation is atomic as far as observers are
+   * concerned, batch them upfront here before mutating the thread state. */
+
+  lua_lock(L);
+  settaint(L, &stacktaint, ts->stacktaint);
+  settaint(L, &newgctaint, ts->newobjecttaint);
+  settaint(L, &newcltaint, ts->newclosuretaint);
+  lua_unlock(L);
+
+  settaintmode(L, ts->mode);
+  L->ts.stacktaint = stacktaint;
+  L->ts.newgctaint = newgctaint;
+  L->ts.newcltaint = newcltaint;
+}
+
+
+LUA_API void lua_exchangetaint (lua_State *L, lua_TaintState *ts) {
+  lua_TaintState temp;
+  lua_savetaint(L, &temp);
+  lua_restoretaint(L, ts);
+  *ts = temp;
+}
+
+
+struct PTCallS {
+    lua_PFunction func;
+    void *ud;
+};
+
+
+void f_PTcall (lua_State *L, void *ud) {
+  struct PTCallS *c = cast(struct PTCallS *, ud);
+  lua_unlock(L);
+  (*c->func)(L, c->ud);
+  lua_lock(L);
+}
+
+
+LUA_API void lua_protecttaint (lua_State *L, lua_PFunction func, void *ud) {
+  TaintState savedts;
+  struct PTCallS c;
+  int status;
 
   lua_lock(L);
   c.func = func;
   c.ud = ud;
+  savedts = L->ts;
+  status = luaD_rawrunprotected(L, f_PTcall, &c);
 
-  luaV_taintbarrier(L, {
-    status = luaD_pcall(L, f_Ccall, &c, savestack(L, L->top), 0);
-  });
+  if (status != 0) {
+    /* Re-throw the captured error after restoring the taint state. We also
+     * clear taint off the top value on the stack (typically an error). This
+     * is safe as - eventually - 'luaD_throw' will lead to a pcall or panic
+     * handler and invoke 'luaD_seterrorobj' which will (depending on the error)
+     * do a stack-to-stack move of this top value, which applies any expected
+     * taint. */
 
-  /* Clear taint from return values if initially secure. */
-  if (status != 0 && !L->taint) {
-    (L->top - 1)->taint = NULL;
+    StkId err = L->top - 1;
+
+    L->ts = savedts;
+    err->taint = NULL;
+    luaD_throw(L, status);
   }
 
   lua_unlock(L);
-  return status;
 }
+
+
+LUA_API void lua_cleartaint (lua_State *L) {
+  L->ts.stacktaint = NULL;
+  L->ts.newgctaint = NULL;
+  L->ts.newcltaint = NULL;
+}
+
+
+LUA_API void lua_resettaint (lua_State *L) {
+  CallInfo *ci;
+  StkId o;
+
+  L->ts.readmask = LUA_TAINTBLOCKED;
+  L->ts.writemask = LUA_TAINTBLOCKED;
+  L->ts.stacktaint = NULL;
+  L->ts.newgctaint = NULL;
+  L->ts.newcltaint = NULL;
+
+  /* Clear saved taint of all stack frames */
+  for (ci = L->base_ci; ci <= L->ci; ci++) {
+    ci->savedtaint = NULL;
+  }
+
+  /* Clear taint of all stack values */
+  for (o = L->stack; o < L->top; o++) {
+    o->taint = NULL;
+  }
+}
+
 
 /* }====================================================================== */

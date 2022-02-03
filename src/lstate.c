@@ -17,6 +17,7 @@
 #include "lfunc.h"
 #include "lgc.h"
 #include "llex.h"
+#include "lmanip.h"
 #include "lmem.h"
 #include "lstate.h"
 #include "lstring.h"
@@ -52,9 +53,10 @@ static void stack_init (lua_State *L1, lua_State *L) {
   L1->stack_last = L1->stack+(L1->stacksize - EXTRA_STACK)-1;
   /* initialize first ci */
   L1->ci->func = L1->top;
-  setnilvalue(L1->top++);  /* `function' entry for this `ci' */
+  setnilvalue(L1, L1->top++);  /* `function' entry for this `ci' */
   L1->base = L1->ci->base = L1->top;
   L1->ci->top = L1->top + LUA_MINSTACK;
+  L1->ci->savedtaint = NULL;
 }
 
 
@@ -77,6 +79,8 @@ static void f_luaopen (lua_State *L, void *ud) {
   luaT_init(L);
   luaX_init(L);
   luaS_fix(luaS_newliteral(L, MEMERRMSG));
+  luaS_fix(luaS_newliteral(L, LUALIB_FORCEINSECURE_TAINT));
+  luaS_fix(luaS_newliteral(L, LUALIB_LOADSTRING_TAINT));
   g->GCthreshold = 4*g->totalbytes;
 }
 
@@ -98,8 +102,23 @@ static void preinit_state (lua_State *L, global_State *g) {
   L->base_ci = L->ci = NULL;
   L->savedpc = NULL;
   L->errfunc = 0;
-  L->taint = NULL;
-  setnilvalue(gt(L));
+  L->ts.readmask = LUA_TAINTBLOCKED;
+  L->ts.vmexecmask = LUA_TAINTALLOWED;
+  L->ts.writemask = LUA_TAINTBLOCKED;
+  L->ts.stacktaint = NULL;
+  L->ts.newgctaint = NULL;
+  L->ts.newcltaint = NULL;
+  setnilvalue(L, gt(L));
+}
+
+
+static void freesourcestats (global_State *g) {
+  SourceStats *st;
+
+  for (st = g->sourcestats; st != NULL; st = g->sourcestats) {
+    g->sourcestats = st->next;
+    luaM_free(g->mainthread, st);
+  }
 }
 
 
@@ -109,6 +128,8 @@ static void close_state (lua_State *L) {
   luaC_freeall(L);  /* collect all objects */
   lua_assert(g->rootgc == obj2gco(L));
   lua_assert(g->strt.nuse == 0);
+  freesourcestats(g);
+  lua_assert(g->sourcestats == NULL);
   luaM_freearray(L, G(L)->strt.hash, G(L)->strt.size, TString *);
   luaZ_freebuffer(L, &g->buff);
   freestack(L, L);
@@ -126,7 +147,7 @@ lua_State *luaE_newthread (lua_State *L) {
   L1->hookmask = L->hookmask;
   L1->basehookcount = L->basehookcount;
   L1->hook = L->hook;
-  L1->taint = L->taint;
+  luaE_taintthread(L1, L);
   resethookcount(L1);
   lua_assert(iswhite(obj2gco(L1)));
   return L1;
@@ -151,6 +172,7 @@ LUA_API lua_State *lua_newstate (lua_Alloc f, void *ud) {
   L = tostate(l);
   g = &((LG *)L)->g;
   L->next = NULL;
+  L->taint = NULL;
   L->tt = LUA_TTHREAD;
   g->currentwhite = bit2mask(WHITE0BIT, FIXEDBIT);
   L->marked = luaC_white(g);
@@ -165,7 +187,8 @@ LUA_API lua_State *lua_newstate (lua_Alloc f, void *ud) {
   g->strt.size = 0;
   g->strt.nuse = 0;
   g->strt.hash = NULL;
-  setnilvalue(registry(L));
+  setnilvalue(L, registry(L));
+  setnilvalue(L, &g->l_errfunc);
   luaZ_initbuffer(L, &g->buff);
   g->panic = NULL;
   g->gcstate = GCSpause;
@@ -180,7 +203,10 @@ LUA_API lua_State *lua_newstate (lua_Alloc f, void *ud) {
   g->gcpause = LUAI_GCPAUSE;
   g->gcstepmul = LUAI_GCMUL;
   g->gcdept = 0;
-  g->trapmask = LUA_TRAPSIGNEDOVERFLOW;
+  g->startticks = luaG_gettickcount();
+  g->execticks = 0;
+  g->bytesallocated = g->totalbytes;
+  g->sourcestats = NULL;
   for (i=0; i<NUM_TAGS; i++) g->mt[i] = NULL;
   if (luaD_rawrunprotected(L, f_luaopen, NULL) != 0) {
     /* memory allocation error: free partial state */
@@ -207,6 +233,7 @@ LUA_API void lua_close (lua_State *L) {
   L->errfunc = 0;  /* no error function during GC metamethods */
   do {  /* repeat until no more errors */
     L->ci = L->base_ci;
+    lua_assert(L->ts.vmexecmask == LUA_TAINTALLOWED);
     L->base = L->top = L->ci->base;
     L->nCcalls = L->baseCcalls = 0;
   } while (luaD_rawrunprotected(L, callallgcTM, NULL) != 0);

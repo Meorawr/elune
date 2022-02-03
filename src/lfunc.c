@@ -14,10 +14,21 @@
 
 #include "lfunc.h"
 #include "lgc.h"
+#include "lmanip.h"
 #include "lmem.h"
 #include "lobject.h"
 #include "lstate.h"
 
+
+LUAI_FUNC ClosureStats *luaF_newclosurestats (lua_State *L) {
+  ClosureStats *cs = luaM_new(L, ClosureStats);
+  cs->calls = 0;
+  cs->opencalls = 0;
+  cs->startticks = 0;
+  cs->execticks = 0;
+  cs->subexecticks = 0;
+  return cs;
+}
 
 
 Closure *luaF_newCclosure (lua_State *L, int nelems, Table *e) {
@@ -25,8 +36,8 @@ Closure *luaF_newCclosure (lua_State *L, int nelems, Table *e) {
   luaC_link(L, obj2gco(c), LUA_TFUNCTION);
   c->c.isC = 1;
   c->c.env = e;
+  c->c.stats = (G(L)->enablestats ? luaF_newclosurestats(L) : NULL);
   c->c.nupvalues = cast_byte(nelems);
-  c->c.taint = L->taint;  /* mark closure as internally tainted */
   return c;
 }
 
@@ -36,9 +47,9 @@ Closure *luaF_newLclosure (lua_State *L, int nelems, Table *e) {
   luaC_link(L, obj2gco(c), LUA_TFUNCTION);
   c->l.isC = 0;
   c->l.env = e;
+  c->l.stats = (G(L)->enablestats ? luaF_newclosurestats(L) : NULL);
   c->l.nupvalues = cast_byte(nelems);
   while (nelems--) c->l.upvals[nelems] = NULL;
-  c->l.taint = L->taint;  /* mark closure as internally tainted */
   return c;
 }
 
@@ -47,7 +58,7 @@ UpVal *luaF_newupval (lua_State *L) {
   UpVal *uv = luaM_new(L, UpVal);
   luaC_link(L, obj2gco(uv), LUA_TUPVAL);
   uv->v = &uv->u.value;
-  setnilvalue(uv->v);
+  setnilvalue(L, uv->v);
   return uv;
 }
 
@@ -67,8 +78,8 @@ UpVal *luaF_findupval (lua_State *L, StkId level) {
     pp = &p->next;
   }
   uv = luaM_new(L, UpVal);  /* not found: create a new one */
-  uv->taint = L->taint;
   uv->tt = LUA_TUPVAL;
+  uv->taint = luaE_maskalloctaint(L, uv->tt);
   uv->marked = luaC_white(g);
   uv->v = level;  /* current value lives in the stack */
   uv->next = *pp;  /* chain it in the proper position */
@@ -137,7 +148,6 @@ Proto *luaF_newproto (lua_State *L) {
   f->linedefined = 0;
   f->lastlinedefined = 0;
   f->source = NULL;
-  f->taint = L->taint;
   return f;
 }
 
@@ -154,8 +164,8 @@ void luaF_freeproto (lua_State *L, Proto *f) {
 
 
 void luaF_freeclosure (lua_State *L, Closure *c) {
-  int size = (c->c.isC) ? sizeCclosure(c->c.nupvalues) :
-                          sizeLclosure(c->l.nupvalues);
+  int size = (c->c.isC) ? sizeCclosure(c->c.nupvalues) : sizeLclosure(c->l.nupvalues);
+  if (c->c.stats) luaM_free(L, c->c.stats);
   luaM_freemem(L, c, size);
 }
 

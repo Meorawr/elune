@@ -29,6 +29,7 @@
 #include "ldebug.h"
 #include "ldo.h"
 #include "lgc.h"
+#include "lmanip.h"
 #include "lmem.h"
 #include "lobject.h"
 #include "lstate.h"
@@ -263,7 +264,7 @@ static void setarrayvector (lua_State *L, Table *t, int size) {
   int i;
   luaM_reallocvector(L, t->array, t->sizearray, size, TValue);
   for (i=t->sizearray; i<size; i++)
-     setnilvalue(&t->array[i]);
+     setnilvalue2t(&t->array[i]);
   t->sizearray = size;
 }
 
@@ -284,8 +285,8 @@ static void setnodevector (lua_State *L, Table *t, int size) {
     for (i=0; i<size; i++) {
       Node *n = gnode(t, i);
       gnext(n) = NULL;
-      setnilvalue(key2tval(n));
-      setnilvalue(gval(n));
+      setnilvalue2t(key2tval(n));
+      setnilvalue2t(gval(n));
     }
   }
   t->lsizenode = cast_byte(lsize);
@@ -359,7 +360,6 @@ Table *luaH_new (lua_State *L, int narray, int nhash) {
   luaC_link(L, obj2gco(t), LUA_TTABLE);
   t->metatable = NULL;
   t->flags = cast_byte(~0);
-  t->taint = L->taint;
   /* temporary values (kept only if some malloc fails) */
   t->array = NULL;
   t->sizearray = 0;
@@ -413,7 +413,7 @@ static TValue *newkey (lua_State *L, Table *t, const TValue *key) {
       gnext(othern) = n;  /* redo the chain with `n' in place of `mp' */
       *n = *mp;  /* copy colliding node into free pos. (mp->next also goes) */
       gnext(mp) = NULL;  /* now `mp' is free */
-      setnilvalue(gval(mp));
+      setnilvalue2t(gval(mp));
     }
     else {  /* colliding node is in its own main position */
       /* new node will go into free position */
@@ -422,9 +422,7 @@ static TValue *newkey (lua_State *L, Table *t, const TValue *key) {
       mp = n;
     }
   }
-  gkey(mp)->value = key->value;
-  gkey(mp)->tt = key->tt;
-  gkey(mp)->taint = key->taint;
+  setobjt2t(L, key2tval(mp), key);
   luaC_barriert(L, t, key);
   lua_assert(ttisnil(gval(mp)));
   return gval(mp);

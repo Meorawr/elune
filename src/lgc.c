@@ -15,6 +15,7 @@
 #include "ldo.h"
 #include "lfunc.h"
 #include "lgc.h"
+#include "lmanip.h"
 #include "lmem.h"
 #include "lobject.h"
 #include "lstate.h"
@@ -62,7 +63,7 @@
 static void removeentry (Node *n) {
   lua_assert(ttisnil(gval(n)));
   if (iscollectable(gkey(n)))
-    setttype(gkey(n), LUA_TDEADKEY);  /* dead key; remove it */
+    gkey(n)->tt = LUA_TDEADKEY;  /* dead key; remove it */
 }
 
 
@@ -152,6 +153,48 @@ size_t luaC_separateudata (lua_State *L, int all) {
     }
   }
   return deadmem;
+}
+
+
+LUAI_FUNC size_t luaC_objectsize (const GCObject *o) {
+  switch (o->gch.tt) {
+    case LUA_TSTRING: {
+      return sizestring(gco2ts(o));
+    }
+    case LUA_TTABLE: {
+      const Table *h = gco2h(o);
+      return sizeof(Table) + sizeof(TValue) * h->sizearray +
+                             sizeof(Node) * sizenode(h);
+    }
+    case LUA_TFUNCTION: {
+      const Closure *cl = gco2cl(o);
+      return (cl->c.isC) ? sizeCclosure(cl->c.nupvalues) : sizeLclosure(cl->l.nupvalues);
+    }
+    case LUA_TUSERDATA: {
+      return sizeudata(gco2u(o));
+    }
+    case LUA_TTHREAD: {
+      const lua_State *th = gco2th(o);
+      return sizeof(lua_State) + sizeof(TValue) * th->stacksize +
+                                 sizeof(CallInfo) * th->size_ci;
+    }
+    case LUA_TPROTO: {
+      const Proto *p = gco2p(o);
+      return sizeof(Proto) + sizeof(Instruction) * p->sizecode +
+                             sizeof(Proto *) * p->sizep +
+                             sizeof(TValue) * p->sizek +
+                             sizeof(int) * p->sizelineinfo +
+                             sizeof(LocVar) * p->sizelocvars +
+                             sizeof(TString *) * p->sizeupvalues;
+    }
+    case LUA_TUPVAL: {
+      return sizeof(UpVal);
+    }
+    default: {
+      lua_assert(0);
+      return 0;
+    }
+  }
 }
 
 
@@ -265,7 +308,7 @@ static void traversestack (global_State *g, lua_State *l) {
   for (o = l->stack; o < l->top; o++)
     markvalue(g, o);
   for (; o <= lim; o++)
-    setnilvalue(o);
+    setnilvalue(l,o);
   checkstacksizes(l, lim);
 }
 
@@ -284,15 +327,13 @@ static l_mem propagatemark (global_State *g) {
       g->gray = h->gclist;
       if (traversetable(g, h))  /* table is weak? */
         black2gray(o);  /* keep it gray */
-      return sizeof(Table) + sizeof(TValue) * h->sizearray +
-                             sizeof(Node) * sizenode(h);
+      return luaC_objectsize(o);
     }
     case LUA_TFUNCTION: {
       Closure *cl = gco2cl(o);
       g->gray = cl->c.gclist;
       traverseclosure(g, cl);
-      return (cl->c.isC) ? sizeCclosure(cl->c.nupvalues) :
-                           sizeLclosure(cl->l.nupvalues);
+      return luaC_objectsize(o);
     }
     case LUA_TTHREAD: {
       lua_State *th = gco2th(o);
@@ -301,19 +342,13 @@ static l_mem propagatemark (global_State *g) {
       g->grayagain = o;
       black2gray(o);
       traversestack(g, th);
-      return sizeof(lua_State) + sizeof(TValue) * th->stacksize +
-                                 sizeof(CallInfo) * th->size_ci;
+      return luaC_objectsize(o);
     }
     case LUA_TPROTO: {
       Proto *p = gco2p(o);
       g->gray = p->gclist;
       traverseproto(g, p);
-      return sizeof(Proto) + sizeof(Instruction) * p->sizecode +
-                             sizeof(Proto *) * p->sizep +
-                             sizeof(TValue) * p->sizek +
-                             sizeof(int) * p->sizelineinfo +
-                             sizeof(LocVar) * p->sizelocvars +
-                             sizeof(TString *) * p->sizeupvalues;
+      return luaC_objectsize(o);
     }
     default: lua_assert(0); return 0;
   }
@@ -358,7 +393,7 @@ static void cleartable (GCObject *l) {
       while (i--) {
         TValue *o = &h->array[i];
         if (iscleared(o, 0))  /* value was collected? */
-          setnilvalue(o);  /* remove value */
+          setnilvalue2t(o);  /* remove value */
       }
     }
     i = sizenode(h);
@@ -366,7 +401,7 @@ static void cleartable (GCObject *l) {
       Node *n = gnode(h, i);
       if (!ttisnil(gval(n)) &&  /* non-empty entry? */
           (iscleared(key2tval(n), 1) || iscleared(gval(n), 0))) {
-        setnilvalue(gval(n));  /* remove value ... */
+        setnilvalue2t(gval(n));  /* remove value ... */
         removeentry(n);  /* remove entry from table */
       }
     }
@@ -527,13 +562,14 @@ static void atomic (lua_State *L) {
   size_t udsize;  /* total size of userdata to be finalized */
   /* remark occasional upvalues of (maybe) dead threads */
   remarkupvals(g);
-  /* traverse objects cautch by write barrier and by 'remarkupvals' */
+  /* traverse objects caught by write barrier and by 'remarkupvals' */
   propagateall(g);
   /* remark weak tables */
   g->gray = g->weak;
   g->weak = NULL;
   lua_assert(!iswhite(obj2gco(g->mainthread)));
   markobject(g, L);  /* mark running thread */
+  markvalue(g, &g->l_errfunc);  /* mark global error handler */
   markmt(g);  /* mark basic metatables (again) */
   propagateall(g);
   /* remark gray again */
@@ -688,12 +724,14 @@ void luaC_link (lua_State *L, GCObject *o, lu_byte tt) {
   g->rootgc = o;
   o->gch.marked = luaC_white(g);
   o->gch.tt = tt;
+  o->gch.taint = luaE_maskalloctaint(L, tt);
 }
 
 
 void luaC_linkupval (lua_State *L, UpVal *uv) {
   global_State *g = G(L);
   GCObject *o = obj2gco(uv);
+  o->gch.taint = luaE_maskalloctaint(L, LUA_TUPVAL);
   o->gch.next = g->rootgc;  /* link upvalue into `rootgc' list */
   g->rootgc = o;
   if (isgray(o)) {
@@ -707,4 +745,3 @@ void luaC_linkupval (lua_State *L, UpVal *uv) {
     }
   }
 }
-

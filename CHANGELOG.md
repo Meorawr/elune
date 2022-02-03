@@ -2,28 +2,33 @@
 
 ## [Unreleased]
 ### Added
+- Added Lua debug APIs for function utilities:
+  - Added `c = debug.newcfunction(f)` which wraps a function `f` in a C function `c`.
+  - Added `isC = debug.iscfunction(f)` which returns true if `f` is a C function.
+- Added Lua debug APIs for profiling and memory measurement:
+  - Added `size = debug.getobjectsize(o)` which returns the approximate size of a collectable object.
+  - Added `stats = debug.getglobalstats()` which returns global execution and memory statistics.
+  - Added `stats = debug.getfunctionstats(f)` which returns execution statistics for a function `f`.
+  - Added `stats = debug.getsourcestats(name)` which returns execution and memory statistics for objects and functions tainted by `name`, or untainted ones if `name` is nil.
+  - Added `debug.enablestats([enable])` which controls the measurement of timing statistics.
+  - Added `debug.collectstats()` which will can be used to flush and update cached statistics.
+  - Added `debug.resetstats()` which will flush cached statistics.
+- Added Lua debug APIs for high-precision timers:
+  - Added `time = debug.microclock()` which returns the time-since-startup in microseconds.
+- Added `security` library for querying and manipulating taint.
+- Added a Lua API for secure random number generation - `securerandom()`. This accepts the same arguments as `math.random`.
+- Added support for the `__environment` metatable key to `getfenv`.
 - Added a `-t` flag to the interpreter to run inline scripts (`-e`) or load files insecurely.
   - When this flag is specified, any modules loaded via `-l` will still be loaded securely.
-- Added `debug.issecureclosure(func)`
-- Added `debug.issecurefield([table,] key)`
-- Added `debug.issecurelocal([thread,] level, local)`
-- Added `debug.issecurethread([thread])`
-- Added `debug.issecureupvalue(func, up)`
-- Added `debug.setclosuretaint(func, source)`
-- Added `debug.setfieldtaint([table,] key, source)`
-- Added `debug.setlocaltaint([thread,] level, local, source)`
-- Added `debug.setthreadtaint([thread,] source)`
-- Added `debug.setupvaluetaint(func, up, source)`
-- Added support for the `__environment` metatable key to `getfenv`.
 
 ### Changed
-- Reworked taint propagation to work at a C API/VM opcode level instead of object macro level.
-- Fixed various initialization issues with taint that could cause some values to incorrectly be considered tainted upon creation.
-- Build process now requires CMake 3.20 and makes use of CMake presets for common build targets. See README for more information.
+- Made significant changes to how taint is propagated throughout the system, particularly with respect to coroutines.
+- Build process now requires CMake 3.21 and makes use of CMake presets for common build targets. See README for more information.
 
 ### Removed
 - Removed the taint field on the `lua_Debug` to fix potential binary incompatibilities.
-- Removed the `"s"` field from `debug.getinfo`. Use `debug.issecurethread()` instead.
+- Removed the `"s"` field from `debug.getinfo`. Use `security.getstacktaint()` instead.
+- Removed `debug.forcesecure()`. Use `security.setstacktaint(nil)` instead.
 
 ## [v1]
 ### Added

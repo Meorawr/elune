@@ -28,11 +28,6 @@
 #define FREELIST_REF	0	/* free list of references */
 
 
-/* convert a stack index to positive */
-#define abs_index(L, i)		((i) > 0 || (i) <= LUA_REGISTRYINDEX ? (i) : \
-					lua_gettop(L) + (i) + 1)
-
-
 /*
 ** {======================================================
 ** Error-report functions
@@ -200,6 +195,30 @@ LUALIB_API lua_Integer luaL_optinteger (lua_State *L, int narg,
 }
 
 
+LUALIB_API int (luaL_checkint) (lua_State *L, int narg) {
+  int i = lua_toint(L, narg);
+  if (i == 0 && !lua_isnumber(L, narg)) tag_error(L, narg, LUA_TNUMBER);
+  return i;
+}
+
+
+LUALIB_API int (luaL_optint) (lua_State *L, int narg, int def) {
+  return luaL_opt(L, luaL_checkint, narg, def);
+}
+
+
+LUALIB_API lua_State *(luaL_checkthread) (lua_State *L, int narg) {
+  lua_State *L1 = lua_tothread(L, narg);
+  if (!L1) tag_error(L, narg, LUA_TTHREAD);
+  return L1;
+}
+
+
+LUALIB_API lua_State *(luaL_optthread) (lua_State *L, int narg, lua_State *def) {
+  return luaL_opt(L, luaL_checkthread, narg, def);
+}
+
+
 LUALIB_API int luaL_getmetafield (lua_State *L, int obj, const char *event) {
   if (!lua_getmetatable(L, obj))  /* no metatable? */
     return 0;
@@ -217,7 +236,7 @@ LUALIB_API int luaL_getmetafield (lua_State *L, int obj, const char *event) {
 
 
 LUALIB_API int luaL_callmeta (lua_State *L, int obj, const char *event) {
-  obj = abs_index(L, obj);
+  obj = lua_absindex(L, obj);
   if (!luaL_getmetafield(L, obj, event))  /* no metafield? */
     return 0;
   lua_pushvalue(L, obj);
@@ -300,7 +319,7 @@ static void getsizes (lua_State *L) {
 
 
 LUALIB_API void luaL_setn (lua_State *L, int t, int n) {
-  t = abs_index(L, t);
+  t = lua_absindex(L, t);
   lua_pushliteral(L, "n");
   lua_rawget(L, t);
   if (checkint(L, 1) >= 0) {  /* is there a numeric field `n'? */
@@ -320,7 +339,7 @@ LUALIB_API void luaL_setn (lua_State *L, int t, int n) {
 
 LUALIB_API int luaL_getn (lua_State *L, int t) {
   int n;
-  t = abs_index(L, t);
+  t = lua_absindex(L, t);
   lua_pushliteral(L, "n");  /* try t.n */
   lua_rawget(L, t);
   if ((n = checkint(L, 1)) >= 0) return n;
@@ -378,14 +397,6 @@ LUALIB_API const char *luaL_findtable (lua_State *L, int idx,
     fname = e + 1;
   } while (*e == '.');
   return NULL;
-}
-
-
-LUALIB_API void luaL_registeraliases (lua_State *L, int idx, const luaL_RegAlias *a) {
-  for (; a->fieldname; ++a) {
-    lua_getfield(L, idx, a->fieldname);
-    lua_setglobal(L, a->globalname);
-  }
 }
 
 
@@ -487,16 +498,17 @@ LUALIB_API void luaL_buffinit (lua_State *L, luaL_Buffer *B) {
 
 LUALIB_API int luaL_ref (lua_State *L, int t) {
   int ref;
-  t = abs_index(L, t);
+  t = lua_absindex(L, t);
   if (lua_isnil(L, -1)) {
     lua_pop(L, 1);  /* remove from stack */
     return LUA_REFNIL;  /* `nil' has a unique fixed reference */
   }
   lua_rawgeti(L, t, FREELIST_REF);  /* get first free element */
-  ref = (int)lua_tointeger(L, -1);  /* ref = t[FREELIST_REF] */
+  ref = lua_toint(L, -1);  /* ref = t[FREELIST_REF] */
   lua_pop(L, 1);  /* remove it from stack */
   if (ref != 0) {  /* any free element? */
     lua_rawgeti(L, t, ref);  /* remove it from list */
+    lua_setvaluetaint(L, -1, NULL);
     lua_rawseti(L, t, FREELIST_REF);  /* (t[FREELIST_REF] = t[ref]) */
   }
   else {  /* no free elements */
@@ -510,10 +522,12 @@ LUALIB_API int luaL_ref (lua_State *L, int t) {
 
 LUALIB_API void luaL_unref (lua_State *L, int t, int ref) {
   if (ref >= 0) {
-    t = abs_index(L, t);
+    t = lua_absindex(L, t);
     lua_rawgeti(L, t, FREELIST_REF);
+    lua_setvaluetaint(L, -1, NULL);
     lua_rawseti(L, t, ref);  /* t[ref] = t[FREELIST_REF] */
     lua_pushinteger(L, ref);
+    lua_setvaluetaint(L, -1, NULL);
     lua_rawseti(L, t, FREELIST_REF);  /* t[FREELIST_REF] = ref */
   }
 }
@@ -662,55 +676,337 @@ LUALIB_API lua_State *luaL_newstate (void) {
 ** =======================================================================
 */
 
-static lua_Taint luaO_forcedtaint = {"*** TaintForced ***", NULL};
 
-LUALIB_API lua_Taint *luaL_findtaint (lua_State *L, const char *name) {
-  lua_Taint *taint;
+LUALIB_API int luaL_issecure (lua_State *L) {
+  return lua_getstacktaint(L) == NULL;
+}
 
-  luaL_findtable(L, LUA_REGISTRYINDEX, "_TAINTOBJS", 16);
-  lua_pushstring(L, name);
+
+LUALIB_API int luaL_issecurevalue (lua_State *L, int idx) {
+  return lua_getvaluetaint(L, idx) == NULL;
+}
+
+
+LUALIB_API int luaL_issecureobject (lua_State *L, int idx) {
+  return lua_getobjecttaint(L, idx) == NULL;
+}
+
+
+static void aux_gettable_untainted (lua_State *L, void *ud) {
+  ((void) ud);  /* unused */
+  lua_setstacktaint(L, NULL);
   lua_gettable(L, -2);
+}
 
-  if (!lua_isuserdata(L, -1)) {
-    lua_pushstring(L, name);
-    taint = (lua_Taint *) lua_newuserdata(L, sizeof(lua_Taint));
-    taint->source = lua_tostring(L, -2);
-    taint->data = NULL;
 
-    lua_setstacktaint(L, -2, -1, NULL);
-    lua_settable(L, -4);
-  } else {
-    taint = lua_touserdata(L, -1);
-  }
+LUALIB_API const char *luaL_gettabletaint (lua_State *L, int idx) {
+  lua_TaintState savedts;
+  const char *taint;
+  int tidx = lua_absindex(L, idx);
+  int kidx = lua_absindex(L, -1);
 
-  lua_pop(L, 2);
+  lua_checkstack(L, 2);
+  lua_savetaint(L, &savedts);
+  lua_pushvalue(L, tidx);
+  lua_pushvalue(L, kidx);
+  lua_protecttaint(L, aux_gettable_untainted, NULL);
+  lua_settop(L, kidx - 1);
+  taint = lua_getstacktaint(L);
+  lua_restoretaint(L, &savedts);
+
   return taint;
 }
 
-LUALIB_API void luaL_forcetaintthread (lua_State *L) {
-  if (!lua_getthreadtaint(L)) {
-    lua_setthreadtaint(L, &luaO_forcedtaint);
+
+LUALIB_API const char *luaL_getlocaltaint (lua_State *L, const lua_Debug *ar, int n) {
+  lua_TaintState savedts;
+  const char *taint;
+
+  lua_checkstack(L, 1);
+  lua_savetaint(L, &savedts);
+  lua_setstacktaint(L, NULL);
+  if (lua_getlocal(L, ar, n)) lua_pop(L, 1);
+  taint = lua_getstacktaint(L);
+  lua_restoretaint(L, &savedts);
+
+  return taint;
+}
+
+
+LUALIB_API const char *luaL_getupvaluetaint (lua_State *L, int funcindex, int n) {
+  lua_TaintState savedts;
+  const char *taint;
+
+  lua_checkstack(L, 1);
+  lua_savetaint(L, &savedts);
+  lua_setstacktaint(L, NULL);
+  if (lua_getupvalue(L, funcindex, n)) lua_pop(L, 1);
+  taint = lua_getstacktaint(L);
+  lua_restoretaint(L, &savedts);
+
+  return taint;
+}
+
+
+static void aux_settable_untainted (lua_State *L, void *ud) {
+  ((void) ud);  /* unused */
+  lua_setstacktaint(L, NULL);
+  lua_settable(L, -2);
+}
+
+
+LUALIB_API void luaL_settabletaint (lua_State *L, int idx, const char *name) {
+  lua_TaintState savedts;
+  int tidx = lua_absindex(L, idx);
+  int kidx = lua_absindex(L, -1);
+
+  lua_savetaint(L, &savedts);
+  lua_pushvalue(L, kidx);
+  lua_gettable(L, tidx);
+  lua_setvaluetaint(L, -1, name);
+  lua_protecttaint(L, aux_settable_untainted, NULL);
+  lua_restoretaint(L, &savedts);
+}
+
+
+LUALIB_API void luaL_setlocaltaint (lua_State *L, const lua_Debug *ar, int n, const char *name) {
+  lua_TaintState savedts;
+
+  lua_checkstack(L, 1);
+  lua_savetaint(L, &savedts);
+
+  if (lua_getlocal(L, ar, n)) {
+    lua_setvaluetaint(L, -1, name);
+    lua_setlocal(L, ar, n);
+  }
+
+  lua_restoretaint(L, &savedts);
+}
+
+
+LUALIB_API void luaL_setupvaluetaint (lua_State *L, int funcindex, int n, const char *name) {
+  lua_TaintState savedts;
+
+  lua_checkstack(L, 1);
+  lua_savetaint(L, &savedts);
+
+  if (lua_getupvalue(L, funcindex, n)) {
+    lua_setvaluetaint(L, -1, name);
+    lua_setupvalue(L, funcindex, n);
+  }
+
+  lua_restoretaint(L, &savedts);
+}
+
+
+LUALIB_API int luaL_securecall (lua_State *L, int nargs, int nresults, int errfunc) {
+  int status = luaL_securepcall(L, nargs, nresults, errfunc);
+  if (status != 0) lua_pop(L, 1);
+  return status;
+}
+
+
+LUALIB_API int luaL_securepcall (lua_State *L, int nargs, int nresults, int errfunc) {
+  lua_TaintState savedts;
+  lua_savetaint(L, &savedts);
+  return luaL_pcallas(L, nargs, nresults, errfunc, &savedts);
+}
+
+
+LUALIB_API int luaL_securecpcall (lua_State *L, lua_CFunction func, void *ud) {
+  lua_TaintState savedts;
+  lua_savetaint(L, &savedts);
+  return luaL_cpcallas(L, func, ud, &savedts);
+}
+
+
+LUALIB_API void luaL_secureforeach (lua_State *L, int idx, int errfunc) {
+  lua_TaintState savedts;
+  int funcidx;
+
+  lua_checkstack(L, 5);
+  lua_savetaint(L, &savedts);
+  funcidx = lua_absindex(L, -1);
+  idx = lua_absindex(L, idx);
+  errfunc = lua_absindex(L, errfunc);
+
+  lua_pushnil(L);  /* push initial key */
+
+  while (lua_next(L, idx)) {
+    lua_pushvalue(L, funcidx);
+    lua_pushvalue(L, -3);  /* push key */
+    lua_pushvalue(L, -3);  /* push value */
+    lua_pcall(L, 2, 0, errfunc);
+    lua_settop(L, funcidx + 1);  /* retain key for next */
+    lua_restoretaint(L, &savedts);
+  }
+
+  lua_pop(L, 1);  /* pop function */
+}
+
+
+static int f_insecuredelegate (lua_State *L) {
+  lua_pushvalue(L, lua_upvalueindex(1));
+  lua_call(L, (lua_gettop(L) - 1), LUA_MULTRET);
+  return lua_gettop(L);
+}
+
+
+LUALIB_API void luaL_createdelegate (lua_State *L) {
+  lua_pushcclosure(L, &f_insecuredelegate, 1);
+}
+
+
+static int f_securedelegate (lua_State *L) {
+  lua_TaintState savedts;
+  int nargs = lua_gettop(L);
+  int nresults;
+  int argi;
+  int status;
+
+  /* Wrap all function in arguments in delegates that can taint when invoked. */
+  for (argi = 1; argi <= nargs; ++argi) {
+    if (lua_isfunction(L, argi)) {
+      lua_pushvalue(L, argi);
+      luaL_createdelegate(L);
+      lua_replace(L, argi);
+    }
+  }
+
+  lua_savetaint(L, &savedts);
+  lua_pushvalue(L, lua_upvalueindex(1));
+  lua_insert(L, 1);
+  lua_setstacktaint(L, NULL);
+  lua_settoptaint(L, nargs, NULL);
+  status = lua_pcall(L, nargs, LUA_MULTRET, 0);
+  nresults = lua_gettop(L);
+  lua_restoretaint(L, &savedts);
+  lua_settoptaint(L, nresults, lua_getstacktaint(L));
+
+  if (status != 0) lua_error(L);
+  return nresults;
+}
+
+
+LUALIB_API void luaL_createsecuredelegate (lua_State *L) {
+  lua_pushcclosure(L, &f_securedelegate, 1);
+}
+
+
+static int f_securehook (lua_State *L) {
+  lua_TaintState savedts;
+  int nargs;
+  int nresults;
+  int argi;
+  int status;
+
+  nargs = lua_gettop(L);
+
+  /* Set up and call initial function */
+  lua_checkstack(L, nargs + 1);
+  lua_pushvalue(L, lua_upvalueindex(1));
+  for (argi = 1; argi <= nargs; ++argi) lua_pushvalue(L, argi);
+  lua_call(L, nargs, LUA_MULTRET);
+  nresults = lua_gettop(L) - nargs;
+
+  /* Set up and call posthook function */
+  lua_checkstack(L, nargs + 1);
+  lua_savetaint(L, &savedts);
+  lua_pushvalue(L, lua_upvalueindex(2));
+  for (argi = 1; argi <= nargs; ++argi) lua_pushvalue(L, argi);
+  status = lua_pcall(L, nargs, 0, LUA_ERRORHANDLERINDEX);
+  if (status != 0) lua_pop(L, 1);
+  lua_restoretaint(L, &savedts);
+
+  return nresults;
+}
+
+
+LUALIB_API void luaL_createsecurehook (lua_State *L) {
+  lua_pushcclosure(L, &f_securehook, 2);
+}
+
+
+LUALIB_API void luaL_forceinsecure (lua_State *L) {
+  if (luaL_issecure(L)) {
+    lua_setstacktaint(L, LUALIB_FORCEINSECURE_TAINT);
   }
 }
 
-LUALIB_API void luaL_forcetaintvalue (lua_State *L, int idx) {
-  if (!lua_getvaluetaint(L, idx)) {
-    lua_setvaluetaint(L, idx, &luaO_forcedtaint);
-  }
+
+LUALIB_API int luaL_pcallas (lua_State *L, int nargs, int nresults, int errfunc, lua_TaintState *ts) {
+  int base;
+  int status;
+
+  base = lua_absindex(L, -(nargs + 1));
+  lua_exchangetaint(L, ts);
+  status = lua_pcall(L, nargs, nresults, errfunc);
+  nresults = (lua_gettop(L) - (base - 1));
+  lua_exchangetaint(L, ts);
+  lua_settoptaint(L, nresults, lua_getstacktaint(L));
+
+  return status;
 }
 
-LUALIB_API void luaL_forcetaintobject (lua_State *L, int idx) {
-  if (!lua_getobjecttaint(L, idx)) {
-    lua_setobjecttaint(L, idx, &luaO_forcedtaint);
-  }
+
+LUALIB_API int luaL_cpcallas (lua_State *L, lua_CFunction func, void *ud, lua_TaintState *ts) {
+  int status;
+
+  lua_exchangetaint(L, ts);
+  status = lua_cpcall(L, func, ud);
+  lua_exchangetaint(L, ts);
+  if (status != 0) lua_setvaluetaint(L, -1, lua_getstacktaint(L));
+
+  return status;
 }
 
-LUALIB_API void luaL_seterrorhandler (lua_State *L) {
-  lua_setfield(L, LUA_REGISTRYINDEX, "_ERRORHANDLER");
+
+LUALIB_API int luaL_loadas (lua_State *L, lua_Reader reader, void *dt, const char *chunkname, lua_TaintState *ts) {
+  int status;
+
+  lua_exchangetaint(L, ts);
+  status = lua_load(L, reader, dt, chunkname);
+  lua_exchangetaint(L, ts);
+  lua_setvaluetaint(L, -1, lua_getstacktaint(L));
+
+  return status;
 }
 
-LUALIB_API void luaL_pusherrorhandler (lua_State *L) {
-  lua_getfield(L, LUA_REGISTRYINDEX, "_ERRORHANDLER");
+
+LUALIB_API int luaL_loadfileas (lua_State *L, const char *filename, lua_TaintState *ts) {
+  int status;
+
+  lua_exchangetaint(L, ts);
+  status = luaL_loadfile(L, filename);
+  lua_exchangetaint(L, ts);
+  lua_setvaluetaint(L, -1, lua_getstacktaint(L));
+
+  return status;
 }
+
+
+LUALIB_API int luaL_loadbufferas (lua_State *L, const char *buff, size_t sz, const char *name, lua_TaintState *ts) {
+  int status;
+
+  lua_exchangetaint(L, ts);
+  status = luaL_loadbuffer(L, buff, sz, name);
+  lua_exchangetaint(L, ts);
+  lua_setvaluetaint(L, -1, lua_getstacktaint(L));
+
+  return status;
+}
+
+
+LUALIB_API int luaL_loadstringas (lua_State *L, const char *s, lua_TaintState *ts) {
+  int status;
+
+  lua_exchangetaint(L, ts);
+  status = luaL_loadstring(L, s);
+  lua_exchangetaint(L, ts);
+  lua_setvaluetaint(L, -1, lua_getstacktaint(L));
+
+  return status;
+}
+
 
 /* }====================================================================== */

@@ -18,6 +18,7 @@
 #include "ldo.h"
 #include "lfunc.h"
 #include "lgc.h"
+#include "lmanip.h"
 #include "lmem.h"
 #include "lobject.h"
 #include "lopcodes.h"
@@ -26,7 +27,6 @@
 #include "lstring.h"
 #include "ltable.h"
 #include "ltm.h"
-#include "lundump.h"
 #include "lvm.h"
 #include "lzio.h"
 
@@ -80,6 +80,7 @@ static void restore_stack_limit (lua_State *L) {
 
 static void resetstack (lua_State *L, int status) {
   L->ci = L->base_ci;
+  L->ts.vmexecmask = LUA_TAINTALLOWED;
   L->base = L->ci->base;
   luaF_close(L, L->base);  /* close eventual pending closures */
   luaD_seterrorobj(L, status, L->base);
@@ -117,6 +118,7 @@ int luaD_rawrunprotected (lua_State *L, Pfunc f, void *ud) {
     (*f)(L, ud);
   );
   L->errorJmp = lj.previous;  /* restore old error handler */
+  L->ts.vmexecmask = LUA_TAINTALLOWED;
   return lj.status;
 }
 
@@ -211,7 +213,7 @@ static StkId adjust_varargs (lua_State *L, Proto *p, int actual) {
   Table *htab = NULL;
   StkId base, fixed;
   for (; actual < nfixargs; ++actual)
-    setnilvalue(L->top++);
+    setnilvalue(L, L->top++);
 #if defined(LUA_COMPAT_VARARG)
   if (p->is_vararg & VARARG_NEEDSARG) { /* compat. with old-style vararg? */
     int nvar = actual - nfixargs;  /* number of extra arguments */
@@ -230,11 +232,7 @@ static StkId adjust_varargs (lua_State *L, Proto *p, int actual) {
   base = L->top;  /* final position of first argument */
   for (i=0; i<nfixargs; i++) {
     setobjs2s(L, L->top++, fixed+i);
-    setnilvalue(fixed+i);
-  }
-  /* apply taint to varargs */
-  for (i = 1; i <= actual; ++i) {
-    luaV_writetaint(L, base - i);
+    setnilvalue(L, fixed+i);
   }
   /* add `arg' parameter */
   if (htab) {
@@ -266,6 +264,41 @@ static StkId tryfuncTM (lua_State *L, StkId func) {
    (condhardstacktests(luaD_reallocCI(L, L->size_ci)), ++L->ci))
 
 
+// LUAI_FUNC void luaG_entercall (lua_State *L, CallInfo *ci) {
+//   Closure *cl;
+//   ClosureStats *cs;
+
+//   cl = clvalue(ci->func);
+//   cs = cl->c.stats;
+
+//   if (cs != NULL && (cs->nopencalls++) == 0) {
+//     cs->startticks = lua_gettickcount();
+//   }
+// }
+
+
+// LUAI_FUNC void luaG_yieldcall (lua_State *L, CallInfo *ci) {
+//   Closure *cl;
+//   ClosureStats *cs;
+
+//   cl = clvalue(ci->func);
+//   cs = cl->c.stats;
+// }
+
+
+// LUAI_FUNC void luaG_leavecall (lua_State *L, CallInfo *ci) {
+//   Closure *cl;
+//   ClosureStats *cs;
+
+//   cl = clvalue(ci->func);
+//   cs = cl->c.stats;
+
+//   if (cs != NULL && (cs->nopencalls--) == 1) {
+//     // cs->ntotalticks += (lua_gettickcount() - cs->nstartticks);
+//   }
+// }
+
+
 int luaD_precall (lua_State *L, StkId func, int nresults) {
   LClosure *cl;
   ptrdiff_t funcr;
@@ -274,6 +307,8 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
   funcr = savestack(L, func);
   cl = &clvalue(func)->l;
   L->ci->savedpc = L->savedpc;
+  L->ci->savedtaint = L->ts.stacktaint;
+  L->ts.vmexecmask = LUA_TAINTALLOWED;
   if (!cl->isC) {  /* Lua function? prepare its call */
     CallInfo *ci;
     StkId st, base;
@@ -293,19 +328,13 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
     ci = inc_ci(L);  /* now `enter' new function */
     ci->func = func;
     L->base = ci->base = base;
-    luaV_readtaint(L, func);  /* propagate tainted function value to state */
-    luaV_readgcotaint(L, obj2gco(cl));  /* propagate internal closure taint to state */
     ci->top = L->base + p->maxstacksize;
     lua_assert(ci->top <= L->stack_last);
     L->savedpc = p->code;  /* starting point */
     ci->tailcalls = 0;
     ci->nresults = nresults;
     for (st = L->top; st < ci->top; st++) {
-      setnilvalue(st);
-      luaV_writetaint(L, st);
-    }
-    for (st = ci->base; st < L->top; st++) {  /* propagate taint to stack */
-      luaV_writetaint(L, st);
+      setnilvalue(L, st);
     }
     L->top = ci->top;
     if (L->hookmask & LUA_MASKCALL) {
@@ -317,20 +346,14 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
   }
   else {  /* if is a C function, call it */
     CallInfo *ci;
-    StkId st;
     int n;
     luaD_checkstack(L, LUA_MINSTACK);  /* ensure minimum stack size */
     ci = inc_ci(L);  /* now `enter' new function */
     ci->func = restorestack(L, funcr);
     L->base = ci->base = ci->func + 1;
-    luaV_readtaint(L, func);  /* propagate tainted function value to state */
-    luaV_readgcotaint(L, obj2gco(cl));  /* propagate internal closure taint to state */
     ci->top = L->top + LUA_MINSTACK;
     lua_assert(ci->top <= L->stack_last);
     ci->nresults = nresults;
-    for (st = ci->base; st < L->top; st++) {  /* propagate taint to stack */
-      luaV_writetaint(L, st);
-    }
     if (L->hookmask & LUA_MASKCALL)
       luaD_callhook(L, LUA_HOOKCALL, -1);
     lua_unlock(L);
@@ -357,25 +380,28 @@ static StkId callrethooks (lua_State *L, StkId firstResult) {
 }
 
 
+void luaD_preyield (lua_State *L) {
+  L->ts.vmexecmask = LUA_TAINTALLOWED;
+}
+
+
 int luaD_poscall (lua_State *L, StkId firstResult) {
   StkId res;
   int wanted, i;
-  CallInfo *ci;
   if (L->hookmask & LUA_MASKRET)
     firstResult = callrethooks(L, firstResult);
-  ci = L->ci--;
-  res = ci->func;  /* res == final position of 1st result */
-  wanted = ci->nresults;
-  L->base = (ci - 1)->base;  /* restore base */
-  L->savedpc = (ci - 1)->savedpc;  /* restore savedpc */
+  res = L->ci->func;  /* res == final position of 1st result */
+  wanted = L->ci->nresults;
+  L->ci = L->ci - 1;
+  L->ts.vmexecmask = LUA_TAINTALLOWED;
+  L->base = L->ci->base;  /* restore base */
+  L->savedpc = L->ci->savedpc;  /* restore savedpc */
   /* move results to correct place */
   for (i = wanted; i != 0 && firstResult < L->top; i--) {
-    setobjs2s(L, res, firstResult++);
-    luaV_taint(L, res++);  /* propagate taint to/from stack returns */
+    setobjs2s(L, res++, firstResult++);
   }
   while (i-- > 0) {
-    setnilvalue(res);
-    luaV_writetaint(L, res++);  /* propagate state taint to stack returns */
+    setnilvalue(L, res++);
   }
   L->top = res;
   return (wanted - LUA_MULTRET);  /* 0 iff wanted == LUA_MULTRET */
@@ -437,6 +463,11 @@ static int resume_error (lua_State *L, const char *msg) {
 
 
 LUA_API int lua_resume (lua_State *L, int nargs) {
+  return lua_resumefrom(L, NULL, nargs);
+}
+
+
+LUA_API int lua_resumefrom (lua_State *L, lua_State *from, int nargs) {
   int status;
   lua_lock(L);
   if (L->status != LUA_YIELD && (L->status != 0 || L->ci != L->base_ci))
@@ -445,8 +476,11 @@ LUA_API int lua_resume (lua_State *L, int nargs) {
     return resume_error(L, "C stack overflow");
   luai_userstateresume(L, nargs);
   lua_assert(L->errfunc == 0);
+  if (from) L->nCcalls = from->nCcalls;
   L->baseCcalls = ++L->nCcalls;
+  if (from) luaE_taintthread(L, from);
   status = luaD_rawrunprotected(L, resume, L->top - nargs);
+  if (from) luaE_taintthread(from, L);
   if (status != 0) {  /* error? */
     L->status = cast_byte(status);  /* mark thread as `dead' */
     luaD_seterrorobj(L, status, L->top);
@@ -489,6 +523,7 @@ int luaD_pcall (lua_State *L, Pfunc func, void *u,
     luaD_seterrorobj(L, status, oldtop);
     L->nCcalls = oldnCcalls;
     L->ci = restoreci(L, old_ci);
+    lua_assert(L->ts.vmexecmask == LUA_TAINTALLOWED);
     L->base = L->ci->base;
     L->savedpc = L->ci->savedpc;
     L->allowhook = old_allowhooks;
@@ -497,8 +532,6 @@ int luaD_pcall (lua_State *L, Pfunc func, void *u,
   L->errfunc = old_errfunc;
   return status;
 }
-
-
 
 /*
 ** Execute a protected parser.
@@ -514,13 +547,10 @@ static void f_parser (lua_State *L, void *ud) {
   Proto *tf;
   Closure *cl;
   struct SParser *p = cast(struct SParser *, ud);
-  int c = luaZ_lookahead(p->z);
   luaC_checkGC(L);
-  tf = ((c == LUA_SIGNATURE[0]) ? luaU_undump : luaY_parser)(L, p->z,
-                                                             &p->buff, p->name);
+  tf = luaY_parser(L, p->z, &p->buff, p->name);
   cl = luaF_newLclosure(L, tf->nups, hvalue(gt(L)));
   cl->l.p = tf;
-  cl->l.taint = (cl->l.taint) ? cl->l.taint : tf->taint;  /* taint closure if prototype was tainted */
   for (i = 0; i < tf->nups; i++)  /* initialize eventual upvalues */
     cl->l.upvals[i] = luaF_newupval(L);
   setclvalue(L, L->top, cl);
