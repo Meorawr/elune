@@ -13,23 +13,23 @@ jobs:
       matrix:
         config:
           - name: Windows (amd64)
-            os: windows-2019
+            os: windows-latest
             preset: windows
             arch: x64
             executable-suffix: .exe
 
           - name: Windows (x86)
-            os: windows-2019
+            os: windows-latest
             preset: windows
             arch: x86
             executable-suffix: .exe
 
           - name: Linux
-            os: ubuntu-20.04
+            os: ubuntu-latest
             preset: linux
 
           - name: macOS
-            os: macos-10.15
+            os: macos-latest
             preset: macos
 
     steps:
