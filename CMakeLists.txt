@@ -9,6 +9,8 @@ project(tainted-lua
 option(BUILD_SHARED_LIBS "Build Lua as a shared library?" ON)
 option(BUILD_TESTING "Build tests?" ON)
 
+add_subdirectory(ports/acutest)
+add_subdirectory(ports/utf8)
 add_subdirectory(src)
 add_subdirectory(tests)
 

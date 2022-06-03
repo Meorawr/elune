@@ -76,8 +76,6 @@ target_compile_definitions(liblua
 target_include_directories(liblua
   PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
-  PRIVATE
-    "utf8"
 )
 
 target_link_libraries(liblua
@@ -85,6 +83,7 @@ target_link_libraries(liblua
     $<$<PLATFORM_ID:Darwin,Linux>:dl>
     $<$<PLATFORM_ID:Darwin,Linux>:m>
     $<$<PLATFORM_ID:Windows>:bcrypt>
+    sheredom::utf8h
 )
 
 target_sources(liblua

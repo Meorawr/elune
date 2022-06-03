@@ -10,13 +10,9 @@ set_target_properties(luatest
     RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin"
 )
 
-target_include_directories(luatest
-  PRIVATE
-    "acutest/include"
-)
-
 target_link_libraries(luatest
   PRIVATE
+    mity::acutest
     liblua
 )
 
