@@ -13,7 +13,6 @@
       "installDir": "${sourceDir}/build/${presetName}/install",
       "cacheVariables": {
         "CMAKE_CONFIGURATION_TYPES": "Debug;Release",
-        "CMAKE_CROSS_CONFIGS": "all",
         "CMAKE_DEFAULT_BUILD_TYPE": "Debug",
         "CMAKE_EXPORT_COMPILE_COMMANDS": true
       }
@@ -21,28 +20,24 @@
     {
       "name": "windows",
       "displayName": "Windows",
-      "inherits": [
-        "base"
-      ],
+      "inherits": "base",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "cl.exe",
         "CMAKE_C_FLAGS": "/D_CRT_SECURE_NO_WARNINGS /fp:fast /W4 /wd4324 /wd4334 /utf-8",
         "CMAKE_C_FLAGS_DEBUG": "/Od /Ob1 /ZI",
         "CMAKE_C_FLAGS_RELEASE": "/GL /Gw /O2 /Ob3 /Zi",
         "CMAKE_EXE_LINKER_FLAGS": "/DEBUG:FULL /MANIFEST:NO /PDBALTPATH:%_PDB%",
-        "CMAKE_EXE_LINKER_FLAGS_DEBUG": "/INCREMENTAL /OPT:NOREF,NOICF /EDITANDCONTINUE",
+        "CMAKE_EXE_LINKER_FLAGS_DEBUG": "/INCREMENTAL /OPT:NOREF /OPT:NOICF /EDITANDCONTINUE",
         "CMAKE_EXE_LINKER_FLAGS_RELEASE": "/INCREMENTAL:NO /LTCG /OPT:REF /OPT:ICF",
         "CMAKE_SHARED_LINKER_FLAGS": "/DEBUG:FULL /MANIFEST:NO /PDBALTPATH:%_PDB%",
-        "CMAKE_SHARED_LINKER_FLAGS_DEBUG": "/INCREMENTAL /OPT:NOREF,NOICF /EDITANDCONTINUE",
+        "CMAKE_SHARED_LINKER_FLAGS_DEBUG": "/INCREMENTAL /OPT:NOREF /OPT:NOICF /EDITANDCONTINUE",
         "CMAKE_SHARED_LINKER_FLAGS_RELEASE": "/INCREMENTAL:NO /LTCG /OPT:REF /OPT:ICF"
       }
     },
     {
       "name": "windows-amd64",
       "displayName": "Windows (amd64)",
-      "inherits": [
-        "windows"
-      ],
+      "inherits": "windows",
       "toolset": {
         "strategy": "external",
         "value": "host=x64"
@@ -55,9 +50,7 @@
     {
       "name": "windows-x86",
       "displayName": "Windows (x86)",
-      "inherits": [
-        "windows"
-      ],
+      "inherits": "windows",
       "toolset": {
         "strategy": "external",
         "value": "host=x86"
@@ -70,9 +63,7 @@
     {
       "name": "linux",
       "displayName": "Linux",
-      "inherits": [
-        "base"
-      ],
+      "inherits": "base",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "gcc",
         "CMAKE_C_FLAGS": "-D_GNU_SOURCE -ffast-math -Wall -Wextra",
@@ -82,9 +73,7 @@
     {
       "name": "macos",
       "displayName": "macOS",
-      "inherits": [
-        "base"
-      ],
+      "inherits": "base",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_C_FLAGS": "-D_GNU_SOURCE -ffast-math -Wall -Wextra",
@@ -95,62 +84,62 @@
   "buildPresets": [
     {
       "name": "windows",
-      "displayName": "Release",
+      "displayName": "Windows (optimized)",
       "configurePreset": "windows",
       "configuration": "Release"
     },
     {
       "name": "windows-debug",
-      "inherits": "windows",
-      "displayName": "Debug",
+      "displayName": "Windows (unoptimized)",
+      "configurePreset": "windows",
       "configuration": "Debug"
     },
     {
       "name": "windows-amd64",
+      "displayName": "Windows amd64 (optimized)",
       "configurePreset": "windows-amd64",
-      "displayName": "Release",
       "configuration": "Release"
     },
     {
       "name": "windows-amd64-debug",
-      "inherits": "windows-amd64",
-      "displayName": "Debug",
+      "displayName": "Windows amd64 (unoptimized)",
+      "configurePreset": "windows-amd64",
       "configuration": "Debug"
     },
     {
       "name": "windows-x86",
-      "displayName": "Release",
+      "displayName": "Windows x86 (optimized)",
       "configurePreset": "windows-x86",
       "configuration": "Release"
     },
     {
       "name": "windows-x86-debug",
-      "inherits": "windows-x86",
-      "displayName": "Debug",
+      "displayName": "Windows x86 (unoptimized)",
+      "configurePreset": "windows-x86",
       "configuration": "Debug"
     },
     {
       "name": "macos",
-      "displayName": "Release",
+      "displayName": "macOS (optimized)",
       "configurePreset": "macos",
       "configuration": "Release"
     },
     {
       "name": "macos-debug",
-      "inherits": "macos",
-      "displayName": "Debug",
+      "displayName": "macOS (unoptimized)",
+      "configurePreset": "macos",
       "configuration": "Debug"
     },
     {
       "name": "linux",
-      "displayName": "Release",
+      "displayName": "Linux (optimized)",
       "configurePreset": "linux",
       "configuration": "Release"
     },
     {
       "name": "linux-debug",
-      "inherits": "linux",
-      "displayName": "Debug",
+      "displayName": "Linux (unoptimized)",
+      "configurePreset": "linux",
       "configuration": "Debug"
     }
   ]
