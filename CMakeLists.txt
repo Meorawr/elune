@@ -6,18 +6,27 @@ project(tainted-lua
   LANGUAGES C
 )
 
-option(BUILD_SHARED_LIBS "Build Lua as a shared library?" ON)
-option(BUILD_TESTING "Build tests?" ON)
+option(TL_BUILD_SHARED "Build Lua as a shared library?" ${BUILD_SHARED_LIBS})
+option(TL_BUILD_TESTS "Build tests?" ${PROJECT_IS_TOP_LEVEL})
+option(TL_ENABLE_INSTALL "Generate installation rules for build targets?" ${PROJECT_IS_TOP_LEVEL})
+option(TL_ENABLE_CPACK "Generate packaging rules for build targets?" ${PROJECT_IS_TOP_LEVEL})
 
-add_subdirectory(ports/acutest)
+set(BUILD_SHARED_LIBS ${TL_BUILD_SHARED})
+
 add_subdirectory(ports/utf8)
 add_subdirectory(src)
-add_subdirectory(tests)
 
-set(CPACK_PACKAGE_VENDOR "Meorawr")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${PROJECT_DESCRIPTION})
-string(TOLOWER "${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}" CPACK_SYSTEM_NAME)
-set(CPACK_GENERATOR "TXZ;ZIP")
-set(CPACK_STRIP_FILES ON)
+if(TL_BUILD_TESTS)
+  add_subdirectory(ports/acutest)
+  add_subdirectory(tests)
+endif()
 
-include(CPack)
+if(TL_ENABLE_CPACK)
+  set(CPACK_PACKAGE_VENDOR "Meorawr")
+  set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${PROJECT_DESCRIPTION})
+  string(TOLOWER "${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}" CPACK_SYSTEM_NAME)
+  set(CPACK_GENERATOR "TXZ;ZIP")
+  set(CPACK_STRIP_FILES ON)
+
+  include(CPack)
+endif()

@@ -156,14 +156,16 @@ target_sources(luac
 # Add install target support that'll populate a destination prefix with a
 # standard distribution of bin/, lib/, and include/ directories.
 
-install(
-  TARGETS
-    liblua
-    lua
-    luac
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-  OPTIONAL
-)
+if(TL_ENABLE_INSTALL)
+  install(
+    TARGETS
+      liblua
+      lua
+      luac
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    OPTIONAL
+  )
+endif()
