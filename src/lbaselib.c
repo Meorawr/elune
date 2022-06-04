@@ -783,8 +783,15 @@ static int luaB_corunning (lua_State *L) {
 }
 
 
+static int luaB_comainthread (lua_State *L) {
+  lua_pushthread(L);
+  return 1;
+}
+
+
 static const luaL_Reg co_funcs[] = {
   {"create", luaB_cocreate},
+  {"mainthread", luaB_comainthread},
   {"resume", luaB_coresume},
   {"running", luaB_corunning},
   {"status", luaB_costatus},
