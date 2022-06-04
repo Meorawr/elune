@@ -1,19 +1,24 @@
-add_executable(luatest)
+add_executable(tainted-luatest)
+add_executable(meorawr::tainted-luatest ALIAS tainted-luatest)
 
-set_target_properties(luatest
+set_target_properties(
+  tainted-luatest
   PROPERTIES
+    OUTPUT_NAME "luatest"
     C_EXTENSIONS OFF
     C_STANDARD 11
     C_STANDARD_REQUIRED ON
 )
 
-target_link_libraries(luatest
+target_link_libraries(
+  tainted-luatest
   PRIVATE
+    meorawr::tainted-liblua
     mity::acutest
-    liblua
 )
 
-target_sources(luatest
+target_sources(
+  tainted-luatest
   PRIVATE
     luatest.c
     luatest_scriptcases.lua
