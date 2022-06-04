@@ -5,8 +5,6 @@ set_target_properties(luatest
     C_EXTENSIONS OFF
     C_STANDARD 11
     C_STANDARD_REQUIRED ON
-    PDB_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin"
-    RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin"
 )
 
 target_link_libraries(luatest
