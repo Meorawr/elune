@@ -462,6 +462,21 @@ static int db_getfunctionstats (lua_State *L) {
 }
 
 
+static int db_ref (lua_State *L) {
+  luaL_checktype(L, 1, LUA_TTABLE);
+  luaL_checkany(L, 2);
+  lua_pushinteger(L, luaL_ref(L, 1));
+  return 1;
+}
+
+
+static int db_unref (lua_State *L) {
+  luaL_checktype(L, 1, LUA_TTABLE);
+  luaL_unref(L, 1, luaL_checkint(L, 2));
+  return 0;
+}
+
+
 static const luaL_Reg dblib[] = {
   {"collectstats", db_collectstats},
   {"debug", db_debug},
@@ -480,6 +495,7 @@ static const luaL_Reg dblib[] = {
   {"iscfunction", db_iscfunction},
   {"microclock", db_microclock},
   {"newcfunction", db_newcfunction},
+  {"ref", db_ref},
   {"resetstats", db_resetstats},
   {"setfenv", db_setfenv},
   {"sethook", db_sethook},
@@ -487,6 +503,7 @@ static const luaL_Reg dblib[] = {
   {"setmetatable", db_setmetatable},
   {"setupvalue", db_setupvalue},
   {"traceback", db_errorfb},
+  {"unref", db_unref},
   {NULL, NULL}
 };
 
