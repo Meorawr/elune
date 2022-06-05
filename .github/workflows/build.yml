@@ -59,6 +59,7 @@ jobs:
 
       - name: Test
         run: build/${{ matrix.config.preset }}/bin/Release/luatest${{ matrix.config.executable-suffix }}
+        working-directory: build/${{ matrix.config.preset }}/bin/Release
 
       - name: Package
         run: cmake --build --preset ${{ matrix.config.preset }} --target package
