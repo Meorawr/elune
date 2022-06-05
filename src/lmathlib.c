@@ -264,7 +264,7 @@ static const luaL_Reg mathlib[] = {
   {"modf",   math_modf},
   {"pow",   math_pow},
   {"rad",   math_rad},
-  {"random",     math_random},
+  {"random",     math_securerandom},
   {"randomseed", math_randomseed},
   {"sinh",   math_sinh},
   {"sin",   math_sin},
