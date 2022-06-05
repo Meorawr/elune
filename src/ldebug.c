@@ -32,6 +32,8 @@
 #if defined(LUA_USE_WINDOWS)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#elif defined(LUA_USE_LINUX)
+#include <time.h>
 #endif
 
 
