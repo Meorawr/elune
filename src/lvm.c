@@ -78,12 +78,6 @@ static void traceexec (lua_State *L, const Instruction *pc) {
 }
 
 
-static void tracesecurity(lua_State *L, const Instruction *pc) {
-  L->savedpc = pc;
-  luaD_callhook(L, LUA_HOOKSECURITY, -1);
-}
-
-
 static void callTMres (lua_State *L, StkId res, const TValue *f,
                         const TValue *p1, const TValue *p2) {
   ptrdiff_t result = savestack(L, res);
