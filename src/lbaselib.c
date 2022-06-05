@@ -284,6 +284,15 @@ static int luaB_loadstring (lua_State *L) {
   size_t l;
   const char *s = luaL_checklstring(L, 1, &l);
   const char *chunkname = luaL_optstring(L, 2, s);
+  lua_setstacktaint(L, LUALIB_LOADSTRING_TAINT);
+  return load_aux(L, luaL_loadbuffer(L, s, l, chunkname));
+}
+
+
+static int luaB_loadstringuntainted (lua_State *L) {
+  size_t l;
+  const char *s = luaL_checklstring(L, 1, &l);
+  const char *chunkname = luaL_optstring(L, 2, s);
   return load_aux(L, luaL_loadbuffer(L, s, l, chunkname));
 }
 
@@ -662,6 +671,7 @@ static const luaL_Reg base_funcs[] = {
   { .name = "load", .func = luaB_load },
   { .name = "loadfile", .func = luaB_loadfile },
   { .name = "loadstring", .func = luaB_loadstring },
+  { .name = "loadstring_untainted", .func = luaB_loadstringuntainted },
   { .name = "next", .func = luaB_next },
   { .name = "pcall", .func = luaB_pcall },
   { .name = "print", .func = luaB_print },
