@@ -67,6 +67,22 @@ static void freestack (lua_State *L, lua_State *L1) {
 
 
 /*
+** Create registry table and its predefined values
+*/
+static void init_registry (lua_State *L, global_State *g) {
+  TValue *node;
+
+  /* create registry */
+  Table *registry = luaH_new(L, 0, LUA_RIDX_LAST);
+  sethvalue(L, &g->l_registry, registry);
+
+  /* registry[LUA_RIDX_MAINTHREAD] = L */
+  node = luaH_setnum(L, registry, LUA_RIDX_MAINTHREAD);
+  setthvalue(L, node, L);
+}
+
+
+/*
 ** open parts that may cause memory-allocation errors
 */
 static void f_luaopen (lua_State *L, void *ud) {
@@ -74,7 +90,7 @@ static void f_luaopen (lua_State *L, void *ud) {
   UNUSED(ud);
   stack_init(L, L);  /* init stack */
   sethvalue(L, gt(L), luaH_new(L, 0, 2));  /* table of globals */
-  sethvalue(L, registry(L), luaH_new(L, 0, 2));  /* registry */
+  init_registry(L, g);
   luaS_resize(L, MINSTRTABSIZE);  /* initial size of string table */
   luaT_init(L);
   luaX_init(L);

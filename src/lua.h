@@ -89,6 +89,11 @@ typedef void * (*lua_Alloc) (void *ud, void *ptr, size_t osize, size_t nsize);
 #define LUA_MINSTACK	100
 
 
+/* predefined values in the registry */
+#define LUA_RIDX_MAINTHREAD     1
+#define LUA_RIDX_LAST           LUA_RIDX_MAINTHREAD
+
+
 /*
 ** generic extra include file
 */

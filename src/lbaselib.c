@@ -824,7 +824,7 @@ static int luaB_corunning (lua_State *L) {
 
 
 static int luaB_comainthread (lua_State *L) {
-  lua_pushthread(L);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, LUA_RIDX_MAINTHREAD);
   return 1;
 }
 
