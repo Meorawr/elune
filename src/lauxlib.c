@@ -907,7 +907,7 @@ static int f_securehook (lua_State *L) {
   lua_pushvalue(L, lua_upvalueindex(1));
   for (argi = 1; argi <= nargs; ++argi) lua_pushvalue(L, argi);
   lua_call(L, nargs, LUA_MULTRET);
-  nresults = lua_gettop(L) - nargs;
+  nresults = (lua_gettop(L) - nargs);
 
   /* Set up and call posthook function */
   lua_checkstack(L, nargs + 1);
