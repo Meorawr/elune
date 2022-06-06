@@ -829,6 +829,60 @@ static int luaB_comainthread (lua_State *L) {
 }
 
 
+static int aux_cocall (lua_State *from, lua_State *to, int nargs) {
+  int base;
+  int status;
+  int nresults;
+
+  if (from != to) {
+    lua_checkstack(to, (nargs + 1));
+    lua_copytaint(from, to);
+    lua_xmove(from, to, (nargs + 1));
+  }
+
+  base = lua_absindex(to, -(nargs + 1));
+  status = lua_pcall(to, nargs, LUA_MULTRET, 0);
+  nresults = (lua_gettop(to) - (base - 1));
+
+  if (from != to) {
+    lua_copytaint(to, from);
+    lua_checkstack(from, nresults);
+    lua_xmove(to, from, nresults);
+  }
+
+  if (status != 0) {
+    lua_error(from);
+  }
+
+  return nresults;
+}
+
+
+static int luaB_cocall (lua_State *L) {
+  lua_State* L1 = luaL_checkthread(L, 1);
+  luaL_checkany(L, 2);
+  return aux_cocall(L, L1, (lua_gettop(L) - 2));
+}
+
+
+static int aux_cobind (lua_State *L) {
+  lua_State* L1 = lua_tothread(L, lua_upvalueindex(1));
+  lua_checkstack(L, 1);
+  lua_pushvalue(L, lua_upvalueindex(2));
+  lua_insert(L, 1);
+  return aux_cocall(L, L1, (lua_gettop(L) - 1));
+}
+
+
+static int luaB_cobind (lua_State *L) {
+  luaL_checkthread(L, 1);
+  luaL_checkany(L, 2);
+  lua_settop(L, 2);
+  lua_pushcclosure(L, &aux_cobind, 2);
+  return 1;
+}
+
+
 static const luaL_Reg co_funcs[] = {
   {"create", luaB_cocreate},
   {"mainthread", luaB_comainthread},
@@ -837,8 +891,11 @@ static const luaL_Reg co_funcs[] = {
   {"status", luaB_costatus},
   {"wrap", luaB_cowrap},
   {"yield", luaB_yield},
+  {"call", luaB_cocall},
+  {"bind", luaB_cobind},
   {NULL, NULL}
 };
+
 
 /* }====================================================== */
 
