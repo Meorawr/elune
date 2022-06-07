@@ -477,10 +477,50 @@ static int db_unref (lua_State *L) {
 }
 
 
+static int db_getexceptmask (lua_State *L) {
+  lua_State *L1;
+  int arg;
+  int mask;
+  char smask[4];
+
+  L1 = getthread(L, &arg);
+  mask = lua_getexceptmask(L);
+
+  int i = 0;
+  if (mask & LUA_EXCEPTFPECOERCE) smask[i++] = 'f';
+  if (mask & LUA_EXCEPTFPESTRICT) smask[i++] = 'F';
+  if (mask & LUA_EXCEPTOVERFLOW) smask[i++] = 'o';
+  smask[i] = '\0';
+
+  lua_pushstring(L, smask);
+  return 1;
+}
+
+
+static int db_setexceptmask (lua_State *L) {
+  lua_State *L1;
+  const char *smask;
+  int arg;
+  int mask;
+
+  L1 = getthread(L, &arg);
+  smask = luaL_checkstring(L, arg + 1);
+
+  mask = 0;
+  if (strchr(smask, 'f')) mask |= LUA_EXCEPTFPECOERCE;
+  if (strchr(smask, 'F')) mask |= LUA_EXCEPTFPESTRICT;
+  if (strchr(smask, 'o')) mask |= LUA_EXCEPTOVERFLOW;
+
+  lua_setexceptmask(L, mask);
+  return 0;
+}
+
+
 static const luaL_Reg dblib[] = {
   {"collectstats", db_collectstats},
   {"debug", db_debug},
   {"enablestats", db_enablestats},
+  {"getexceptmask", db_getexceptmask},
   {"getfenv", db_getfenv},
   {"getfunctionstats", db_getfunctionstats},
   {"getglobalstats", db_getglobalstats},
@@ -497,6 +537,7 @@ static const luaL_Reg dblib[] = {
   {"newcfunction", db_newcfunction},
   {"ref", db_ref},
   {"resetstats", db_resetstats},
+  {"setexceptmask", db_setexceptmask},
   {"setfenv", db_setfenv},
   {"sethook", db_sethook},
   {"setlocal", db_setlocal},

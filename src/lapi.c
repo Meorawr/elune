@@ -362,7 +362,7 @@ LUA_API lua_Integer lua_tointeger (lua_State *L, int idx) {
 LUA_API int lua_toint (lua_State *L, int idx) {
   lua_Number n = lua_tonumber(L, idx);
 
-  if (n < LUA_INTEGER_MIN || n > LUA_INTEGER_MAX) {
+  if ((L->exceptmask & LUA_EXCEPTOVERFLOW) && (n < LUA_INTEGER_MIN || n > LUA_INTEGER_MAX)) {
     lua_lock(L);
     luaG_overflowerror(L, n);
     lua_unlock(L);

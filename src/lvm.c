@@ -344,12 +344,16 @@ static void Arith (lua_State *L, StkId ra, const TValue *rb,
       case TM_SUB: setnvalue(L, ra, luai_numsub(nb, nc)); break;
       case TM_MUL: setnvalue(L, ra, luai_nummul(nb, nc)); break;
       case TM_DIV: {
-        checkdivoperands(L, nb, nc);
+        if (L->exceptmask & LUA_EXCEPTFPECOERCE) {
+          checkdivoperands(L, nb, nc);
+        }
         setnvalue(L, ra, luai_numdiv(nb, nc));
         break;
       }
       case TM_MOD: {
-        checkdivoperands(L, nb, nc);
+        if (L->exceptmask & LUA_EXCEPTFPECOERCE) {
+          checkdivoperands(L, nb, nc);
+        }
         setnvalue(L, ra, luai_nummod(nb, nc));
         break;
       }
@@ -522,14 +526,16 @@ void luaV_execute (lua_State *L, int nexeccalls) {
         continue;
       }
       case OP_DIV: {
-        /* TODO: Add a toggle for these. */
-        /* checkdivoperands(L, nvalue(RKB(i)), nvalue(RKC(i))); */
+        if (L->exceptmask & LUA_EXCEPTFPESTRICT) {
+          checkdivoperands(L, nvalue(RKB(i)), nvalue(RKC(i)));
+        }
         arith_op(luai_numdiv, TM_DIV);
         continue;
       }
       case OP_MOD: {
-        /* TODO: Add a toggle for these. */
-        /* checkdivoperands(L, nvalue(RKB(i)), nvalue(RKC(i))); */
+        if (L->exceptmask & LUA_EXCEPTFPESTRICT) {
+          checkdivoperands(L, nvalue(RKB(i)), nvalue(RKC(i)));
+        }
         arith_op(luai_nummod, TM_MOD);
         continue;
       }

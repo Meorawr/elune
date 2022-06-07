@@ -273,6 +273,16 @@ LUA_API int lua_getinfo (lua_State *L, const char *what, lua_Debug *ar) {
 }
 
 
+LUA_API int lua_getexceptmask (lua_State *L) {
+  return cast_int(L->exceptmask);
+}
+
+
+LUA_API int lua_setexceptmask (lua_State *L, int mask) {
+  return cast_int(L->exceptmask = cast_byte(mask));
+}
+
+
 /*
 ** {======================================================
 ** Symbolic Execution and code checker

@@ -148,6 +148,7 @@ struct lua_State {
   int size_ci;  /* size of array `base_ci' */
   unsigned short nCcalls;  /* number of nested C calls */
   unsigned short baseCcalls;  /* nested C calls when resuming coroutine */
+  lu_byte exceptmask;
   lu_byte hookmask;
   lu_byte allowhook;
   int basehookcount;

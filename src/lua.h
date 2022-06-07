@@ -336,6 +336,43 @@ LUA_API void lua_setlevel	(lua_State *from, lua_State *to);
 #define LUA_MASKSECURITY (1 << LUA_HOOKSECURITY)
 
 
+/**
+ * Exception masks; these can be enabled through the 'lua_setexceptmask()'
+ * API to raise errors on certain events.
+ */
+typedef enum lua_ExceptMask
+{
+  /**
+   * Raises errors on division or modulo VM operations on non-finite values
+   * where either operand undergoes implicit conversions from a non-numeric
+   * value.
+   *
+   * This is enabled by default and matches reference client behavior for
+   * release builds.
+   */
+  LUA_EXCEPTFPECOERCE = (1 << 0),
+
+  /**
+   * Raises errors on division or modulo VM operations on non-finite values,
+   * including those where both operands are numeric.
+   *
+   * This is disabled by default; enabling both LUA_EXCEPTFPE and this will
+   * match reference client behavior for test builds.
+   */
+  LUA_EXCEPTFPESTRICT = (1 << 1),
+
+  /**
+   * Raises errors on integer overflow with the 'lua_toint()' API, which is
+   * used by various Lua functions including 'string.format()' for "%d" format
+   * specifiers.
+   *
+   * This is enabled by default and matches reference client behavior for
+   * release builds.
+   */
+  LUA_EXCEPTOVERFLOW = (1 << 2),
+} lua_ExceptMask;
+
+
 typedef struct lua_Debug lua_Debug;  /* activation record */
 
 
@@ -354,6 +391,9 @@ LUA_API int lua_sethook (lua_State *L, lua_Hook func, int mask, int count);
 LUA_API lua_Hook lua_gethook (lua_State *L);
 LUA_API int lua_gethookmask (lua_State *L);
 LUA_API int lua_gethookcount (lua_State *L);
+
+LUA_API int lua_getexceptmask (lua_State *L);
+LUA_API int lua_setexceptmask (lua_State *L, int mask);
 
 
 struct lua_Debug {
