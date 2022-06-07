@@ -372,6 +372,19 @@ static int db_errorfb (lua_State *L) {
 }
 
 
+static int db_geterrorhandler (lua_State *L) {
+  lua_pushvalue(L, LUA_ERRORHANDLERINDEX);
+  return 1;
+}
+
+
+static int db_seterrorhandler (lua_State *L) {
+  luaL_checkany(L, 1);
+  lua_replace(L, LUA_ERRORHANDLERINDEX);
+  return 0;
+}
+
+
 static int db_getobjectsize (lua_State *L) {
   luaL_checkany(L, 1);
   lua_pushinteger(L, lua_objsize(L, 1));
@@ -520,6 +533,7 @@ static const luaL_Reg dblib[] = {
   {"collectstats", db_collectstats},
   {"debug", db_debug},
   {"enablestats", db_enablestats},
+  {"geterrorhandler", db_geterrorhandler},
   {"getexceptmask", db_getexceptmask},
   {"getfenv", db_getfenv},
   {"getfunctionstats", db_getfunctionstats},
@@ -537,6 +551,7 @@ static const luaL_Reg dblib[] = {
   {"newcfunction", db_newcfunction},
   {"ref", db_ref},
   {"resetstats", db_resetstats},
+  {"seterrorhandler", db_seterrorhandler},
   {"setexceptmask", db_setexceptmask},
   {"setfenv", db_setfenv},
   {"sethook", db_sethook},
