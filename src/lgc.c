@@ -156,7 +156,7 @@ size_t luaC_separateudata (lua_State *L, int all) {
 }
 
 
-LUAI_FUNC size_t luaC_objectsize (const GCObject *o) {
+size_t luaC_objectsize (const GCObject *o) {
   switch (o->gch.tt) {
     case LUA_TSTRING: {
       return sizestring(gco2ts(o));

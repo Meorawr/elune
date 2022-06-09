@@ -237,7 +237,7 @@ static int auxgetinfo (lua_State *L, const char *what, lua_Debug *ar,
 }
 
 
-LUAI_FUNC int luaG_getinfo (lua_State *L, CallInfo *ci, const char *what, lua_Debug *ar) {
+int luaG_getinfo (lua_State *L, CallInfo *ci, const char *what, lua_Debug *ar) {
   StkId func = ci->func;
   Closure *f = ttisfunction(func) ? clvalue(func) : NULL;
   return auxgetinfo(L, what, ar, f, ci);
