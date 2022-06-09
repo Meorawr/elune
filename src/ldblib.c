@@ -435,7 +435,7 @@ static int db_getexceptmask (lua_State *L) {
   if (mask & LUA_EXCEPTOVERFLOW) smask[i++] = 'o';
   smask[i] = '\0';
 
-  lua_pushstring(L, smask);
+  lua_pushstring(L1, smask);
   return 1;
 }
 
@@ -454,7 +454,7 @@ static int db_setexceptmask (lua_State *L) {
   if (strchr(smask, 'F')) mask |= LUA_EXCEPTFPESTRICT;
   if (strchr(smask, 'o')) mask |= LUA_EXCEPTOVERFLOW;
 
-  lua_setexceptmask(L, mask);
+  lua_setexceptmask(L1, mask);
   return 0;
 }
 
