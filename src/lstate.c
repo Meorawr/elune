@@ -114,7 +114,7 @@ static void preinit_state (lua_State *L, global_State *g) {
   L->execcount = 0;
   L->allowhook = 1;
   resethookcount(L);
-  L->exceptmask = LUA_EXCEPTFPECOERCE | LUA_EXCEPTOVERFLOW;
+  L->exceptmask = 0;
   L->openupval = NULL;
   L->size_ci = 0;
   L->nCcalls = L->baseCcalls = 0;

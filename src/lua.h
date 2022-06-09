@@ -339,16 +339,17 @@ LUA_API void lua_setlevel	(lua_State *from, lua_State *to);
 /**
  * Exception masks; these can be enabled through the 'lua_setexceptmask()'
  * API to raise errors on certain events.
+ *
+ * By default all exceptions are disabled, even if this would cause a deviation
+ * from reference client behavior.
  */
-typedef enum lua_ExceptMask
-{
+typedef enum lua_ExceptMask {
   /**
    * Raises errors on division or modulo VM operations on non-finite values
    * where either operand undergoes implicit conversions from a non-numeric
    * value.
    *
-   * This is enabled by default and matches reference client behavior for
-   * release builds.
+   * Enable this to match reference client behavior.
    */
   LUA_EXCEPTFPECOERCE = (1 << 0),
 
@@ -356,8 +357,7 @@ typedef enum lua_ExceptMask
    * Raises errors on division or modulo VM operations on non-finite values,
    * including those where both operands are numeric.
    *
-   * This is disabled by default; enabling both LUA_EXCEPTFPE and this will
-   * match reference client behavior for test builds.
+   * Enable this to match reference client behavior for test builds (beta/ptr).
    */
   LUA_EXCEPTFPESTRICT = (1 << 1),
 
@@ -366,8 +366,7 @@ typedef enum lua_ExceptMask
    * used by various Lua functions including 'string.format()' for "%d" format
    * specifiers.
    *
-   * This is enabled by default and matches reference client behavior for
-   * release builds.
+   * Enable this to match reference client behavior.
    */
   LUA_EXCEPTOVERFLOW = (1 << 2),
 } lua_ExceptMask;
