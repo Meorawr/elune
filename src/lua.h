@@ -393,7 +393,7 @@ LUA_API int lua_gethookmask (lua_State *L);
 LUA_API int lua_gethookcount (lua_State *L);
 
 LUA_API int lua_getexceptmask (lua_State *L);
-LUA_API int lua_setexceptmask (lua_State *L, int mask);
+LUA_API void lua_setexceptmask (lua_State *L, int mask);
 
 
 struct lua_Debug {

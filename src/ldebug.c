@@ -279,8 +279,8 @@ LUA_API int lua_getexceptmask (lua_State *L) {
 }
 
 
-LUA_API int lua_setexceptmask (lua_State *L, int mask) {
-  return cast_int(L->exceptmask = cast_byte(mask));
+LUA_API void lua_setexceptmask (lua_State *L, int mask) {
+  L->exceptmask = cast_byte(mask);
 }
 
 
