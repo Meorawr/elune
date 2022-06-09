@@ -261,7 +261,7 @@ const luaL_Reg seclib_funcs[] = {
 
 
 LUALIB_API int luaopen_security (lua_State *L) {
-  luaL_register(L, LUA_SECLIBNAME, seclib_funcs);
+  luaL_register(L, LUA_DBLIBNAME, seclib_funcs);
   return 1;
 }
 
