@@ -459,6 +459,25 @@ static int db_setexceptmask (lua_State *L) {
 }
 
 
+static int db_getscripttimeout (lua_State *L) {
+  lua_ScriptTimeout timeout;
+  lua_getscripttimeout(L, &timeout);
+
+  lua_pushnumber(L, (lua_Number) timeout.ticks / lua_gettickfrequency(L));
+  lua_pushinteger(L, timeout.instructions);
+  return 2;
+}
+
+
+static int db_setscripttimeout (lua_State *L) {
+  lua_ScriptTimeout timeout;
+  timeout.ticks = (lua_clock_t) (luaL_checknumber(L, 1) * lua_gettickfrequency(L));
+  timeout.instructions = luaL_checkint(L, 2);
+  lua_setscripttimeout(L, &timeout);
+  return 0;
+}
+
+
 static const luaL_Reg dblib[] = {
   {"debug", db_debug},
   {"geterrorhandler", db_geterrorhandler},
@@ -470,6 +489,7 @@ static const luaL_Reg dblib[] = {
   {"getmetatable", db_getmetatable},
   {"getobjectsize", db_getobjectsize},
   {"getregistry", db_getregistry},
+  {"getscripttimeout", db_getscripttimeout},
   {"getupvalue", db_getupvalue},
   {"iscfunction", db_iscfunction},
   {"newcfunction", db_newcfunction},
@@ -479,6 +499,7 @@ static const luaL_Reg dblib[] = {
   {"setfenv", db_setfenv},
   {"sethook", db_sethook},
   {"setlocal", db_setlocal},
+  {"setscripttimeout", db_setscripttimeout},
   {"setmetatable", db_setmetatable},
   {"setupvalue", db_setupvalue},
   {"traceback", db_errorfb},

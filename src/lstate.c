@@ -109,6 +109,9 @@ static void preinit_state (lua_State *L, global_State *g) {
   L->hook = NULL;
   L->hookmask = 0;
   L->basehookcount = 0;
+  L->baseexeclimit = 0;
+  L->baseexeccount = 0;
+  L->execcount = 0;
   L->allowhook = 1;
   resethookcount(L);
   L->exceptmask = LUA_EXCEPTFPECOERCE | LUA_EXCEPTOVERFLOW;
@@ -164,6 +167,8 @@ lua_State *luaE_newthread (lua_State *L) {
   L1->exceptmask = L->exceptmask;
   L1->hookmask = L->hookmask;
   L1->basehookcount = L->basehookcount;
+  L1->baseexeclimit = L->baseexeclimit;
+  L1->baseexeccount = L->baseexeccount;
   L1->hook = L->hook;
   luaE_taintthread(L1, L);
   resethookcount(L1);

@@ -408,6 +408,7 @@ void luaV_execute (lua_State *L, int nexeccalls) {
   StkId base;
   TValue *k;
   const Instruction *pc;
+  const lua_clock_t tickstart = luaG_gettickcount(G(L));
  reentry:  /* entry point */
   lua_assert(isLua(L->ci));
   pc = L->savedpc;
@@ -438,6 +439,15 @@ void luaV_execute (lua_State *L, int nexeccalls) {
 
       base = L->base;
       luaG_profileenter(L);
+    }
+
+    if (L->baseexeccount > 0 && (--L->execcount == 0)) {
+      lua_clock_t elapsed = (luaG_gettickcount(G(L)) - tickstart);
+      L->execcount = L->baseexeccount;
+
+      if (elapsed > L->baseexeclimit) {
+        luaG_runerror(L, "script ran too long");
+      }
     }
 
     /* warning!! several calls may realloc the stack and invalidate `ra' */

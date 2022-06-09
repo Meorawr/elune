@@ -155,6 +155,9 @@ struct lua_State {
   lu_byte allowhook;
   int basehookcount;
   int hookcount;
+  lua_clock_t baseexeclimit;
+  int baseexeccount;
+  int execcount;
   lua_Hook hook;
   TValue l_gt;  /* table of globals */
   TValue env;  /* temporary place for environments */

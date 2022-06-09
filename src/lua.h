@@ -372,6 +372,12 @@ typedef enum lua_ExceptMask
   LUA_EXCEPTOVERFLOW = (1 << 2),
 } lua_ExceptMask;
 
+typedef lua_Integer lua_clock_t;
+
+typedef struct lua_ScriptTimeout {
+  lua_clock_t ticks;  /* How long to allow script execution before timing out? */
+  int instructions;  /* How many instructions should pass between each check? */
+} lua_ScriptTimeout;
 
 typedef struct lua_Debug lua_Debug;  /* activation record */
 
@@ -394,6 +400,9 @@ LUA_API int lua_gethookcount (lua_State *L);
 
 LUA_API int lua_getexceptmask (lua_State *L);
 LUA_API void lua_setexceptmask (lua_State *L, int mask);
+
+LUA_API void lua_getscripttimeout (lua_State *L, lua_ScriptTimeout *timeout);
+LUA_API void lua_setscripttimeout (lua_State *L, const lua_ScriptTimeout *timeout);
 
 
 struct lua_Debug {
@@ -420,8 +429,6 @@ struct lua_Debug {
 ** =======================================================================
 */
 
-
-typedef lua_Integer lua_clock_t;
 
 typedef struct lua_GlobalStats {
   size_t bytesused;  /* total number of bytes in use */
