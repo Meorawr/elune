@@ -403,7 +403,6 @@ static void Arith (lua_State *L, StkId ra, const TValue *rb,
       }
 
 
-
 void luaV_execute (lua_State *L, int nexeccalls) {
   LClosure *cl;
   StkId base;
@@ -421,23 +420,24 @@ void luaV_execute (lua_State *L, int nexeccalls) {
   luaE_taintstack(L, cl->taint);
   L->ts.vmexecmask = ((cl->taint != NULL) ? LUA_TAINTBLOCKED : LUA_TAINTALLOWED);
 
+  luaG_profileenter(L);
+
   /* main loop of interpreter */
   for (;;) {
     const Instruction i = *pc++;
     StkId ra;
 
-    if (L->hookmask & (LUA_MASKLINE | LUA_MASKCOUNT)) {
-      if ((L->hookmask & LUA_MASKLINE) || ((L->hookmask & LUA_MASKCOUNT) && --L->hookcount == 0)) {
-        traceexec(L, pc);
-      }
+    if (((L->hookmask & LUA_MASKCOUNT) && (--L->hookcount == 0)) || (L->hookmask & LUA_MASKLINE)) {
+      luaG_profileleave(L);
+      traceexec(L, pc);
 
       if (L->status == LUA_YIELD) {  /* did any hook yield? */
         L->savedpc = pc - 1;
-        luaD_preyield(L);
         return;
       }
 
       base = L->base;
+      luaG_profileenter(L);
     }
 
     /* warning!! several calls may realloc the stack and invalidate `ra' */
@@ -636,6 +636,7 @@ void luaV_execute (lua_State *L, int nexeccalls) {
         int nresults = GETARG_C(i) - 1;
         if (b != 0) L->top = ra+b;  /* else previous instruction set top */
         L->savedpc = pc;
+        luaG_profileleave(L);
         switch (luaD_precall(L, ra, nresults)) {
           case PCRLUA: {
             nexeccalls++;
@@ -645,10 +646,10 @@ void luaV_execute (lua_State *L, int nexeccalls) {
             /* it was a C function (`precall' called it); adjust results */
             if (nresults >= 0) L->top = L->ci->top;
             base = L->base;
+            luaG_profileenter(L);
             continue;
           }
           default: {
-            luaD_preyield(L);
             return;  /* yield */
           }
         }
@@ -658,10 +659,11 @@ void luaV_execute (lua_State *L, int nexeccalls) {
         if (b != 0) L->top = ra+b;  /* else previous instruction set top */
         L->savedpc = pc;
         lua_assert(GETARG_C(i) - 1 == LUA_MULTRET);
+        luaG_profileleave(L);
         switch (luaD_precall(L, ra, LUA_MULTRET)) {
           case PCRLUA: {
             /* tail call: put new frame in place of previous one */
-            CallInfo *ci = L->ci - 1;  /* previous frame */
+            CallInfo *ci = luaD_unwindci(L, L->ci, L->ci - 1);
             int aux;
             StkId func = ci->func;
             StkId pfunc = (ci+1)->func;  /* previous function index */
@@ -672,6 +674,8 @@ void luaV_execute (lua_State *L, int nexeccalls) {
             ci->top = L->top = func+aux;  /* correct top */
             lua_assert(L->top == L->base + clvalue(func)->l.p->maxstacksize);
             ci->savedtaint = (ci+1)->savedtaint;
+            ci->startticks = (ci+1)->startticks;
+            ci->entryticks = (ci+1)->entryticks;
             ci->savedpc = L->savedpc;
             ci->tailcalls++;  /* one more call lost */
             L->ci--;  /* remove new frame */
@@ -679,10 +683,10 @@ void luaV_execute (lua_State *L, int nexeccalls) {
           }
           case PCRC: {  /* it was a C function (`precall' called it) */
             base = L->base;
+            luaG_profileenter(L);
             continue;
           }
           default: {
-            luaD_preyield(L);
             return;  /* yield */
           }
         }
@@ -691,10 +695,10 @@ void luaV_execute (lua_State *L, int nexeccalls) {
         int b = GETARG_B(i);
         if (b != 0) L->top = ra+b-1;
         if (L->openupval) luaF_close(L, base);
+        luaG_profileleave(L);
         L->savedpc = pc;
         b = luaD_poscall(L, ra);
         if (--nexeccalls == 0) { /* was previous function running `here'? */
-          luaD_preyield(L);
           return;  /* no: return */
         } else {  /* yes: continue its execution */
           if (b) L->top = L->ci->top;

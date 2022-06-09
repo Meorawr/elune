@@ -51,6 +51,8 @@ typedef struct CallInfo {
   StkId	top;  /* top for this function */
   const Instruction *savedpc;
   TString *savedtaint;  /* saved taint for this call; informational only */
+  lua_clock_t entryticks;  /* tick count on first initial entry or resumption of this call */
+  lua_clock_t startticks;  /* tick count on last reentry of this function */
   int nresults;  /* expected number of results from this function */
   int tailcalls;  /* number of tail calls lost under this entry */
 } CallInfo;
@@ -67,7 +69,7 @@ typedef struct CallInfo {
 */
 typedef struct SourceStats {
   TString *owner;
-  lu_int64 execticks;  /* ticks spent executing owned functions */
+  lua_clock_t execticks;  /* ticks spent executing owned functions */
   lu_mem bytesowned;  /* total size of owned allocations */
   struct SourceStats *next;
 } SourceStats;
@@ -97,8 +99,8 @@ typedef struct global_State {
   lu_mem gcdept;  /* how much GC is `behind schedule' */
   int gcpause;  /* size of pause between successive GCs */
   int gcstepmul;  /* GC `granularity' */
-  lu_int64 startticks;  /* tick count on startup */
-  lu_int64 execticks;  /* ticks spent executing all functions */
+  lua_clock_t startticks;  /* tick count at startup */
+  lua_clock_t tickfreq;  /* tick frequency; cached on startup */
   lu_mem bytesallocated;  /* total number of bytes allocated */
   SourceStats *sourcestats;  /* list of source-specific statistics */
   lua_CFunction panic;  /* to be called in unprotected errors */

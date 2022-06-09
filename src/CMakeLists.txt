@@ -1,3 +1,10 @@
+include(CheckSymbolExists)
+
+check_symbol_exists(clock_gettime "time.h" TL_HAS_CLOCK_GETTIME)
+check_symbol_exists(CLOCK_MONOTONIC "time.h" TL_HAS_CLOCK_MONOTONIC)
+check_symbol_exists(CLOCK_MONOTONIC_RAW "time.h" TL_HAS_CLOCK_MONOTONIC_RAW)
+check_symbol_exists(QueryPerformanceCounter "windows.h" TL_HAS_QUERY_PERFORMANCE_COUNTER)
+
 # -----------------------------------------------------------------------------
 # Lua library target (meorawr::tainted-liblua)
 # -----------------------------------------------------------------------------
@@ -24,6 +31,10 @@ target_compile_definitions(
   PRIVATE
     $<$<CONFIG:Debug>:LUA_USE_ASSERT>     # Enable internal assertions on debug builds.
     $<$<CONFIG:Debug>:LUA_USE_APICHECK>   # Enable public API assertions on debug builds.
+    $<$<BOOL:${TL_HAS_CLOCK_GETTIME}>:LUA_HAS_CLOCK_GETTIME>
+    $<$<BOOL:${TL_HAS_CLOCK_MONOTONIC_RAW}>:LUA_HAS_CLOCK_MONOTONIC_RAW>
+    $<$<BOOL:${TL_HAS_CLOCK_MONOTONIC}>:LUA_HAS_CLOCK_MONOTONIC>
+    $<$<BOOL:${TL_HAS_QUERY_PERFORMANCE_COUNTER}>:LUA_HAS_QUERY_PERFORMANCE_COUNTER>
 )
 
 target_include_directories(
@@ -83,6 +94,7 @@ target_sources(
     loadlib.c
     loslib.c
     lseclib.c
+    lstatslib.c
     lstrlib.c
     ltablib.c
     linit.c

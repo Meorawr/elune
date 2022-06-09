@@ -20,13 +20,11 @@
 #include "lstate.h"
 
 
-LUAI_FUNC ClosureStats *luaF_newclosurestats (lua_State *L) {
+ClosureStats *luaF_newclosurestats (lua_State *L) {
   ClosureStats *cs = luaM_new(L, ClosureStats);
   cs->calls = 0;
-  cs->opencalls = 0;
-  cs->startticks = 0;
-  cs->execticks = 0;
-  cs->subexecticks = 0;
+  cs->ownticks = 0;
+  cs->subticks = 0;
   return cs;
 }
 
@@ -38,6 +36,7 @@ Closure *luaF_newCclosure (lua_State *L, int nelems, Table *e) {
   c->c.env = e;
   c->c.stats = (G(L)->enablestats ? luaF_newclosurestats(L) : NULL);
   c->c.nupvalues = cast_byte(nelems);
+  c->c.nopencalls = 0;
   return c;
 }
 
@@ -49,6 +48,7 @@ Closure *luaF_newLclosure (lua_State *L, int nelems, Table *e) {
   c->l.env = e;
   c->l.stats = (G(L)->enablestats ? luaF_newclosurestats(L) : NULL);
   c->l.nupvalues = cast_byte(nelems);
+  c->l.nopencalls = 0;
   while (nelems--) c->l.upvals[nelems] = NULL;
   return c;
 }

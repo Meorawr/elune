@@ -45,6 +45,7 @@ static void print_usage (void) {
   "  -e stat  execute string " LUA_QL("stat") "\n"
   "  -l name  require library " LUA_QL("name") "\n"
   "  -i       enter interactive mode after executing " LUA_QL("script") "\n"
+  "  -p       enable performance accounting\n"
   "  -t       load and execute scripts insecurely\n"
   "  -v       show version information\n"
   "  --       stop handling options\n"
@@ -276,6 +277,9 @@ static int collectargs (char **argv, int *pi, int *pv, int *pe) {
       case 't':
         notail(argv[i]);
         break;
+      case 'p':
+        notail(argv[i]);
+        break;
       case 'e':
         *pe = 1;  /* go through */
         LUA_FALLTHROUGH;
@@ -316,6 +320,10 @@ static int runargs (lua_State *L, char **argv, int n) {
       }
       case 't': {
         luaL_forceinsecure(L);
+        break;
+      }
+      case 'p': {
+        lua_setprofilingenabled(L, 1);
         break;
       }
       default: break;

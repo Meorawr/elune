@@ -405,76 +405,6 @@ static int db_newcfunction (lua_State *L) {
 }
 
 
-static int db_microclock (lua_State *L) {
-  lua_pushnumber(L, (lua_Number) lua_microclock(L));
-  return 1;
-}
-
-
-static int db_enablestats (lua_State *L) {
-  lua_enablestats(L, luaL_optint(L, 1, 0));
-  return 0;
-}
-
-
-static int db_collectstats (lua_State *L) {
-  lua_collectstats(L);
-  return 0;
-}
-
-
-static int db_resetstats (lua_State *L) {
-  lua_resetstats(L);
-  return 0;
-}
-
-
-static int db_getglobalstats (lua_State *L) {
-  lua_GlobalStats stats;
-  lua_getglobalstats(L, &stats);
-
-  lua_createtable(L, 0, 5);
-  lua_pushnumber(L, (lua_Number) stats.exectime);
-  lua_setfield(L, -2, "exectime");
-  lua_pushnumber(L, (lua_Number) stats.bytesused);
-  lua_setfield(L, -2, "bytesused");
-  lua_pushnumber(L, (lua_Number) stats.bytesallocated);
-  lua_setfield(L, -2, "bytesallocated");
-
-  return 1;
-}
-
-
-static int db_getsourcestats (lua_State *L) {
-  lua_SourceStats stats;
-  lua_getsourcestats(L, luaL_optstring(L, 1, NULL), &stats);
-
-  lua_createtable(L, 0, 4);
-  lua_pushnumber(L, (lua_Number) stats.exectime);
-  lua_setfield(L, -2, "exectime");
-  lua_pushnumber(L, (lua_Number) stats.bytesowned);
-  lua_setfield(L, -2, "bytesowned");
-
-  return 1;
-}
-
-
-static int db_getfunctionstats (lua_State *L) {
-  lua_FunctionStats stats;
-  lua_getfunctionstats(L, -1, &stats);
-
-  lua_createtable(L, 0, 3);
-  lua_pushnumber(L, stats.calls);
-  lua_setfield(L, -2, "calls");
-  lua_pushnumber(L, (lua_Number) stats.exectime);
-  lua_setfield(L, -2, "exectime");
-  lua_pushnumber(L, (lua_Number) stats.subexectime);
-  lua_setfield(L, -2, "subexectime");
-
-  return 1;
-}
-
-
 static int db_ref (lua_State *L) {
   luaL_checktype(L, 1, LUA_TTABLE);
   luaL_checkany(L, 2);
@@ -530,27 +460,20 @@ static int db_setexceptmask (lua_State *L) {
 
 
 static const luaL_Reg dblib[] = {
-  {"collectstats", db_collectstats},
   {"debug", db_debug},
-  {"enablestats", db_enablestats},
   {"geterrorhandler", db_geterrorhandler},
   {"getexceptmask", db_getexceptmask},
   {"getfenv", db_getfenv},
-  {"getfunctionstats", db_getfunctionstats},
-  {"getglobalstats", db_getglobalstats},
   {"gethook", db_gethook},
   {"getinfo", db_getinfo},
   {"getlocal", db_getlocal},
   {"getmetatable", db_getmetatable},
   {"getobjectsize", db_getobjectsize},
   {"getregistry", db_getregistry},
-  {"getsourcestats", db_getsourcestats},
   {"getupvalue", db_getupvalue},
   {"iscfunction", db_iscfunction},
-  {"microclock", db_microclock},
   {"newcfunction", db_newcfunction},
   {"ref", db_ref},
-  {"resetstats", db_resetstats},
   {"seterrorhandler", db_seterrorhandler},
   {"setexceptmask", db_setexceptmask},
   {"setfenv", db_setfenv},

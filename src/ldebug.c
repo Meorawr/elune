@@ -29,9 +29,10 @@
 #include "ltm.h"
 #include "lvm.h"
 
-#if defined(LUA_USE_WINDOWS)
+
+#if defined(LUA_HAS_QUERY_PERFORMANCE_COUNTER)
 #define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#include <Windows.h>
 #else
 #include <time.h>
 #endif
@@ -687,36 +688,114 @@ void luaG_runerror (lua_State *L, const char *fmt, ...) {
 }
 
 
-LUAI_FUNC uint64_t luaG_gettickcount (void) {
-#if defined(LUA_USE_WINDOWS)
-  /* Windows platform */
+static lu_int64 os_gettickcount (void);
+static lu_int64 os_gettickfrequency (void);
+
+
+void luaG_init (global_State *g) {
+  g->startticks = os_gettickcount();
+  g->tickfreq = os_gettickfrequency();
+}
+
+
+lua_clock_t luaG_gettickcount (const global_State *g) {
+  return (os_gettickcount() - g->startticks);
+}
+
+
+lua_clock_t luaG_gettickfrequency (const global_State *g) {
+  return g->tickfreq;
+}
+
+
+void luaG_profileenter (lua_State *L) {
+  const global_State *g = G(L);
+  CallInfo *ci = L->ci;
+  Closure *cl = ci_func(ci);
+  ClosureStats *cs = cl->c.stats;
+
+  if (g->enablestats && cs != NULL) {
+    lua_clock_t now = luaG_gettickcount(g);
+
+    /* Are we starting profiling on a new call? */
+    if (ci->entryticks == 0) {
+      cs->calls++;
+      ci->entryticks = now;
+    }
+
+    ci->startticks = now;
+  }
+}
+
+
+void luaG_profileleave (lua_State *L) {
+  const global_State *g = G(L);
+  CallInfo *ci = L->ci;
+  Closure *cl = ci_func(ci);
+  ClosureStats *cs = cl->c.stats;
+
+  if (g->enablestats && ci->entryticks != 0 && cs != NULL) {
+    lua_clock_t now = luaG_gettickcount(g);
+
+    /* Commit the current execution time of this call. */
+    cs->ownticks += (now - ci->startticks);
+    ci->startticks = now;
+
+    /* Commit the sub-execution time if this is the top call for this closure. */
+    if (cl->c.nopencalls == 1) {
+      cs->subticks += (now - ci->entryticks);
+      ci->entryticks = now;
+    }
+  }
+}
+
+
+void luaG_profileresume (lua_State *L) {
+  const global_State *g = G(L);
+  CallInfo *ci = L->ci;
+  Closure *cl = ci_func(ci);
+  ClosureStats *cs = cl->c.stats;
+
+  if (g->enablestats && ci->entryticks != 0 && cs != NULL) {
+    /* Reset entry time upon thread resumption for the current call only. */
+    ci->entryticks = luaG_gettickcount(g);
+  }
+}
+
+
+#if defined(LUA_HAS_CLOCK_MONOTONIC_RAW)
+#define LUA_CLOCK_GETTIME_ID CLOCK_MONOTONIC_RAW
+#elif defined(LUA_HAS_CLOCK_MONOTONIC)
+#define LUA_CLOCK_GETTIME_ID CLOCK_MONOTONIC
+#endif
+
+
+static lu_int64 os_gettickcount (void) {
+#if defined(LUA_HAS_QUERY_PERFORMANCE_COUNTER)
   LARGE_INTEGER counter;
   QueryPerformanceCounter(&counter);
   return counter.QuadPart;
-#elif defined(LUA_USE_LINUX)
-  struct timespec time;
+#elif defined(LUA_HAS_CLOCK_GETTIME) && defined(LUA_CLOCK_GETTIME_ID)
+  struct timespec ts;
   uint64_t ticks;
-  clock_gettime(CLOCK_MONOTONIC_RAW, &time);
-  ticks = (time.tv_sec * 1e9) + time.tv_nsec;
+  clock_gettime(LUA_CLOCK_GETTIME_ID, &ts);
+  ticks = (ts.tv_sec * 1e9) + ts.tv_nsec;
   return ticks;
 #else
-  /* Generic platform */
-  return clock();
+  return 0;
 #endif
 }
 
 
-LUAI_FUNC uint64_t luaG_gettickfrequency (void) {
-#if defined(LUA_USE_WINDOWS)
-  /* Windows platform */
+static lu_int64 os_gettickfrequency (void) {
+#if defined(LUA_HAS_QUERY_PERFORMANCE_COUNTER)
   LARGE_INTEGER frequency;
   QueryPerformanceFrequency(&frequency);
   return frequency.QuadPart;
-#elif defined(LUA_USE_LINUX)
-  return 1e9;  /* Always measured in nanoseconds. */
+#elif defined(LUA_HAS_CLOCK_GETTIME) && defined(LUA_CLOCK_GETTIME_ID)
+  return 1e9;
 #else
-  /* Generic platform */
-  return CLOCKS_PER_SEC;
+  return 0;
 #endif
 }
 

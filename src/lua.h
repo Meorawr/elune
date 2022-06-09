@@ -421,26 +421,30 @@ struct lua_Debug {
 */
 
 
+typedef lua_Integer lua_clock_t;
+
 typedef struct lua_GlobalStats {
-  uint64_t exectime;  /* time (μsec) spent executing all functions */
   size_t bytesused;  /* total number of bytes in use */
   size_t bytesallocated;  /* total number of bytes allocated */
 } lua_GlobalStats;
 
 typedef struct lua_SourceStats {
-  uint64_t exectime;  /* time (μsec) spent executing owned functions */
+  lua_clock_t execticks;  /* ticks spent executing owned functions */
   size_t bytesowned;  /* total byte size owned objects */
 } lua_SourceStats;
 
 typedef struct lua_FunctionStats {
   int calls;  /* number of calls */
-  uint64_t exectime;  /* time (μsec) spent executing this function */
-  uint64_t subexectime;  /* as above but including calls to subroutines */
+  lua_clock_t ownticks;  /* ticks spent executing this function */
+  lua_clock_t subticks;  /* as above but including calls to subroutines */
 } lua_FunctionStats;
 
-LUA_API uint64_t lua_microclock (lua_State *L);
+LUA_API lua_clock_t lua_gettickcount (lua_State *L);
+LUA_API lua_clock_t lua_gettickfrequency (lua_State *L);
 
-LUA_API void lua_enablestats (lua_State *L, int enable);
+LUA_API int lua_isprofilingenabled (lua_State *L);
+LUA_API void lua_setprofilingenabled (lua_State *L, int enable);
+
 LUA_API void lua_collectstats (lua_State *L);
 LUA_API void lua_resetstats (lua_State *L);
 

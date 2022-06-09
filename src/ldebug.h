@@ -28,7 +28,12 @@ LUAI_FUNC LUA_NORETURN void luaG_errormsg (lua_State *L);
 LUAI_FUNC int luaG_checkcode (const Proto *pt);
 LUAI_FUNC int luaG_checkopenop (Instruction i);
 LUAI_FUNC int luaG_getinfo (lua_State *L, CallInfo *ci, const char *what, lua_Debug *ar);
-LUAI_FUNC uint64_t luaG_gettickcount (void);
-LUAI_FUNC uint64_t luaG_gettickfrequency (void);
+
+LUAI_FUNC void luaG_init (global_State *g);
+LUAI_FUNC void luaG_profileenter (lua_State *L);
+LUAI_FUNC void luaG_profileleave (lua_State *L);
+LUAI_FUNC void luaG_profileresume (lua_State *L);
+LUAI_FUNC lua_clock_t luaG_gettickcount (const global_State *g);
+LUAI_FUNC lua_clock_t luaG_gettickfrequency (const global_State *g);
 
 #endif

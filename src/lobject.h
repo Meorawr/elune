@@ -215,16 +215,14 @@ typedef struct UpVal {
 */
 
 #define ClosureHeader \
-	CommonHeader; lu_byte isC; lu_byte nupvalues; GCObject *gclist; \
-	struct Table *env; struct ClosureStats *stats
+	CommonHeader; lu_byte isC; lu_byte nupvalues; lu_int32 nopencalls; \
+  GCObject *gclist; struct Table *env; struct ClosureStats *stats
 
 
 typedef struct ClosureStats {
   lu_int32 calls;  /* number of calls */
-  lu_int32 opencalls;  /* number of calls that haven't yet returned */
-  lu_int64 startticks;  /* tick count at start of first open call */
-  lu_int64 execticks;  /* ticks spent executing this closure */
-  lu_int64 subexecticks;  /* as above but including calls to subroutines */
+  lua_clock_t ownticks;  /* ticks spent executing this closure */
+  lua_clock_t subticks;  /* as above but including calls to subroutines */
 } ClosureStats;
 
 

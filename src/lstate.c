@@ -192,6 +192,7 @@ LUA_API lua_State *lua_newstate (lua_Alloc f, void *ud) {
   L->next = NULL;
   L->taint = NULL;
   L->tt = LUA_TTHREAD;
+  g->enablestats = 0;
   g->currentwhite = bit2mask(WHITE0BIT, FIXEDBIT);
   L->marked = luaC_white(g);
   set2bits(L->marked, FIXEDBIT, SFIXEDBIT);
@@ -221,8 +222,7 @@ LUA_API lua_State *lua_newstate (lua_Alloc f, void *ud) {
   g->gcpause = LUAI_GCPAUSE;
   g->gcstepmul = LUAI_GCMUL;
   g->gcdept = 0;
-  g->startticks = luaG_gettickcount();
-  g->execticks = 0;
+  luaG_init(g);
   g->bytesallocated = g->totalbytes;
   g->sourcestats = NULL;
   for (i=0; i<NUM_TAGS; i++) g->mt[i] = NULL;
@@ -250,8 +250,7 @@ LUA_API void lua_close (lua_State *L) {
   luaC_separateudata(L, 1);  /* separate udata that have GC metamethods */
   L->errfunc = 0;  /* no error function during GC metamethods */
   do {  /* repeat until no more errors */
-    L->ci = L->base_ci;
-    lua_assert(L->ts.vmexecmask == LUA_TAINTALLOWED);
+    L->ci = luaD_unwindci(L, L->base_ci, L->ci);
     L->base = L->top = L->ci->base;
     L->nCcalls = L->baseCcalls = 0;
   } while (luaD_rawrunprotected(L, callallgcTM, NULL) != 0);
