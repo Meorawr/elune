@@ -5,6 +5,10 @@ check_symbol_exists(CLOCK_MONOTONIC "time.h" TL_HAS_CLOCK_MONOTONIC)
 check_symbol_exists(CLOCK_MONOTONIC_RAW "time.h" TL_HAS_CLOCK_MONOTONIC_RAW)
 check_symbol_exists(QueryPerformanceCounter "windows.h" TL_HAS_QUERY_PERFORMANCE_COUNTER)
 
+set(CMAKE_REQUIRED_LIBRARIES "bcrypt")
+check_symbol_exists(BCryptGenRandom "windows.h;bcrypt.h" TL_HAS_BCRYPT_GEN_RANDOM)
+set(CMAKE_REQUIRED_LIBRARIES)
+
 # -----------------------------------------------------------------------------
 # Lua library target (meorawr::tainted-liblua)
 # -----------------------------------------------------------------------------
@@ -34,6 +38,7 @@ target_compile_definitions(
     $<$<BOOL:${TL_HAS_CLOCK_GETTIME}>:LUA_HAS_CLOCK_GETTIME>
     $<$<BOOL:${TL_HAS_CLOCK_MONOTONIC_RAW}>:LUA_HAS_CLOCK_MONOTONIC_RAW>
     $<$<BOOL:${TL_HAS_CLOCK_MONOTONIC}>:LUA_HAS_CLOCK_MONOTONIC>
+    $<$<BOOL:${TL_HAS_BCRYPT_GEN_RANDOM}>:LUA_HAS_BCRYPT_GEN_RANDOM>
     $<$<BOOL:${TL_HAS_QUERY_PERFORMANCE_COUNTER}>:LUA_HAS_QUERY_PERFORMANCE_COUNTER>
 )
 
@@ -48,7 +53,7 @@ target_link_libraries(
   PRIVATE
     $<$<PLATFORM_ID:Darwin,Linux>:dl>
     $<$<PLATFORM_ID:Darwin,Linux>:m>
-    $<$<PLATFORM_ID:Windows>:bcrypt>
+    $<$<BOOL:${TL_HAS_BCRYPT_GEN_RANDOM}>:bcrypt>
     sheredom::utf8h
 )
 
