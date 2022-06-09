@@ -14,6 +14,20 @@ option(TL_BUILD_TESTS "Build tests?" ${PROJECT_IS_TOP_LEVEL})
 option(TL_BUILD_INSTALL "Generate installation rules for build targets?" ${PROJECT_IS_TOP_LEVEL})
 option(TL_BUILD_PACKAGE "Generate packaging rules for build targets?" ${PROJECT_IS_TOP_LEVEL})
 
+if(CMAKE_SYSTEM_NAME MATCHES "Windows")
+  set(TL_LIBLUA_OUTPUT_NAME_INIT "lua51")
+  set(TL_LUA_OUTPUT_NAME_INIT "lua")
+  set(TL_LUAC_OUTPUT_NAME_INIT "luac")
+else()
+  set(TL_LIBLUA_OUTPUT_NAME_INIT "lua5.1")
+  set(TL_LUA_OUTPUT_NAME_INIT "lua5.1")
+  set(TL_LUAC_OUTPUT_NAME_INIT "luac5.1")
+endif()
+
+set(TL_LIBLUA_OUTPUT_NAME ${TL_LIBLUA_OUTPUT_NAME_INIT} CACHE STRING "Output name of the Lua library target, without any prefixes or extensions")
+set(TL_LUA_OUTPUT_NAME ${TL_LUA_OUTPUT_NAME_INIT} CACHE STRING "Output name of the Lua interpreter target, without any prefixes or extensions")
+set(TL_LUAC_OUTPUT_NAME ${TL_LUAC_OUTPUT_NAME_INIT} CACHE STRING "Output name of the Lua compiler target, without any prefixes or extensions")
+
 set(BUILD_SHARED_LIBS ${TL_BUILD_SHARED_LIBS})
 
 add_subdirectory(ports/utf8)
