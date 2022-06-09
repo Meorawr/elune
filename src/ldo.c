@@ -231,6 +231,7 @@ void luaD_callhook (lua_State *L, int event, int line) {
   if (hook && L->allowhook) {
     ptrdiff_t top = savestack(L, L->top);
     ptrdiff_t ci_top = savestack(L, L->ci->top);
+    lu_intptr vmexecmask = L->ts.vmexecmask;
     lua_Debug ar;
     ar.event = event;
     ar.currentline = line;
@@ -242,10 +243,12 @@ void luaD_callhook (lua_State *L, int event, int line) {
     L->ci->top = L->top + LUA_MINSTACK;
     lua_assert(L->ci->top <= L->stack_last);
     L->allowhook = 0;  /* cannot call hooks inside a hook */
+    L->ts.vmexecmask = LUA_TAINTALLOWED;  /* about to call into C */
     lua_unlock(L);
     (*hook)(L, &ar);
     lua_lock(L);
     lua_assert(!L->allowhook);
+    L->ts.vmexecmask = vmexecmask;
     L->allowhook = 1;
     L->ci->top = restorestack(L, ci_top);
     L->top = restorestack(L, top);
