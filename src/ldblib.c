@@ -204,7 +204,7 @@ static const char KEY_HOOK = 'h';
 
 static void hookf (lua_State *L, lua_Debug *ar) {
   static const char *const hooknames[] =
-    {"call", "return", "line", "count", "tail return", "security"};
+    {"call", "return", "line", "count", "tail return"};
   lua_pushlightuserdata(L, (void *)&KEY_HOOK);
   lua_rawget(L, LUA_REGISTRYINDEX);
   lua_pushlightuserdata(L, L);
@@ -225,7 +225,6 @@ static int makemask (const char *smask, int count) {
   if (strchr(smask, 'c')) mask |= LUA_MASKCALL;
   if (strchr(smask, 'r')) mask |= LUA_MASKRET;
   if (strchr(smask, 'l')) mask |= LUA_MASKLINE;
-  if (strchr(smask, 's')) mask |= LUA_MASKSECURITY;
   if (count > 0) mask |= LUA_MASKCOUNT;
   return mask;
 }
@@ -236,7 +235,6 @@ static char *unmakemask (int mask, char *smask) {
   if (mask & LUA_MASKCALL) smask[i++] = 'c';
   if (mask & LUA_MASKRET) smask[i++] = 'r';
   if (mask & LUA_MASKLINE) smask[i++] = 'l';
-  if (mask & LUA_MASKSECURITY) smask[i++] = 's';
   smask[i] = '\0';
   return smask;
 }
@@ -282,7 +280,7 @@ static int db_sethook (lua_State *L) {
 static int db_gethook (lua_State *L) {
   int arg;
   lua_State *L1 = getthread(L, &arg);
-  char buff[5];
+  char buff[4];
   int mask = lua_gethookmask(L1);
   lua_Hook hook = lua_gethook(L1);
   if (hook != NULL && hook != hookf)  /* external hook? */
