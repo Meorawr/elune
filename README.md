@@ -12,11 +12,9 @@ This project is intended to serve as a close approximation of the tainted execut
 
 ## Building
 
-TODO: Reword this part.
+CMake is used for building the project. The presets defined in `CMakePresets.json` at the root of the repository represent the supported build configurations that are tested by the CI; these are Linux (GCC), macOS (Clang) and Windows (MSVC).
 
-The original Makefiles have been replaced with a CMake-based build. Note that only builds on Linux (GCC), macOS (Clang) and Windows (MSVC) are supported. These are implemented as presets in the `CMakePresets.json` file.
-
-For a build with all components enabled in a release configuration, the following CMake commands will configure and build the project in a `build/<preset>` directory. The resulting binaries for Lua can be found in `bin/Release/` and `lib/Release/` subdirectories of that folder.
+For a build with all components enabled in a release configuration the following CMake commands will configure and build the project in a `build/<preset>` directory. The resulting binaries for Lua can be found in `bin/Release/` and `lib/Release/` subdirectories of that folder.
 
 ```sh
 cmake --preset <linux|macos|windows>
@@ -34,15 +32,6 @@ To generate a fully packaged release the following can be executed to create a s
 ```sh
 cmake --build --preset <linux|macos|windows> [--config <Debug|Release>] --target package
 ```
-
-## API Extensions
-
-TODO: Document these!
-
-### C API
-
-
-### Lua API
 
 ## License
 
