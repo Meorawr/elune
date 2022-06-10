@@ -2,33 +2,25 @@
 
 ## [Unreleased]
 ### Added
-- Added Lua debug APIs for function utilities:
-  - Added `c = debug.newcfunction(f)` which wraps a function `f` in a C function `c`.
-  - Added `isC = debug.iscfunction(f)` which returns true if `f` is a C function.
-- Added Lua debug APIs for profiling and memory measurement:
-  - Added `size = debug.getobjectsize(o)` which returns the approximate size of a collectable object.
-  - Added `stats = debug.getglobalstats()` which returns global execution and memory statistics.
-  - Added `stats = debug.getfunctionstats(f)` which returns execution statistics for a function `f`.
-  - Added `stats = debug.getsourcestats(name)` which returns execution and memory statistics for objects and functions tainted by `name`, or untainted ones if `name` is nil.
-  - Added `debug.enablestats([enable])` which controls the measurement of timing statistics.
-  - Added `debug.collectstats()` which will can be used to flush and update cached statistics.
-  - Added `debug.resetstats()` which will flush cached statistics.
-- Added Lua debug APIs for high-precision timers:
-  - Added `time = debug.microclock()` which returns the time-since-startup in microseconds.
-- Added `security` library for querying and manipulating taint.
-- Added a Lua API for secure random number generation - `securerandom()`. This accepts the same arguments as `math.random`.
+- Reimplemented taint propagation from the ground-up, fixing a large amount of bugs and unimplemented aspects particularly around coroutines.
+- Added C and Lua APIs for creating and testing C closures.
+- Added C and Lua APIs for profiling and memory measurement.
+- Added C and Lua APIs for high-precision timers.
+- Added C and Lua APIs for querying and manipulating taint.
+- Added a Lua API for secure random number generation.
+  - At present this is only implemented for Windows; on other platforms this will fall back to `rand()`.
 - Added support for the `__environment` metatable key to `getfenv`.
+- Added a `-p` flag to the interpreter to enable performance accounting.
 - Added a `-t` flag to the interpreter to run inline scripts (`-e`) or load files insecurely.
   - When this flag is specified, any modules loaded via `-l` will still be loaded securely.
 
 ### Changed
-- Made significant changes to how taint is propagated throughout the system, particularly with respect to coroutines.
 - Build process now requires CMake 3.21 and makes use of CMake presets for common build targets. See README for more information.
 
 ### Removed
 - Removed the taint field on the `lua_Debug` to fix potential binary incompatibilities.
-- Removed the `"s"` field from `debug.getinfo`. Use `security.getstacktaint()` instead.
-- Removed `debug.forcesecure()`. Use `security.setstacktaint(nil)` instead.
+- Removed the `"s"` field from `debug.getinfo`. Use `debug.getstacktaint()` instead.
+- Removed `debug.forcesecure()`. Use `debug.setstacktaint(nil)` instead.
 
 ## [v1]
 ### Added
