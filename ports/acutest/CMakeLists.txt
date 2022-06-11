@@ -2,8 +2,8 @@ include(FetchContent)
 
 FetchContent_Declare(
   acutest
-    GIT_REPOSITORY "https://github.com/mity/acutest.git"
-    GIT_TAG "cce300734bfe5c3879b0449ac283a872633e615c"
+  GIT_REPOSITORY "https://github.com/mity/acutest.git"
+  GIT_TAG "cce300734bfe5c3879b0449ac283a872633e615c"
 )
 
 # The target repository doesn't export an interface target for its headers so
