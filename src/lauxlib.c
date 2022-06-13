@@ -847,6 +847,7 @@ LUALIB_API void luaL_secureforeach (lua_State *L, int idx, int errfunc) {
 
 static int f_insecuredelegate (lua_State *L) {
   lua_pushvalue(L, lua_upvalueindex(1));
+  lua_insert(L, 1);
   lua_call(L, (lua_gettop(L) - 1), LUA_MULTRET);
   return lua_gettop(L);
 }
