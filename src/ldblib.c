@@ -486,6 +486,7 @@ static int db_setglobaltable (lua_State *L) {
   luaL_checkany(L, 1);
   lua_settop(L, 1);
   lua_replace(L, LUA_GLOBALSINDEX);
+  return 0;
 }
 
 
