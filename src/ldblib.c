@@ -476,26 +476,11 @@ static int db_setscripttimeout (lua_State *L) {
 }
 
 
-static int db_getglobaltable (lua_State *L) {
-  lua_pushvalue(L, LUA_GLOBALSINDEX);
-  return 1;
-}
-
-
-static int db_setglobaltable (lua_State *L) {
-  luaL_checkany(L, 1);
-  lua_settop(L, 1);
-  lua_replace(L, LUA_GLOBALSINDEX);
-  return 0;
-}
-
-
 static const luaL_Reg dblib[] = {
   {"debug", db_debug},
   {"geterrorhandler", db_geterrorhandler},
   {"getexceptmask", db_getexceptmask},
   {"getfenv", db_getfenv},
-  {"getglobaltable", db_getglobaltable},
   {"gethook", db_gethook},
   {"getinfo", db_getinfo},
   {"getlocal", db_getlocal},
@@ -510,7 +495,6 @@ static const luaL_Reg dblib[] = {
   {"seterrorhandler", db_seterrorhandler},
   {"setexceptmask", db_setexceptmask},
   {"setfenv", db_setfenv},
-  {"setglobaltable", db_setglobaltable},
   {"sethook", db_sethook},
   {"setlocal", db_setlocal},
   {"setmetatable", db_setmetatable},
