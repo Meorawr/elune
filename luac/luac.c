@@ -6,8 +6,6 @@
 
 #include "lua.h"
 
-#include "lauxlib.h"
-
 #include "ldebug.h"
 #include "ldo.h"
 #include "lfunc.h"
@@ -17,6 +15,8 @@
 #include "lopcodes.h"
 #include "lstring.h"
 #include "lundump.h"
+
+#include "lauxlib.h"
 
 #include <ctype.h>
 #include <errno.h>

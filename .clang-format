@@ -17,9 +17,9 @@ IncludeCategories:
   - Regex: '^(<|")(lua|luaconf).h'
     Priority: 1
   - Regex: '^(<|")(lauxlib|lualib).h'
-    Priority: 2
-  - Regex: '^"l[[:alnum:]]+.h"$'
     Priority: 3
+  - Regex: '^"l[[:alnum:]]+.h"$'
+    Priority: 2
   - Regex: '<[[:alnum:].]+>'
     Priority: 4
 PointerAlignment: Right
