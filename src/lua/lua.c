@@ -494,7 +494,7 @@ static const char *get_prompt (lua_State *L, int firstline) {
 }
 
 /* mark in error messages for incomplete statements */
-#define EOFMARK         "<eof>"
+#define EOFMARK         LUA_QL("<eof>")
 #define marklen         (sizeof(EOFMARK)/sizeof(char) - 1)
 
 
