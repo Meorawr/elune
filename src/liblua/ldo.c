@@ -115,7 +115,7 @@ CallInfo *luaD_unwindci (lua_State *L, CallInfo *newci, CallInfo *oldci) {
   /**
    * Unwinding to the same stack slot occurs in a few conditions; notably when
    * closing a Lua state or when setting up a protected call that errors before
-   * 'L->ci' is incremented (eg. by attempting to call an non-function value).
+   * 'L->ci' is incremented (eg. by attempting to call a non-function value).
    */
   if (oldci == newci) {
     return newci;
@@ -457,7 +457,6 @@ void luaD_call (lua_State *L, StkId func, int nResults) {
   L->nCcalls--;
   luaC_checkGC(L);
 }
-
 
 static void resume (lua_State *L, void *ud) {
   StkId firstArg = cast(StkId, ud);

@@ -80,7 +80,7 @@ set(LUA_ASSERT_CONFIGS "Debug" CACHE STRING "List of build configurations where 
 set(LUA_APICHECK_CONFIGS "Debug" CACHE STRING "List of build configurations where Lua API checks are enabled")
 
 #
-# Project Configuration
+# Config Header Generation
 #
 
 set(LUA_USE_SHARED ${BUILD_SHARED_LIBS})
