@@ -90,15 +90,17 @@ static int bit_mod (lua_State *L) {
  */
 
 static const luaL_Reg bitlib_shared[] = {
-    { .name = "band", .func = bit_band },
-    { .name = "bor", .func = bit_bor },
-    { .name = "bxor", .func = bit_bxor },
-    { .name = "bnot", .func = bit_bnot },
-    { .name = "lshift", .func = bit_lshift },
-    { .name = "rshift", .func = bit_rshift },
-    { .name = "arshift", .func = bit_arshift },
-    { .name = "mod", .func = bit_mod },
-    { .name = NULL, .func = NULL },
+    { "band", bit_band },
+    { "bor", bit_bor },
+    { "bxor", bit_bxor },
+    { "bnot", bit_bnot },
+    { "lshift", bit_lshift },
+    { "rshift", bit_rshift },
+    { "arshift", bit_arshift },
+    { "mod", bit_mod },
+    /* clang-format off */
+    { NULL, NULL },
+    /* clang-format on */
 };
 
 LUALIB_API int luaopen_bit (lua_State *L) {

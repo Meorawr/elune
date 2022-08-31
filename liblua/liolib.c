@@ -443,31 +443,35 @@ static int f_flush (lua_State *L) {
 }
 
 static const luaL_Reg iolib[] = {
-    { .name = "close", .func = io_close },
-    { .name = "flush", .func = io_flush },
-    { .name = "input", .func = io_input },
-    { .name = "lines", .func = io_lines },
-    { .name = "open", .func = io_open },
-    { .name = "output", .func = io_output },
-    { .name = "popen", .func = io_popen },
-    { .name = "read", .func = io_read },
-    { .name = "tmpfile", .func = io_tmpfile },
-    { .name = "type", .func = io_type },
-    { .name = "write", .func = io_write },
-    { .name = NULL, .func = NULL },
+    { "close", io_close },
+    { "flush", io_flush },
+    { "input", io_input },
+    { "lines", io_lines },
+    { "open", io_open },
+    { "output", io_output },
+    { "popen", io_popen },
+    { "read", io_read },
+    { "tmpfile", io_tmpfile },
+    { "type", io_type },
+    { "write", io_write },
+    /* clang-format off */
+    { NULL, NULL },
+    /* clang-format on */
 };
 
 static const luaL_Reg flib[] = {
-    { .name = "close", .func = io_close },
-    { .name = "flush", .func = f_flush },
-    { .name = "lines", .func = f_lines },
-    { .name = "read", .func = f_read },
-    { .name = "seek", .func = f_seek },
-    { .name = "setvbuf", .func = f_setvbuf },
-    { .name = "write", .func = f_write },
-    { .name = "__gc", .func = io_gc },
-    { .name = "__tostring", .func = io_tostring },
-    { .name = NULL, .func = NULL },
+    { "close", io_close },
+    { "flush", f_flush },
+    { "lines", f_lines },
+    { "read", f_read },
+    { "seek", f_seek },
+    { "setvbuf", f_setvbuf },
+    { "write", f_write },
+    { "__gc", io_gc },
+    { "__tostring", io_tostring },
+    /* clang-format off */
+    { NULL, NULL },
+    /* clang-format on */
 };
 
 static void createmeta (lua_State *L) {

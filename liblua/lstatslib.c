@@ -100,18 +100,20 @@ static int statslib_setprofilingenabled (lua_State *L) {
 }
 
 const luaL_Reg statslib_funcs[] = {
-    { .name = "collectstats", .func = statslib_collectstats },
-    { .name = "getelapsedtime", .func = statslib_getelapsedtime },
-    { .name = "getfunctionstats", .func = statslib_getfunctionstats },
-    { .name = "getglobalstats", .func = statslib_getglobalstats },
-    { .name = "getsourcestats", .func = statslib_getsourcestats },
-    { .name = "gettickcount", .func = statslib_gettickcount },
-    { .name = "gettickfrequency", .func = statslib_gettickfrequency },
-    { .name = "gettime", .func = statslib_gettime },
-    { .name = "isprofilingenabled", .func = statslib_isprofilingenabled },
-    { .name = "resetstats", .func = statslib_resetstats },
-    { .name = "setprofilingenabled", .func = statslib_setprofilingenabled },
-    { .name = NULL, .func = NULL },
+    { "collectstats", statslib_collectstats },
+    { "getelapsedtime", statslib_getelapsedtime },
+    { "getfunctionstats", statslib_getfunctionstats },
+    { "getglobalstats", statslib_getglobalstats },
+    { "getsourcestats", statslib_getsourcestats },
+    { "gettickcount", statslib_gettickcount },
+    { "gettickfrequency", statslib_gettickfrequency },
+    { "gettime", statslib_gettime },
+    { "isprofilingenabled", statslib_isprofilingenabled },
+    { "resetstats", statslib_resetstats },
+    { "setprofilingenabled", .func = statslib_setprofilingenabled },
+    /* clang-format off */
+    { NULL, NULL },
+    /* clang-format on */
 };
 
 LUALIB_API int luaopen_stats (lua_State *L) {

@@ -206,25 +206,29 @@ static int os_exit (lua_State *L) {
  */
 
 static const luaL_Reg syslib_lua[] = {
-    { .name = "clock", .func = os_clock },
-    { .name = "date", .func = os_date },
-    { .name = "difftime", .func = os_difftime },
-    { .name = "execute", .func = os_execute },
-    { .name = "exit", .func = os_exit },
-    { .name = "getenv", .func = os_getenv },
-    { .name = "remove", .func = os_remove },
-    { .name = "rename", .func = os_rename },
-    { .name = "setlocale", .func = os_setlocale },
-    { .name = "time", .func = os_time },
-    { .name = "tmpname", .func = os_tmpname },
-    { .name = NULL, .func = NULL },
+    { "clock", os_clock },
+    { "date", os_date },
+    { "difftime", os_difftime },
+    { "execute", os_execute },
+    { "exit", os_exit },
+    { "getenv", os_getenv },
+    { "remove", os_remove },
+    { "rename", os_rename },
+    { "setlocale", os_setlocale },
+    { "time", os_time },
+    { "tmpname", os_tmpname },
+    /* clang-format off */
+    { NULL, NULL },
+    /* clang-format on */
 };
 
 static const luaL_Reg syslib_global[] = {
-    { .name = "date", .func = os_date },
-    { .name = "difftime", .func = os_difftime },
-    { .name = "time", .func = os_time },
-    { .name = NULL, .func = NULL },
+    { "date", os_date },
+    { "difftime", os_difftime },
+    { "time", os_time },
+    /* clang-format off */
+    { NULL, NULL },
+    /* clang-format on */
 };
 
 LUALIB_API int luaopen_os (lua_State *L) {

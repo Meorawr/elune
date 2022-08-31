@@ -467,38 +467,42 @@ static int db_debugprofilestop (lua_State *L) {
  */
 
 static const luaL_Reg dblib_lua[] = {
-    { .name = "debug", .func = db_debug },
-    { .name = "geterrorhandler", .func = db_geterrorhandler },
-    { .name = "getexceptmask", .func = db_getexceptmask },
-    { .name = "getfenv", .func = db_getfenv },
-    { .name = "gethook", .func = db_gethook },
-    { .name = "getinfo", .func = db_getinfo },
-    { .name = "getlocal", .func = db_getlocal },
-    { .name = "getmetatable", .func = db_getmetatable },
-    { .name = "getobjectsize", .func = db_getobjectsize },
-    { .name = "getregistry", .func = db_getregistry },
-    { .name = "getscripttimeout", .func = db_getscripttimeout },
-    { .name = "getupvalue", .func = db_getupvalue },
-    { .name = "iscfunction", .func = db_iscfunction },
-    { .name = "newcfunction", .func = db_newcfunction },
-    { .name = "ref", .func = db_ref },
-    { .name = "seterrorhandler", .func = db_seterrorhandler },
-    { .name = "setexceptmask", .func = db_setexceptmask },
-    { .name = "setfenv", .func = db_setfenv },
-    { .name = "sethook", .func = db_sethook },
-    { .name = "setlocal", .func = db_setlocal },
-    { .name = "setmetatable", .func = db_setmetatable },
-    { .name = "setscripttimeout", .func = db_setscripttimeout },
-    { .name = "setupvalue", .func = db_setupvalue },
-    { .name = "traceback", .func = db_traceback },
-    { .name = "unref", .func = db_unref },
-    { .name = NULL, .func = NULL },
+    { "debug", db_debug },
+    { "geterrorhandler", db_geterrorhandler },
+    { "getexceptmask", db_getexceptmask },
+    { "getfenv", db_getfenv },
+    { "gethook", db_gethook },
+    { "getinfo", db_getinfo },
+    { "getlocal", db_getlocal },
+    { "getmetatable", db_getmetatable },
+    { "getobjectsize", db_getobjectsize },
+    { "getregistry", db_getregistry },
+    { "getscripttimeout", db_getscripttimeout },
+    { "getupvalue", db_getupvalue },
+    { "iscfunction", db_iscfunction },
+    { "newcfunction", db_newcfunction },
+    { "ref", db_ref },
+    { "seterrorhandler", db_seterrorhandler },
+    { "setexceptmask", db_setexceptmask },
+    { "setfenv", db_setfenv },
+    { "sethook", db_sethook },
+    { "setlocal", db_setlocal },
+    { "setmetatable", db_setmetatable },
+    { "setscripttimeout", db_setscripttimeout },
+    { "setupvalue", db_setupvalue },
+    { "traceback", db_traceback },
+    { "unref", db_unref },
+    /* clang-format off */
+    { NULL, NULL },
+    /* clang-format on */
 };
 
 static const luaL_Reg dblib_global[] = {
-    { .name = "debugstack", .func = NULL },  /* TODO: Implement me! */
-    { .name = "debuglocals", .func = NULL }, /* TODO: Implement me! */
-    { .name = NULL, .func = NULL },
+    { "debugstack", NULL },  /* TODO: Implement me! */
+    { "debuglocals", NULL }, /* TODO: Implement me! */
+    /* clang-format off */
+    { NULL, NULL },
+    /* clang-format on */
 };
 
 static void dblib_opendebugprofile (lua_State *L) {

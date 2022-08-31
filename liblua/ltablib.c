@@ -321,18 +321,20 @@ static int table_removemulti (lua_State *L) {
  */
 
 static const luaL_Reg tablib_shared[] = {
-    { .name = "concat", .func = table_concat },
-    { .name = "foreach", .func = table_foreach },
-    { .name = "foreachi", .func = table_foreachi },
-    { .name = "getn", .func = table_getn },
-    { .name = "maxn", .func = table_maxn },
-    { .name = "insert", .func = table_insert },
-    { .name = "remove", .func = table_remove },
-    { .name = "removemulti", .func = table_removemulti },
-    { .name = "setn", .func = table_setn },
-    { .name = "sort", .func = table_sort },
-    { .name = "wipe", .func = table_wipe },
-    { .name = NULL, .func = NULL },
+    { "concat", table_concat },
+    { "foreach", table_foreach },
+    { "foreachi", table_foreachi },
+    { "getn", table_getn },
+    { "maxn", table_maxn },
+    { "insert", table_insert },
+    { "remove", table_remove },
+    { "removemulti", table_removemulti },
+    { "setn", table_setn },
+    { "sort", table_sort },
+    { "wipe", table_wipe },
+    /* clang-format off */
+    { NULL, NULL },
+    /* clang-format on */
 };
 
 LUALIB_API int luaopen_table (lua_State *L) {

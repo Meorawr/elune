@@ -219,50 +219,58 @@ static int math_randomseed (lua_State *L) {
  */
 
 static const luaL_Reg mathlib_global[] = {
-    { .name = "fastrandom", .func = math_fastrandom },
-    { .name = NULL, .func = NULL },
+    { "fastrandom", math_fastrandom },
+    /* clang-format off */
+    { NULL, NULL },
+    /* clang-format on */
 };
 
 static const luaL_Reg mathlib_shared[] = {
-    { .name = "abs", .func = math_abs },
-    { .name = "acos", .func = math_acos },
-    { .name = "asin", .func = math_asin },
-    { .name = "atan2", .func = math_atan2 },
-    { .name = "atan", .func = math_atan },
-    { .name = "ceil", .func = math_ceil },
-    { .name = "cosh", .func = math_cosh },
-    { .name = "cos", .func = math_cos },
-    { .name = "deg", .func = math_deg },
-    { .name = "exp", .func = math_exp },
-    { .name = "floor", .func = math_floor },
-    { .name = "fmod", .func = math_fmod },
-    { .name = "frexp", .func = math_frexp },
-    { .name = "ldexp", .func = math_ldexp },
-    { .name = "log10", .func = math_log10 },
-    { .name = "log", .func = math_log },
-    { .name = "max", .func = math_max },
-    { .name = "min", .func = math_min },
-    { .name = "modf", .func = math_modf },
-    { .name = "pow", .func = math_pow },
-    { .name = "rad", .func = math_rad },
-    { .name = "sinh", .func = math_sinh },
-    { .name = "sin", .func = math_sin },
-    { .name = "sqrt", .func = math_sqrt },
-    { .name = "tanh", .func = math_tanh },
-    { .name = "tan", .func = math_tan },
-    { .name = NULL, .func = NULL },
+    { "abs", math_abs },
+    { "acos", math_acos },
+    { "asin", math_asin },
+    { "atan2", math_atan2 },
+    { "atan", math_atan },
+    { "ceil", math_ceil },
+    { "cosh", math_cosh },
+    { "cos", math_cos },
+    { "deg", math_deg },
+    { "exp", math_exp },
+    { "floor", math_floor },
+    { "fmod", math_fmod },
+    { "frexp", math_frexp },
+    { "ldexp", math_ldexp },
+    { "log10", math_log10 },
+    { "log", math_log },
+    { "max", math_max },
+    { "min", math_min },
+    { "modf", math_modf },
+    { "pow", math_pow },
+    { "rad", math_rad },
+    { "sinh", math_sinh },
+    { "sin", math_sin },
+    { "sqrt", math_sqrt },
+    { "tanh", math_tanh },
+    { "tan", math_tan },
+    /* clang-format off */
+    { NULL, NULL },
+    /* clang-format on */
 };
 
 static const luaL_Reg mathlib_lua[] = {
-    { .name = "random", .func = math_fastrandom },
-    { .name = "randomseed", .func = math_randomseed },
-    { .name = "securerandom", .func = math_securerandom },
-    { .name = NULL, .func = NULL },
+    { "random", math_fastrandom },
+    { "randomseed", math_randomseed },
+    { "securerandom", math_securerandom },
+    /* clang-format off */
+    { NULL, NULL },
+    /* clang-format on */
 };
 
 static const luaL_Reg mathlib_wow[] = {
-    { .name = "random", .func = math_securerandom },
-    { .name = NULL, .func = NULL },
+    { "random", math_securerandom },
+    /* clang-format off */
+    { NULL, NULL },
+    /* clang-format on */
 };
 
 static void mathlib_openshared (lua_State *L) {

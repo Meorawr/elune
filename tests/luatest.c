@@ -154,33 +154,18 @@ static void test_profilingscriptcases (void) {
 */
 
 TEST_LIST = {
-    {
-        .name = "lua_protecttaint: stack remains secure after call",
-        .func = test_protecttaint_secure_normal,
-    },
-    {
-        .name = "lua_protecttaint: stack remains tainted after call",
-        .func = test_protecttaint_tainted_normal,
-    },
-    {
-        .name = "lua_protecttaint: stack restored to secure on error",
-        .func = test_protecttaint_secure_error,
-    },
-    {
-        .name = "lua_protecttaint: stack restored to tainted on error",
-        .func = test_protecttaint_tainted_error,
-    },
-    {
-        .name = "scripted test cases",
-        .func = test_scriptcases,
-    },
-    {
-        .name = "coroutine script tests",
-        .func = test_coroutinescriptcases,
-    },
-    {
-        .name = "profiling script tests",
-        .func = test_profilingscriptcases,
-    },
-    { .name = NULL, .func = NULL },
+    { "lua_protecttaint: stack remains secure after call",
+      test_protecttaint_secure_normal },
+    { "lua_protecttaint: stack remains tainted after call",
+      test_protecttaint_tainted_normal },
+    { "lua_protecttaint: stack restored to secure on error",
+      test_protecttaint_secure_error },
+    { "lua_protecttaint: stack restored to tainted on error",
+      test_protecttaint_tainted_error },
+    { "scripted test cases", test_scriptcases },
+    { "coroutine script tests", test_coroutinescriptcases },
+    { "profiling script tests", test_profilingscriptcases },
+    /* clang-format off */
+    { NULL, NULL },
+    /* clang-format on */
 };

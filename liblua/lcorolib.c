@@ -192,24 +192,30 @@ static int luaB_cobind (lua_State *L) {
  */
 
 static const luaL_Reg corolib_shared[] = {
-    { .name = "create", .func = luaB_cocreate },
-    { .name = "resume", .func = luaB_coresume },
-    { .name = "running", .func = luaB_corunning },
-    { .name = "status", .func = luaB_costatus },
-    { .name = "wrap", .func = luaB_cowrap },
-    { .name = "yield", .func = luaB_coyield },
-    { .name = NULL, .func = NULL },
+    { "create", luaB_cocreate },
+    { "resume", luaB_coresume },
+    { "running", luaB_corunning },
+    { "status", luaB_costatus },
+    { "wrap", luaB_cowrap },
+    { "yield", luaB_coyield },
+    /* clang-format off */
+    { NULL, NULL },
+    /* clang-format on */
 };
 
 static const luaL_Reg corolib_lua[] = {
-    { .name = "bind", .func = luaB_cobind },
-    { .name = "call", .func = luaB_cocall },
-    { .name = "mainthread", .func = luaB_comainthread },
-    { .name = NULL, .func = NULL },
+    { "bind", luaB_cobind },
+    { "call", luaB_cocall },
+    { "mainthread", luaB_comainthread },
+    /* clang-format off */
+    { NULL, NULL },
+    /* clang-format on */
 };
 
 static const luaL_Reg corolib_wow[] = {
-    { .name = NULL, .func = NULL },
+    /* clang-format off */
+    { NULL, NULL },
+    /* clang-format on */
 };
 
 LUALIB_API int luaopen_coroutine (lua_State *L) {

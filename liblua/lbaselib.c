@@ -654,51 +654,57 @@ static const char lua_print[] =
  */
 
 static const luaL_Reg baselib_shared[] = {
-    { .name = "assert", .func = luaB_assert },
-    { .name = "collectgarbage", .func = luaB_collectgarbage },
-    { .name = "error", .func = luaB_error },
-    { .name = "forceinsecure", .func = luaB_forceinsecure },
-    { .name = "gcinfo", .func = luaB_gcinfo },
-    { .name = "geterrorhandler", .func = luaB_geterrorhandler },
-    { .name = "getfenv", .func = luaB_getfenv },
-    { .name = "getmetatable", .func = luaB_getmetatable },
-    { .name = "hooksecurefunc", .func = luaB_hooksecurefunc },
-    { .name = "issecure", .func = luaB_issecure },
-    { .name = "issecurevariable", .func = luaB_issecurevariable },
-    { .name = "loadstring_untainted", .func = luaB_loadstringuntainted },
-    { .name = "next", .func = luaB_next },
-    { .name = "pcall", .func = luaB_pcall },
-    { .name = "rawequal", .func = luaB_rawequal },
-    { .name = "rawget", .func = luaB_rawget },
-    { .name = "rawset", .func = luaB_rawset },
-    { .name = "scrub", .func = luaB_scrub },
-    { .name = "securecall", .func = luaB_securecall },
-    { .name = "securecallfunction", .func = luaB_securecallfunction },
-    { .name = "secureexecuterange", .func = luaB_secureexecuterange },
-    { .name = "select", .func = luaB_select },
-    { .name = "seterrorhandler", .func = luaB_seterrorhandler },
-    { .name = "setfenv", .func = luaB_setfenv },
-    { .name = "setmetatable", .func = luaB_setmetatable },
-    { .name = "tonumber", .func = luaB_tonumber },
-    { .name = "tostring", .func = luaB_tostring },
-    { .name = "type", .func = luaB_type },
-    { .name = "unpack", .func = luaB_unpack },
-    { .name = "xpcall", .func = luaB_xpcall },
-    { .name = NULL, .func = NULL },
+    { "assert", luaB_assert },
+    { "collectgarbage", luaB_collectgarbage },
+    { "error", luaB_error },
+    { "forceinsecure", luaB_forceinsecure },
+    { "gcinfo", luaB_gcinfo },
+    { "geterrorhandler", luaB_geterrorhandler },
+    { "getfenv", luaB_getfenv },
+    { "getmetatable", luaB_getmetatable },
+    { "hooksecurefunc", luaB_hooksecurefunc },
+    { "issecure", luaB_issecure },
+    { "issecurevariable", luaB_issecurevariable },
+    { "loadstring_untainted", luaB_loadstringuntainted },
+    { "next", luaB_next },
+    { "pcall", luaB_pcall },
+    { "rawequal", luaB_rawequal },
+    { "rawget", luaB_rawget },
+    { "rawset", luaB_rawset },
+    { "scrub", luaB_scrub },
+    { "securecall", luaB_securecall },
+    { "securecallfunction", luaB_securecallfunction },
+    { "secureexecuterange", luaB_secureexecuterange },
+    { "select", luaB_select },
+    { "seterrorhandler", luaB_seterrorhandler },
+    { "setfenv", luaB_setfenv },
+    { "setmetatable", luaB_setmetatable },
+    { "tonumber", luaB_tonumber },
+    { "tostring", luaB_tostring },
+    { "type", luaB_type },
+    { "unpack", luaB_unpack },
+    { "xpcall", luaB_xpcall },
+    /* clang-format off */
+    { NULL, NULL },
+    /* clang-format on */
 };
 
 static const luaL_Reg baselib_lua[] = {
-    { .name = "dofile", .func = luaB_dofile },
-    { .name = "load", .func = luaB_load },
-    { .name = "loadfile", .func = luaB_loadfile },
-    { .name = "loadstring", .func = luaB_loadstringuntainted },
-    { .name = "print", .func = luaB_print },
-    { .name = NULL, .func = NULL },
+    { "dofile", luaB_dofile },
+    { "load", luaB_load },
+    { "loadfile", luaB_loadfile },
+    { "loadstring", luaB_loadstringuntainted },
+    { "print", luaB_print },
+    /* clang-format off */
+    { NULL, NULL },
+    /* clang-format on */
 };
 
 static const luaL_Reg baselib_wow[] = {
-    { .name = "loadstring", .func = luaB_loadstring },
-    { .name = NULL, .func = NULL },
+    { "loadstring", luaB_loadstring },
+    /* clang-format off */
+    { NULL, NULL },
+    /* clang-format on */
 };
 
 static void baselib_openshared (lua_State *L) {

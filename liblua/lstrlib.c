@@ -1036,36 +1036,42 @@ static int strlenutf8 (lua_State *L) {
  */
 
 static const luaL_Reg strlib_shared[] = {
-    { .name = "byte", .func = str_byte },
-    { .name = "char", .func = str_char },
-    { .name = "find", .func = str_find },
-    { .name = "format", .func = str_format },
-    { .name = "gfind", .func = str_gfind },
-    { .name = "gmatch", .func = str_gmatch },
-    { .name = "gsub", .func = str_gsub },
-    { .name = "len", .func = str_len },
-    { .name = "lower", .func = str_lower },
-    { .name = "match", .func = str_match },
-    { .name = "rep", .func = str_rep },
-    { .name = "reverse", .func = str_reverse },
-    { .name = "sub", .func = str_sub },
-    { .name = "upper", .func = str_upper },
-    { .name = NULL, .func = NULL },
+    { "byte", str_byte },
+    { "char", str_char },
+    { "find", str_find },
+    { "format", str_format },
+    { "gfind", str_gfind },
+    { "gmatch", str_gmatch },
+    { "gsub", str_gsub },
+    { "len", str_len },
+    { "lower", str_lower },
+    { "match", str_match },
+    { "rep", str_rep },
+    { "reverse", str_reverse },
+    { "sub", str_sub },
+    { "upper", str_upper },
+    /* clang-format off */
+    { NULL, NULL },
+    /* clang-format on */
 };
 
 static const luaL_Reg strlib_lua[] = {
-    { .name = "dump", .func = str_dump },
-    { .name = NULL, .func = NULL },
+    { "dump", str_dump },
+    /* clang-format off */
+    { NULL, NULL },
+    /* clang-format on */
 };
 
 static const luaL_Reg strlib_global[] = {
-    { .name = "strcmputf8i", .func = strcmputf8i },
-    { .name = "strconcat", .func = str_concat },
-    { .name = "strjoin", .func = str_join },
-    { .name = "strlenutf8", .func = strlenutf8 },
-    { .name = "strsplit", .func = str_split },
-    { .name = "strtrim", .func = str_trim },
-    { .name = NULL, .func = NULL },
+    { "strcmputf8i", strcmputf8i },
+    { "strconcat", str_concat },
+    { "strjoin", str_join },
+    { "strlenutf8", strlenutf8 },
+    { "strsplit", str_split },
+    { "strtrim", str_trim },
+    /* clang-format off */
+    { NULL, NULL },
+    /* clang-format on */
 };
 
 static void createmetatable (lua_State *L) {

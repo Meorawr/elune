@@ -517,20 +517,26 @@ static void setpath (lua_State *L, const char *fieldname, const char *envname,
 }
 
 static const luaL_Reg pk_funcs[] = {
-    { .name = "loadlib", .func = ll_loadlib },
-    { .name = "seeall", .func = ll_seeall },
-    { .name = NULL, .func = NULL },
+    { "loadlib", ll_loadlib },
+    { "seeall", ll_seeall },
+    /* clang-format off */
+    { NULL, NULL },
+    /* clang-format on */
 };
 
 static const luaL_Reg ll_funcs[] = {
-    { .name = "module", .func = ll_module },
-    { .name = "require", .func = ll_require },
-    { .name = NULL, .func = NULL },
+    { "module", ll_module },
+    { "require", ll_require },
+    /* clang-format off */
+    { NULL, NULL },
+    /* clang-format on */
 };
 
 static const luaL_Reg ll_preload[] = {
-    { .name = LUA_WOWLIBNAME, .func = luaopen_wow },
-    { .name = NULL, .func = NULL },
+    { LUA_WOWLIBNAME, luaopen_wow },
+    /* clang-format off */
+    { NULL, NULL },
+    /* clang-format on */
 };
 
 static const lua_CFunction loaders[] = {
