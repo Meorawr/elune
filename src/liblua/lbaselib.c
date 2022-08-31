@@ -777,7 +777,7 @@ static void baselib_openshared (lua_State *L) {
   lua_setglobal(L, "newproxy");  /* set global `newproxy' */
 
   /* register Lua functions */
-  luaL_dobuffer(L, lua_tostringall, "print.lua");
+  (void) luaL_dobuffer(L, lua_tostringall, "print.lua");
   lua_setfield(L, -2, "tostringall");
 }
 
@@ -809,11 +809,11 @@ LUALIB_API int luaopen_wow_base (lua_State *L) {
   baselib_openshared(L);
 
   /* register print infrastructure */
-  luaL_dobuffer(L, lua_getprinthandler, "print.lua");
+  (void) luaL_dobuffer(L, lua_getprinthandler, "print.lua");
   lua_pushcclosure(L, luaB_print, 0);
   lua_setupvalue(L, -2, 1);  /* set default print handler */
-  luaL_dobuffer(L, lua_setprinthandler, "print.lua");
-  luaL_dobuffer(L, lua_print, "print.lua");
+  (void) luaL_dobuffer(L, lua_setprinthandler, "print.lua");
+  (void) luaL_dobuffer(L, lua_print, "print.lua");
 
   /* join upvalues of 'LOCAL_PrintHandler' between loaded functions */
   lua_getupvalue(L, -1, 3);  /* push 'print_inner' upvalue from 'print' */
