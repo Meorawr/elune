@@ -66,15 +66,9 @@ static void freestack (lua_State *L, lua_State *L1) {
 ** Create registry table and its predefined values
 */
 static void init_registry (lua_State *L, global_State *g) {
-  TValue *node;
-
-  /* create registry */
-  Table *registry = luaH_new(L, 0, LUA_RIDX_LAST);
+  Table *registry = luaH_new(L, LUA_RIDX_LAST, 0);
   sethvalue(L, &g->l_registry, registry);
-
-  /* registry[LUA_RIDX_MAINTHREAD] = L */
-  node = luaH_setnum(L, registry, LUA_RIDX_MAINTHREAD);
-  setthvalue(L, node, L);
+  setthvalue(L, luaH_setnum(L, registry, LUA_RIDX_MAINTHREAD), L);
 }
 
 
