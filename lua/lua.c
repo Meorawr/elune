@@ -17,17 +17,6 @@ static lua_State *globalL = NULL;
 
 static const char *progname = LUA_PROGNAME;
 
-#if defined(LUA_USE_READLINE) /* { */
-
-#include <readline/readline.h>
-#define l_initreadline(L) (lua_unused(L), rl_readline_name = "lua")
-
-#else /* }{ */
-
-#define l_initreadline(L) (lua_unused(L))
-
-#endif /* } */
-
 #if defined(LUA_USE_POSIX)
 
 /*
@@ -559,7 +548,7 @@ static void doREPL (lua_State *L) {
     int status;
     const char *oldprogname = progname;
     progname = NULL; /* no 'progname' on errors in interactive mode */
-    l_initreadline(L);
+    luaL_setreadlinename(L, "lua");
     while ((status = loadline(L)) != -1) {
         if (status == LUA_OK) {
             status = docall(L, 0, LUA_MULTRET);

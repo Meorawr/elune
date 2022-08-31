@@ -263,3 +263,13 @@ LUALIB_API void luaL_saveline (lua_State *L, const char *line) {
     lua_unused(line);
 #endif
 }
+
+LUALIB_API void luaL_setreadlinename (lua_State *L, const char *progname) {
+    lua_unused(L);
+
+#if defined(LUA_USE_READLINE)
+    rl_readline_name = progname;
+#else
+    lua_unused(progname);
+#endif
+}

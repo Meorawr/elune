@@ -219,6 +219,7 @@ LUALIB_API int luaL_checkpopenmode (lua_State *L, const char *mode);
 
 LUALIB_API int luaL_readline (lua_State *L, const char *prompt);
 LUALIB_API void luaL_saveline (lua_State *L, const char *line);
+LUALIB_API void luaL_setreadlinename (lua_State *L, const char *name);
 
 /* }====================================================================== */
 
