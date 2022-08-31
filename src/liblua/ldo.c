@@ -40,6 +40,21 @@
 */
 
 
+#if defined(LUA_USE_CXX_EXCEPTIONS)
+#define LUAI_THROW(L,c) throw(c)
+#define LUAI_TRY(L,c,a) try { a } catch(...) { if ((c)->status == 0) (c)->status = -1; }
+#define luai_jmpbuf int
+#elif defined(LUA_USE_ULONGJMP)
+#define LUAI_THROW(L,c) _longjmp((c)->b, 1)
+#define LUAI_TRY(L,c,a) if (_setjmp((c)->b) == 0) { a }
+#define luai_jmpbuf jmp_buf
+#else
+#define LUAI_THROW(L,c) longjmp((c)->b, 1)
+#define LUAI_TRY(L,c,a) if (setjmp((c)->b) == 0) { a }
+#define luai_jmpbuf jmp_buf
+#endif
+
+
 /* chain list of long jump buffers */
 struct lua_longjmp {
   struct lua_longjmp *previous;

@@ -48,7 +48,7 @@ static lua_CFunction ll_sym (lua_State *L, void *lib, const char *sym);
 
 
 
-#if defined(LUA_DL_DLOPEN)
+#if defined(LUA_USE_DL)
 /*
 ** {========================================================================
 ** This is an implementation of loadlib based on the dlfcn interface.
@@ -82,7 +82,7 @@ static lua_CFunction ll_sym (lua_State *L, void *lib, const char *sym) {
 
 
 
-#elif defined(LUA_DL_DLL)
+#elif defined(LUA_USE_GETPROCADDRESS)
 /*
 ** {======================================================================
 ** This is an implementation of loadlib for Windows using native functions.

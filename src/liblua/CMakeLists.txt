@@ -16,17 +16,6 @@ if(NOT utf8h_POPULATED)
   target_include_directories(utf8h INTERFACE ${utf8h_SOURCE_DIR})
 endif()
 
-include(CheckSymbolExists)
-
-check_symbol_exists(clock_gettime "time.h" LUA_USE_CLOCK_GETTIME)
-check_symbol_exists(CLOCK_MONOTONIC "time.h" LUA_USE_CLOCK_MONOTONIC)
-check_symbol_exists(CLOCK_MONOTONIC_RAW "time.h" LUA_USE_CLOCK_MONOTONIC_RAW)
-check_symbol_exists(QueryPerformanceCounter "windows.h" LUA_USE_QUERY_PERFORMANCE_COUNTER)
-
-set(CMAKE_REQUIRED_LIBRARIES "bcrypt")
-check_symbol_exists(BCryptGenRandom "windows.h;bcrypt.h" LUA_USE_BCRYPT_GEN_RANDOM)
-set(CMAKE_REQUIRED_LIBRARIES)
-
 add_library(liblua)
 add_library(elune::liblua ALIAS liblua)
 elune_configure_target(liblua)
@@ -39,24 +28,15 @@ set_target_properties(
 
 target_compile_definitions(
   liblua
-  PUBLIC
-    $<$<PLATFORM_ID:Linux>:LUA_USE_LINUX>
-    $<$<PLATFORM_ID:Darwin>:LUA_USE_MACOSX>
-    $<$<PLATFORM_ID:Windows>:LUA_USE_WINDOWS>
-    $<$<AND:$<PLATFORM_ID:Windows>,$<STREQUAL:$<TARGET_PROPERTY:liblua,TYPE>,SHARED_LIBRARY>>:LUA_BUILD_AS_DLL>
   PRIVATE
-    $<$<CONFIG:Debug>:LUA_USE_ASSERT>     # Enable internal assertions on debug builds.
-    $<$<CONFIG:Debug>:LUA_USE_APICHECK>   # Enable public API assertions on debug builds.
-    $<$<BOOL:${LUA_USE_CLOCK_GETTIME}>:LUA_USE_CLOCK_GETTIME>
-    $<$<BOOL:${LUA_USE_CLOCK_MONOTONIC_RAW}>:LUA_USE_CLOCK_MONOTONIC_RAW>
-    $<$<BOOL:${LUA_USE_CLOCK_MONOTONIC}>:LUA_USE_CLOCK_MONOTONIC>
-    $<$<BOOL:${LUA_USE_BCRYPT_GEN_RANDOM}>:LUA_USE_BCRYPT_GEN_RANDOM>
-    $<$<BOOL:${LUA_USE_QUERY_PERFORMANCE_COUNTER}>:LUA_USE_QUERY_PERFORMANCE_COUNTER>
+    $<$<IN_LIST:$<CONFIG>,${LUA_ASSERT_CONFIGS}>:LUA_USE_ASSERT>
+    $<$<IN_LIST:$<CONFIG>,${LUA_APICHECK_CONFIGS}>:LUA_USE_APICHECK>
 )
 
 target_include_directories(
   liblua
   PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/lua5.1>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/lua5.1>
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -65,19 +45,19 @@ target_include_directories(
 target_link_libraries(
   liblua
   PRIVATE
-    $<$<PLATFORM_ID:Darwin,Linux>:dl>
-    $<$<PLATFORM_ID:Darwin,Linux>:m>
-    $<$<BOOL:${LUA_USE_BCRYPT_GEN_RANDOM}>:bcrypt>
     sheredom::utf8h
+    $<$<PLATFORM_ID:Darwin,Linux>:m>
+    $<$<BOOL:${LUA_USE_BCRYPTGENRANDOM}>:bcrypt>
+    $<$<BOOL:${LUA_USE_DL}>:dl>
 )
 
 elune_target_public_headers(
   liblua
   PRIVATE
+    ${PROJECT_BINARY_DIR}/include/lua5.1/luaconf.h
     ${PROJECT_SOURCE_DIR}/include/lua5.1/lauxlib.h
     ${PROJECT_SOURCE_DIR}/include/lua5.1/lua.h
     ${PROJECT_SOURCE_DIR}/include/lua5.1/lua.hpp
-    ${PROJECT_SOURCE_DIR}/include/lua5.1/luaconf.h
     ${PROJECT_SOURCE_DIR}/include/lua5.1/lualib.h
 )
 

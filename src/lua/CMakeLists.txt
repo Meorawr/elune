@@ -12,7 +12,7 @@ target_link_libraries(
   lua
   PRIVATE
     elune::liblua
-    $<$<PLATFORM_ID:Darwin,Linux>:readline>
+    $<$<BOOL:${LUA_USE_READLINE}>:readline>
 )
 
 target_sources(

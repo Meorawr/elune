@@ -17,6 +17,19 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
+#if defined(LUA_USE_POSIX_ISATTY)
+#include <unistd.h>
+#elif defined(LUA_USE_WINDOWS_ISATTY)
+#include <io.h>
+#include <stdio.h>
+#endif
+
+#if defined(LUA_USE_READLINE)
+#include <readline/readline.h>
+#include <readline/history.h>
+#else
+#include <stdio.h>
+#endif
 
 
 static lua_State *globalL = NULL;
@@ -171,12 +184,51 @@ static int incomplete (lua_State *L, int status) {
 }
 
 
+static char *aux_readline (lua_State *L, char *buf, const char *prompt) {
+  char *line;
+  lua_unused(L);
+  lua_unused(buf);
+
+#if defined(LUA_USE_READLINE)
+  line = readline(prompt);
+#else
+  fputs(prompt, stdout);
+  fflush(stdout);
+  line = fgets(buf, LUA_MAXINPUT, stdin);
+#endif
+
+  return line;
+}
+
+
+static void aux_saveline (lua_State *L, int idx) {
+  lua_unused(L);
+  lua_unused(idx);
+
+#if defined(LUA_USE_READLINE)
+  if (lua_strlen(L, idx) > 0) {
+    add_history(lua_tostring(L, idx));
+  }
+#endif
+}
+
+
+static void aux_freeline (lua_State *L, char *buf) {
+  lua_unused(L);
+  lua_unused(buf);
+
+  #if defined(LUA_USE_READLINE)
+    free(buf);
+  #endif
+}
+
+
 static int pushline (lua_State *L, int firstline) {
   char buffer[LUA_MAXINPUT];
-  char *b = buffer;
   size_t l;
   const char *prmt = get_prompt(L, firstline);
-  if (lua_readline(L, b, prmt) == 0)
+  char *b = aux_readline(L, buffer, prmt);
+  if (b == NULL)
     return 0;  /* no input */
   l = strlen(b);
   if (l > 0 && b[l-1] == '\n')  /* line ends with newline? */
@@ -185,7 +237,7 @@ static int pushline (lua_State *L, int firstline) {
     lua_pushfstring(L, "return %s", b+1);  /* change it to `return' */
   else
     lua_pushstring(L, b);
-  lua_freeline(L, b);
+  aux_freeline(L, b);
   return 1;
 }
 
@@ -204,7 +256,7 @@ static int loadline (lua_State *L) {
     lua_insert(L, -2);  /* ...between the two lines */
     lua_concat(L, 3);  /* join them */
   }
-  lua_saveline(L, 1);
+  aux_saveline(L, 1);
   lua_remove(L, 1);  /* remove line */
   return status;
 }
@@ -350,6 +402,17 @@ struct Smain {
 };
 
 
+static int stdin_is_tty (void) {
+#if defined(LUA_USE_POSIX_ISATTY)
+  return isatty(0);
+#elif defined(LUA_USE_WINDOWS_ISATTY)
+  return _isatty(_fileno(stdin));
+#else
+  return 1;  /* assume stdin is a tty */
+#endif
+}
+
+
 static int pmain (lua_State *L) {
   struct Smain *s = (struct Smain *)lua_touserdata(L, 1);
   char **argv = s->argv;
@@ -380,7 +443,7 @@ static int pmain (lua_State *L) {
   if (has_i)
     dotty(L);
   else if (script == 0 && !has_e && !has_v) {
-    if (lua_stdin_is_tty()) {
+    if (stdin_is_tty()) {
       print_version();
       dotty(L);
     }

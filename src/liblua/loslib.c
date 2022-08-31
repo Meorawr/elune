@@ -20,6 +20,14 @@
 #include "lualib.h"
 
 
+#if defined(LUA_USE_MKSTEMP)
+#include <unistd.h>
+#define LUA_TMPNAMBUFSIZE 32
+#else
+#define LUA_TMPNAMBUFSIZE L_tmpnam
+#endif
+
+
 static int os_pushresult (lua_State *L, int i, const char *filename) {
   int en = errno;  /* calls to Lua API may change this value */
   if (i) {
@@ -54,10 +62,26 @@ static int os_rename (lua_State *L) {
 }
 
 
+static int aux_tmpnam (char *buf) {
+  int err;
+#if defined(LUA_USE_MKSTEMP)
+  {
+    int fd;
+    strcpy(buf, "/tmp/lua_XXXXXX");
+    fd = mkstemp(buf);
+    if (fd != -1) close(fd);
+    err = (fd == -1);
+  }
+#else
+  err = (tmpnam(buf) == NULL);
+#endif
+  return err;
+}
+
+
 static int os_tmpname (lua_State *L) {
   char buff[LUA_TMPNAMBUFSIZE];
-  int err;
-  lua_tmpnam(buff, err);
+  int err = aux_tmpnam(buff);
   if (err)
     return luaL_error(L, "unable to generate a unique filename");
   lua_pushstring(L, buff);

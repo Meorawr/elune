@@ -17,7 +17,7 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
-#if defined(LUA_USE_BCRYPT_GEN_RANDOM)
+#if defined(LUA_USE_BCRYPTGENRANDOM)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <bcrypt.h>
@@ -221,7 +221,7 @@ static int math_securerandom (lua_State *L) {
   uint64_t n;
   lua_Number r;
 
-#if defined(LUA_USE_BCRYPT_GEN_RANDOM)
+#if defined(LUA_USE_BCRYPTGENRANDOM)
   /* Windows platform implementation */
   HRESULT hr = BCryptGenRandom(NULL, (PUCHAR) &n, sizeof(n), BCRYPT_USE_SYSTEM_PREFERRED_RNG);
   if (FAILED(hr)) n = rand();
