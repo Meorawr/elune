@@ -336,18 +336,20 @@ void luaV_concat (lua_State *L, int total, int last) {
     } while (total > 1); /* repeat until only 1 result left */
 }
 
-static void checkdivoperands (lua_State *L, lua_Number nb, lua_Number nc) {
-    int fb = fpclassify(nb);
-    int fc = fpclassify(nc);
+static void checkfp (lua_State *L, int mask, lua_Number nb, lua_Number nc) {
+    if (L->exceptmask & mask) {
+        int fb = fpclassify(nb);
+        int fc = fpclassify(nc);
 
-    if (fc == FP_ZERO) {
-        luaG_runerror(L, "Division by zero");
-    } else if (fb == FP_NAN) {
-        luaG_runerror(L, "Numerator is not a number");
-    } else if (fc == FP_NAN) {
-        luaG_runerror(L, "Denominator is not a number");
-    } else if (fb == FP_INFINITE && fc == FP_INFINITE) {
-        luaG_runerror(L, "Infinity divided by infinity");
+        if (fc == FP_ZERO) {
+            luaG_runerror(L, "Division by zero");
+        } else if (fb == FP_NAN) {
+            luaG_runerror(L, "Numerator is not a number");
+        } else if (fc == FP_NAN) {
+            luaG_runerror(L, "Denominator is not a number");
+        } else if (fb == FP_INFINITE && fc == FP_INFINITE) {
+            luaG_runerror(L, "Infinity divided by infinity");
+        }
     }
 }
 
@@ -372,16 +374,12 @@ static void Arith (lua_State *L, StkId ra, const TValue *rb, const TValue *rc,
                 setnvalue(L, ra, luai_nummul(nb, nc));
                 break;
             case TM_DIV: {
-                if (L->exceptmask & LUA_EXCEPTFPECOERCE) {
-                    checkdivoperands(L, nb, nc);
-                }
+                checkfp(L, LUA_EXCEPTFPECOERCE, nb, nc);
                 setnvalue(L, ra, luai_numdiv(nb, nc));
                 break;
             }
             case TM_MOD: {
-                if (L->exceptmask & LUA_EXCEPTFPECOERCE) {
-                    checkdivoperands(L, nb, nc);
-                }
+                checkfp(L, LUA_EXCEPTFPECOERCE, nb, nc);
                 setnvalue(L, ra, luai_nummod(nb, nc));
                 break;
             }
@@ -583,16 +581,12 @@ reentry: /* entry point */
                 continue;
             }
             case OP_DIV: {
-                if (L->exceptmask & LUA_EXCEPTFPESTRICT) {
-                    checkdivoperands(L, nvalue(RKB(i)), nvalue(RKC(i)));
-                }
+                checkfp(L, LUA_EXCEPTFPESTRICT, nvalue(RKB(i)), nvalue(RKC(i)));
                 arith_op(luai_numdiv, TM_DIV);
                 continue;
             }
             case OP_MOD: {
-                if (L->exceptmask & LUA_EXCEPTFPESTRICT) {
-                    checkdivoperands(L, nvalue(RKB(i)), nvalue(RKC(i)));
-                }
+                checkfp(L, LUA_EXCEPTFPESTRICT, nvalue(RKB(i)), nvalue(RKC(i)));
                 arith_op(luai_nummod, TM_MOD);
                 continue;
             }
