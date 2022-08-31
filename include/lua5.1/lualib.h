@@ -1,8 +1,9 @@
-/*
-** $Id: lualib.h,v 1.36.1.1 2007/12/27 13:02:25 roberto Exp $
-** Lua standard libraries
-** See Copyright Notice in lua.h
-*/
+/**
+ * Lua - An Extensible Extension Language
+ *
+ * Licensed under the terms of the MIT License; see full copyright information
+ * in the "LICENSE" file or at <http://www.lua.org/license.html>
+ */
 
 
 #ifndef lualib_h

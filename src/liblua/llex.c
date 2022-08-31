@@ -1,9 +1,5 @@
-/*
-** $Id: llex.c,v 2.20.1.2 2009/11/23 14:58:22 roberto Exp $
-** Lexical Analyzer
-** See Copyright Notice in lua.h
-*/
-
+/* Licensed under the terms of the MIT License; see full copyright information
+ * in the "LICENSE" file or at <http://www.lua.org/license.html> */
 
 #include <ctype.h>
 #include <locale.h>

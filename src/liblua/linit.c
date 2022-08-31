@@ -1,10 +1,5 @@
-/**
- * Initialization of libraries for lua.c
- *
- * Licensed under the terms of the MIT License; see full copyright information
- * in the "LICENSE" file or at <http://www.lua.org/license.html>
- */
-
+/* Licensed under the terms of the MIT License; see full copyright information
+ * in the "LICENSE" file or at <http://www.lua.org/license.html> */
 
 #define linit_c
 #define LUA_LIB

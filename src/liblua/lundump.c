@@ -1,8 +1,5 @@
-/*
-** $Id: lundump.c,v 2.7.1.4 2008/04/04 19:51:41 roberto Exp $
-** load precompiled Lua chunks
-** See Copyright Notice in lua.h
-*/
+/* Licensed under the terms of the MIT License; see full copyright information
+ * in the "LICENSE" file or at <http://www.lua.org/license.html> */
 
 #include <string.h>
 

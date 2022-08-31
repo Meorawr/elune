@@ -1,9 +1,5 @@
-/*
-** Object Manipulation Functions
-**
-** Licensed under the terms of the MIT License; see full copyright information
-** in the "LICENSE" file or at <http://www.lua.org/license.html>
-*/
+/* Licensed under the terms of the MIT License; see full copyright information
+ * in the "LICENSE" file or at <http://www.lua.org/license.html> */
 
 #ifndef lmanip_h
 #define lmanip_h

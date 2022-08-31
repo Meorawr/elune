@@ -1,9 +1,5 @@
-/*
-** $Id: lparser.c,v 2.42.1.4 2011/10/21 19:31:42 roberto Exp $
-** Lua Parser
-** See Copyright Notice in lua.h
-*/
-
+/* Licensed under the terms of the MIT License; see full copyright information
+ * in the "LICENSE" file or at <http://www.lua.org/license.html> */
 
 #include <string.h>
 

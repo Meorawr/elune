@@ -1,8 +1,5 @@
-/*
-** $Id: ldo.h,v 2.7.1.1 2007/12/27 13:02:25 roberto Exp $
-** Stack and Call structure of Lua
-** See Copyright Notice in lua.h
-*/
+/* Licensed under the terms of the MIT License; see full copyright information
+ * in the "LICENSE" file or at <http://www.lua.org/license.html> */
 
 #ifndef ldo_h
 #define ldo_h

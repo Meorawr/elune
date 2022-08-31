@@ -1,8 +1,5 @@
-/*
-** $Id: ltable.h,v 2.10.1.1 2007/12/27 13:02:25 roberto Exp $
-** Lua tables (hash)
-** See Copyright Notice in lua.h
-*/
+/* Licensed under the terms of the MIT License; see full copyright information
+ * in the "LICENSE" file or at <http://www.lua.org/license.html> */
 
 #ifndef ltable_h
 #define ltable_h

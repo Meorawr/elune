@@ -1,9 +1,5 @@
-/*
-** $Id: ltable.c,v 2.32.1.2 2007/12/28 15:32:23 roberto Exp $
-** Lua tables (hash)
-** See Copyright Notice in lua.h
-*/
-
+/* Licensed under the terms of the MIT License; see full copyright information
+ * in the "LICENSE" file or at <http://www.lua.org/license.html> */
 
 /*
 ** Implementation of tables (aka arrays, objects, or hash tables).

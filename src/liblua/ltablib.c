@@ -1,9 +1,5 @@
-/*
-** $Id: ltablib.c,v 1.38.1.3 2008/02/14 16:46:58 roberto Exp $
-** Library for Table Manipulation
-** See Copyright Notice in lua.h
-*/
-
+/* Licensed under the terms of the MIT License; see full copyright information
+ * in the "LICENSE" file or at <http://www.lua.org/license.html> */
 
 #include <stddef.h>
 

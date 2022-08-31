@@ -1,8 +1,5 @@
-/*
-** $Id: print.c,v 1.55a 2006/05/31 13:30:05 lhf Exp $
-** print bytecodes
-** See Copyright Notice in lua.h
-*/
+/* Licensed under the terms of the MIT License; see full copyright information
+ * in the "LICENSE" file or at <http://www.lua.org/license.html> */
 
 #include <ctype.h>
 #include <stdio.h>

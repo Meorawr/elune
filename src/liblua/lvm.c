@@ -1,9 +1,5 @@
-/*
-** $Id: lvm.c,v 2.63.1.5 2011/08/17 20:43:11 roberto Exp $
-** Lua virtual machine
-** See Copyright Notice in lua.h
-*/
-
+/* Licensed under the terms of the MIT License; see full copyright information
+ * in the "LICENSE" file or at <http://www.lua.org/license.html> */
 
 #include <stdio.h>
 #include <stdlib.h>

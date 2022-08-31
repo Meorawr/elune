@@ -1,9 +1,5 @@
-/*
-** $Id: lobject.h,v 2.20.1.2 2008/08/06 13:29:48 roberto Exp $
-** Type definitions for Lua objects
-** See Copyright Notice in lua.h
-*/
-
+/* Licensed under the terms of the MIT License; see full copyright information
+ * in the "LICENSE" file or at <http://www.lua.org/license.html> */
 
 #ifndef lobject_h
 #define lobject_h

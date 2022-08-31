@@ -1,9 +1,5 @@
-/*
-** $Id: lfunc.c,v 2.12.1.2 2007/12/28 14:58:43 roberto Exp $
-** Auxiliary functions to manipulate prototypes and closures
-** See Copyright Notice in lua.h
-*/
-
+/* Licensed under the terms of the MIT License; see full copyright information
+ * in the "LICENSE" file or at <http://www.lua.org/license.html> */
 
 #include <stddef.h>
 

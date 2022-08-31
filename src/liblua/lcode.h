@@ -1,8 +1,5 @@
-/*
-** $Id: lcode.h,v 1.48.1.1 2007/12/27 13:02:25 roberto Exp $
-** Code generator for Lua
-** See Copyright Notice in lua.h
-*/
+/* Licensed under the terms of the MIT License; see full copyright information
+ * in the "LICENSE" file or at <http://www.lua.org/license.html> */
 
 #ifndef lcode_h
 #define lcode_h
