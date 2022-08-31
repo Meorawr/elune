@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+### Changed
+- The `lua_Clock` typedef is now an `int64_t` to work around issues on 32-bit platforms.
+
 ## [v2.0]
 ### Added
 - Reimplemented taint propagation from the ground-up, fixing a large amount of bugs and unimplemented aspects particularly around coroutines.
