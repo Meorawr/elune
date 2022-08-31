@@ -21,6 +21,9 @@ option(BUILD_TESTING "Build tests?" ${PROJECT_IS_TOP_LEVEL})
 option(BUILD_INSTALL "Generate installation rules for build targets?" ${PROJECT_IS_TOP_LEVEL})
 option(BUILD_PACKAGE "Generate packaging rules for build targets?" ${PROJECT_IS_TOP_LEVEL})
 
+option(BUILD_LUA "Build the Lua interpreter target?" ON)
+option(BUILD_LUAC "Build the Lua compiler target?" ON)
+
 if(CMAKE_SYSTEM_NAME MATCHES "Windows")
   set(LIBLUA_OUTPUT_NAME_INIT "lua51")
   set(LUA_OUTPUT_NAME_INIT "lua")
@@ -35,12 +38,22 @@ set(LIBLUA_OUTPUT_NAME ${LIBLUA_OUTPUT_NAME_INIT} CACHE STRING "Output name of t
 set(LUA_OUTPUT_NAME ${LUA_OUTPUT_NAME_INIT} CACHE STRING "Output name of the Lua interpreter target, without any prefixes or extensions")
 set(LUAC_OUTPUT_NAME ${LUAC_OUTPUT_NAME_INIT} CACHE STRING "Output name of the Lua compiler target, without any prefixes or extensions")
 
+#
+# Project Targets
+#
+
 add_subdirectory(src/liblua)
-add_subdirectory(src/lua)
-add_subdirectory(src/luac)
+
+if(BUILD_LUA)
+  add_subdirectory(src/lua)
+endif()
+
+if(BUILD_LUAC)
+  add_subdirectory(src/luac)
+endif()
 
 if(BUILD_TESTING)
-    add_subdirectory(tests)
+  add_subdirectory(tests)
 endif()
 
 if(BUILD_INSTALL)
