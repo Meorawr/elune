@@ -32,6 +32,8 @@ LUALIB_API int luaopen_io (lua_State *L);
 LUALIB_API int luaopen_math (lua_State *L);
 LUALIB_API int luaopen_os (lua_State *L);
 LUALIB_API int luaopen_package (lua_State *L);
+LUALIB_API int luaopen_security (lua_State *L);
+LUALIB_API int luaopen_stats (lua_State *L);
 LUALIB_API int luaopen_string (lua_State *L);
 LUALIB_API int luaopen_table (lua_State *L);
 

@@ -13,6 +13,8 @@ static const luaL_Reg lualibs[] = {
     { .name = LUA_BASELIBNAME, .func = luaopen_base },
     { .name = LUA_BITLIBNAME, .func = luaopen_bit },
     { .name = LUA_DBLIBNAME, .func = luaopen_debug },
+    { .name = LUA_DBLIBNAME ".security", .func = luaopen_security },
+    { .name = LUA_DBLIBNAME ".stats", .func = luaopen_stats },
     { .name = LUA_IOLIBNAME, .func = luaopen_io },
     { .name = LUA_LOADLIBNAME, .func = luaopen_package },
     { .name = LUA_MATHLIBNAME, .func = luaopen_math },
