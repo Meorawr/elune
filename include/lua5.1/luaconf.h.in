@@ -201,12 +201,16 @@
 #define LUA_DECL_HIDDEN LUA_DECL_EXTERN
 #endif
 
-#if defined(liblua_EXPORTS)
+#if !defined(LUA_API)
+#if defined(LUA_BUILD_EXPORT)
 #define LUA_API LUA_DECL_EXPORT
-#define LUALIB_API LUA_DECL_EXPORT
 #else
 #define LUA_API LUA_DECL_IMPORT
-#define LUALIB_API LUA_DECL_IMPORT
+#endif
+#endif
+
+#if !defined(LUALIB_API)
+#define LUALIB_API LUA_API
 #endif
 
 #define LUAI_FUNC LUA_DECL_HIDDEN

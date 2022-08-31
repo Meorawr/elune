@@ -23,6 +23,7 @@ elune_configure_target(liblua)
 set_target_properties(
   liblua
   PROPERTIES
+    DEFINE_SYMBOL "LUA_BUILD_EXPORT"
     OUTPUT_NAME ${LIBLUA_OUTPUT_NAME}
     SOVERSION 5.1.5
 )
