@@ -925,30 +925,34 @@ static int str_trim (lua_State *L) {
 
 static int str_split (lua_State *L) {
     const char *delim = luaL_checkstring(L, 1);
-    size_t slen;
-    const char *str = luaL_checklstring(L, 2, &slen);
-    const int limit = luaL_optint(L, 3, 0);
-
+    const char *str = luaL_checklstring(L, 2, NULL);
+    const char *end = str + strlen(str);
+    int limit = luaL_optint(L, 3, 0);
     int count = 0;
 
     lua_settop(L, 2);
 
-    const char *begin = str;
-    const char *end = str + slen;
+    /* Note; use of "str <= end" below is intentional as we consider the null
+     * terminator as part of the string. */
 
-    if (limit == 0 || limit > 1) {
-        while (begin <= end) {
-            const size_t distance = strcspn(begin, delim);
-            lua_pushlstring(L, begin, distance);
-
-            begin += distance + 1; /* +1 to skip over the delimiter. */
+    if (!limit || limit > 1) {
+        while (str <= end) {
+            size_t len = strcspn(str, delim);
+            luaL_checkstack(L, count + 1, "strsplit()");
+            lua_pushlstring(L, str, len);
+            str += len + 1;
             ++count;
+
+            if (count == (limit - 1)) {
+                break;
+            }
         }
     }
 
-    /* Process remainder of string if any exists. */
-    if (begin <= end) {
-        lua_pushstring(L, begin);
+    /* push remainder of string */
+    if (str <= end) {
+        luaL_checkstack(L, count + 1, "strsplit()");
+        lua_pushstring(L, str);
         ++count;
     }
 

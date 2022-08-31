@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased]
+### Changed
+- Fixed an issue where `strsplit()` would ignore the value supplied to the `limit` parameter.
+
 ## [v2.1]
 ### Changed
 - The `lua_Clock` typedef is now an `int64_t` to work around issues on 32-bit platforms.
