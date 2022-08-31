@@ -109,6 +109,9 @@ typedef LUA_NUMBER lua_Number;
 /* type for integer functions */
 typedef LUA_INTEGER lua_Integer;
 
+/* Type used to represent clock ticks */
+typedef lua_Integer lua_Time;
+
 
 
 /*

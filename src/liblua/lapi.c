@@ -1142,8 +1142,8 @@ LUA_API const char *lua_setupvalue (lua_State *L, int funcindex, int n) {
 */
 
 
-LUA_API lua_clock_t lua_gettickcount (lua_State *L) {
-  lua_clock_t ticks;
+LUA_API lua_Time lua_gettickcount (lua_State *L) {
+  lua_Time ticks;
   lua_lock(L);
   ticks = luaG_gettickcount(G(L));
   lua_unlock(L);
@@ -1151,8 +1151,8 @@ LUA_API lua_clock_t lua_gettickcount (lua_State *L) {
 }
 
 
-LUA_API lua_clock_t lua_gettickfrequency (lua_State *L) {
-  lua_clock_t rate;
+LUA_API lua_Time lua_gettickfrequency (lua_State *L) {
+  lua_Time rate;
   lua_lock(L);
   rate = luaG_gettickfrequency(G(L));
   lua_unlock(L);

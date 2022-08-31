@@ -469,7 +469,7 @@ static int db_getscripttimeout (lua_State *L) {
 
 static int db_setscripttimeout (lua_State *L) {
   lua_ScriptTimeout timeout;
-  timeout.ticks = (lua_clock_t) (luaL_checknumber(L, 1) * lua_gettickfrequency(L));
+  timeout.ticks = (lua_Time) (luaL_checknumber(L, 1) * lua_gettickfrequency(L));
   timeout.instructions = luaL_checkint(L, 2);
   lua_setscripttimeout(L, &timeout);
   return 0;

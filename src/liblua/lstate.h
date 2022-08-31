@@ -51,8 +51,8 @@ typedef struct CallInfo {
   StkId	top;  /* top for this function */
   const Instruction *savedpc;
   TString *savedtaint;  /* saved taint for this call; informational only */
-  lua_clock_t entryticks;  /* tick count on first initial entry or resumption of this call */
-  lua_clock_t startticks;  /* tick count on last reentry of this function */
+  lua_Time entryticks;  /* tick count on first initial entry or resumption of this call */
+  lua_Time startticks;  /* tick count on last reentry of this function */
   int nresults;  /* expected number of results from this function */
   int tailcalls;  /* number of tail calls lost under this entry */
 } CallInfo;
@@ -69,7 +69,7 @@ typedef struct CallInfo {
 */
 typedef struct SourceStats {
   TString *owner;
-  lua_clock_t execticks;  /* ticks spent executing owned functions */
+  lua_Time execticks;  /* ticks spent executing owned functions */
   size_t bytesowned;  /* total size of owned allocations */
   struct SourceStats *next;
 } SourceStats;
@@ -99,8 +99,8 @@ typedef struct global_State {
   size_t gcdept;  /* how much GC is `behind schedule' */
   int gcpause;  /* size of pause between successive GCs */
   int gcstepmul;  /* GC `granularity' */
-  lua_clock_t startticks;  /* tick count at startup */
-  lua_clock_t tickfreq;  /* tick frequency; cached on startup */
+  lua_Time startticks;  /* tick count at startup */
+  lua_Time tickfreq;  /* tick frequency; cached on startup */
   size_t bytesallocated;  /* total number of bytes allocated */
   SourceStats *sourcestats;  /* list of source-specific statistics */
   lua_CFunction panic;  /* to be called in unprotected errors */
@@ -155,7 +155,7 @@ struct lua_State {
   lu_byte allowhook;
   int basehookcount;
   int hookcount;
-  lua_clock_t baseexeclimit;
+  lua_Time baseexeclimit;
   int baseexeccount;
   int execcount;
   lua_Hook hook;
