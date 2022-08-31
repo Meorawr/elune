@@ -34,10 +34,10 @@
 /*
 ** max size of array part is 2^MAXBITS
 */
-#if LUA_INT_WIDTH > 26
+#if LUAI_BITSINT > 26
 #define MAXBITS 26
 #else
-#define MAXBITS (LUA_INT_WIDTH - 2)
+#define MAXBITS (LUAI_BITSINT - 2)
 #endif
 
 #define MAXASIZE (1 << MAXBITS)

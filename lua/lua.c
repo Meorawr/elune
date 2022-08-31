@@ -28,7 +28,7 @@ static const char *progname = LUA_PROGNAME;
 
 #endif /* } */
 
-#if defined(LUA_USE_SIGACTION) /* { */
+#if defined(LUA_USE_POSIX)
 
 /*
 ** Use 'sigaction' when available.
@@ -41,11 +41,11 @@ static void setsignal (int sig, void (*handler)(int)) {
     sigaction(sig, &sa, NULL);
 }
 
-#else /* }{ */
+#else
 
 #define setsignal signal
 
-#endif /* } */
+#endif
 
 /*
 ** Hook set by signal function to stop the interpreter.

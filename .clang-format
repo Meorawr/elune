@@ -19,8 +19,10 @@ IncludeCategories:
     Priority: 3
   - Regex: '^"l[[:alnum:]]+.h"$'
     Priority: 2
-  - Regex: '<[[:alnum:].]+>'
+  - Regex: '<windows.h>'
     Priority: 4
+  - Regex: '<[[:alnum:].]+>'
+    Priority: 5
 IndentCaseLabels: true
 PointerAlignment: Right
 SortIncludes: true

@@ -50,9 +50,9 @@ target_link_libraries(
   PRIVATE
     sheredom::utf8h
     $<$<PLATFORM_ID:Darwin,Linux>:m>
-    $<$<BOOL:${LUA_USE_BCRYPTGENRANDOM}>:bcrypt>
-    $<$<BOOL:${LUA_USE_DL}>:dl>
-    $<$<BOOL:${LUA_USE_READLINE}>:readline>
+    $<$<PLATFORM_ID:Windows>:bcrypt>
+    $<$<BOOL:${LUA_USE_DLOPEN}>:${CMAKE_DL_LIBS}>
+    $<$<BOOL:${LUA_USE_READLINE}>:readline::readline>
 )
 
 elune_target_headers(

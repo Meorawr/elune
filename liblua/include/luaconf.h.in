@@ -32,31 +32,16 @@
 #define ELUNE_VERSION_NUM @PROJECT_VERSION@
 /* clang-format on */
 
+#cmakedefine LUA_USE_WINDOWS
+#cmakedefine LUA_USE_LINUX
+#cmakedefine LUA_USE_MACOS
+#cmakedefine LUA_USE_POSIX
 #cmakedefine LUA_USE_CXX_EXCEPTIONS
 #cmakedefine LUA_USE_CXX_LINKAGE
 #cmakedefine LUA_USE_LONGLONG
 #cmakedefine LUA_USE_SHARED
-
-/* Optional APIs and Libraries */
-
-/* clang-format off */
-#cmakedefine LUA_CLOCK_ID @LUA_CLOCK_ID@
-/* clang-format on */
-#cmakedefine LUA_USE_ARC4RANDOM
-#cmakedefine LUA_USE_BCRYPTGENRANDOM
-#cmakedefine LUA_USE_CLOCK_GETTIME
-#cmakedefine LUA_USE_DL
-#cmakedefine LUA_USE_GETPROCADDRESS
-#cmakedefine LUA_USE_GETRANDOM
-#cmakedefine LUA_USE_MKSTEMP
-#cmakedefine LUA_USE_POSIX_ISATTY
-#cmakedefine LUA_USE_POSIX_POPEN
-#cmakedefine LUA_USE_QUERYPERFORMANCECOUNTER
+#cmakedefine LUA_USE_DLOPEN
 #cmakedefine LUA_USE_READLINE
-#cmakedefine LUA_USE_SIGACTION
-#cmakedefine LUA_USE_ULONGJMP
-#cmakedefine LUA_USE_WINDOWS_ISATTY
-#cmakedefine LUA_USE_WINDOWS_POPEN
 
 /* Type configuration */
 
@@ -68,7 +53,7 @@
 #define LUAI_UACNUMBER double
 /* Bit-width of integers on the compiled-for platform. */
 /* clang-format off */
-#cmakedefine LUA_INT_WIDTH @LUA_INT_WIDTH@
+#cmakedefine LUAI_BITSINT @LUAI_BITSINT@
 /* clang-format on */
 
 /* VM and auxilliary library limitations */
@@ -146,11 +131,11 @@
  * 'lua_open*' function names. */
 #define LUA_IGMARK "-"
 /* Directory separator for this platform. */
-#define LUA_DIRSEP "@LUA_DIRSEP@"
+#define LUA_DIRSEP "@LUA_DIRSEP_ESCAPED@"
 /* Default search path for Lua libraries. */
-#define LUA_PATH_DEFAULT "@LUA_PATH_DEFAULT@"
+#define LUA_PATH_DEFAULT "@LUA_PATH_ESCAPED@"
 /* Default search path for C libraries. */
-#define LUA_CPATH_DEFAULT "@LUA_CPATH_DEFAULT@"
+#define LUA_CPATH_DEFAULT "@LUA_CPATH_ESCAPED@"
 
 /* Program element quoting */
 

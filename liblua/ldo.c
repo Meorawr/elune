@@ -42,7 +42,7 @@
             (c)->status = -1;                                                  \
     }
 #define luai_jmpbuf int
-#elif defined(LUA_USE_ULONGJMP)
+#elif defined(LUA_USE_POSIX)
 #define LUAI_THROW(L, c) _longjmp((c)->b, 1)
 #define LUAI_TRY(L, c, a)                                                      \
     if (_setjmp((c)->b) == 0) {                                                \
