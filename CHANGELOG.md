@@ -51,6 +51,7 @@
 - Added all math library extensions present in the in-game environment as well as their global aliases.
 - Added all global aliases to the OS libary functions as present in the in-game environment.
 
-[Unreleased]: https://github.com/Meorawr/elune/compare/v2.0...HEAD
+[Unreleased]: https://github.com/Meorawr/elune/compare/v2.1...HEAD
+[v2.1]: https://github.com/Meorawr/elune/compare/v2.0...v2.0
 [v2.0]: https://github.com/Meorawr/elune/compare/v1...v2.0
 [v1]: https://github.com/Meorawr/elune/releases/tag/v1
