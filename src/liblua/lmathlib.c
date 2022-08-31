@@ -377,19 +377,19 @@ static void mathlib_openglobal (lua_State *L, int idx) {
   lua_getfield(L, idx, "sqrt");
   lua_setfield(L, -2, "sqrt");
 
-  (void) luaL_dostring(L, "local math = math;\nreturn function(x) return math.deg(math.acos(x)); end;\n");
+  luaL_dobuffer(L, "local math = math;\nreturn function(x) return math.deg(math.acos(x)); end;\n", "compat.lua");
   lua_setfield(L, -2, "acos");
-  (void) luaL_dostring(L, "local math = math;\nreturn function(x) return math.deg(math.asin(x)); end;\n");
+  luaL_dobuffer(L, "local math = math;\nreturn function(x) return math.deg(math.asin(x)); end;\n", "compat.lua");
   lua_setfield(L, -2, "asin");
-  (void) luaL_dostring(L, "local math = math;\nreturn function(x) return math.deg(math.atan(x)); end;\n");
+  luaL_dobuffer(L, "local math = math;\nreturn function(x) return math.deg(math.atan(x)); end;\n", "compat.lua");
   lua_setfield(L, -2, "atan");
-  (void) luaL_dostring(L, "local math = math;\nreturn function(x, y) return math.deg(math.atan2(x, y)); end;\n");
+  luaL_dobuffer(L, "local math = math;\nreturn function(x, y) return math.deg(math.atan2(x, y)); end;\n", "compat.lua");
   lua_setfield(L, -2, "atan2");
-  (void) luaL_dostring(L, "local math = math;\nreturn function(x) return math.cos(math.rad(x)); end;\n");
+  luaL_dobuffer(L, "local math = math;\nreturn function(x) return math.cos(math.rad(x)); end;\n", "compat.lua");
   lua_setfield(L, -2, "cos");
-  (void) luaL_dostring(L, "local math = math;\nreturn function(x) return math.sin(math.rad(x)); end;\n");
+  luaL_dobuffer(L, "local math = math;\nreturn function(x) return math.sin(math.rad(x)); end;\n", "compat.lua");
   lua_setfield(L, -2, "sin");
-  (void) luaL_dostring(L, "local math = math;\nreturn function(x) return math.tan(math.rad(x)); end;\n");
+  luaL_dobuffer(L, "local math = math;\nreturn function(x) return math.tan(math.rad(x)); end;\n", "compat.lua");
   lua_setfield(L, -2, "tan");
 }
 
