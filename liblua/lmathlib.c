@@ -186,8 +186,7 @@ static int randomrange (lua_State *L, lua_Number r) {
             int l = luaL_checkint(L, 1);
             int u = luaL_checkint(L, 2);
             luaL_argcheck(L, l <= u, 2, "interval is empty");
-            lua_pushnumber(L, floor(r * (u - l + 1)) +
-                                  l); /* int between `l' and `u' */
+            lua_pushnumber(L, floor(r * (u - l + 1)) + l); /* int between `l' and `u' */
             break;
         }
         default:

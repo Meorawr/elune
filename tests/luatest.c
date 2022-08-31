@@ -154,14 +154,10 @@ static void test_profilingscriptcases (void) {
 */
 
 TEST_LIST = {
-    { "lua_protecttaint: stack remains secure after call",
-      test_protecttaint_secure_normal },
-    { "lua_protecttaint: stack remains tainted after call",
-      test_protecttaint_tainted_normal },
-    { "lua_protecttaint: stack restored to secure on error",
-      test_protecttaint_secure_error },
-    { "lua_protecttaint: stack restored to tainted on error",
-      test_protecttaint_tainted_error },
+    { "lua_protecttaint: stack remains secure after call", test_protecttaint_secure_normal },
+    { "lua_protecttaint: stack remains tainted after call", test_protecttaint_tainted_normal },
+    { "lua_protecttaint: stack restored to secure on error", test_protecttaint_secure_error },
+    { "lua_protecttaint: stack restored to tainted on error", test_protecttaint_tainted_error },
     { "scripted test cases", test_scriptcases },
     { "coroutine script tests", test_coroutinescriptcases },
     { "profiling script tests", test_profilingscriptcases },

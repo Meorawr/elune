@@ -32,10 +32,10 @@ typedef union TString TString;
 ** Common Header for all collectable objects (in macro form, to be
 ** included in other objects)
 */
-#define CommonHeader                                                           \
-    GCObject *next;                                                            \
-    TString *taint;                                                            \
-    lu_byte tt;                                                                \
+#define CommonHeader                                                                                                   \
+    GCObject *next;                                                                                                    \
+    TString *taint;                                                                                                    \
+    lu_byte tt;                                                                                                        \
     lu_byte marked
 
 /*
@@ -59,9 +59,9 @@ typedef union {
 ** Tagged Values
 */
 
-#define TValuefields                                                           \
-    Value value;                                                               \
-    TString *taint;                                                            \
+#define TValuefields                                                                                                   \
+    Value value;                                                                                                       \
+    TString *taint;                                                                                                    \
     int tt
 
 typedef struct lua_TValue {
@@ -98,13 +98,10 @@ typedef struct lua_TValue {
 /*
 ** for internal debug only
 */
-#define checkconsistency(obj)                                                  \
-    lua_assert(!iscollectable(obj) || (ttype(obj) == (obj)->value.gc->gch.tt))
+#define checkconsistency(obj) lua_assert(!iscollectable(obj) || (ttype(obj) == (obj)->value.gc->gch.tt))
 
-#define checkliveness(g, obj)                                                  \
-    lua_assert(!iscollectable(obj) ||                                          \
-               ((ttype(obj) == (obj)->value.gc->gch.tt) &&                     \
-                !isdead(g, (obj)->value.gc)))
+#define checkliveness(g, obj)                                                                                          \
+    lua_assert(!iscollectable(obj) || ((ttype(obj) == (obj)->value.gc->gch.tt) && !isdead(g, (obj)->value.gc)))
 
 #define iscollectable(o) (ttype(o) >= LUA_TSTRING)
 
@@ -194,13 +191,13 @@ typedef struct UpVal {
 ** Closures
 */
 
-#define ClosureHeader                                                          \
-    CommonHeader;                                                              \
-    lu_byte isC;                                                               \
-    lu_byte nupvalues;                                                         \
-    uint_least32_t nopencalls;                                                 \
-    GCObject *gclist;                                                          \
-    struct Table *env;                                                         \
+#define ClosureHeader                                                                                                  \
+    CommonHeader;                                                                                                      \
+    lu_byte isC;                                                                                                       \
+    lu_byte nupvalues;                                                                                                 \
+    uint_least32_t nopencalls;                                                                                         \
+    GCObject *gclist;                                                                                                  \
+    struct Table *env;                                                                                                 \
     struct ClosureStats *stats
 
 typedef struct ClosureStats {
@@ -261,8 +258,7 @@ typedef struct Table {
 /*
 ** `module' operation for hashing (size is always a power of 2)
 */
-#define lmod(s, size)                                                          \
-    (check_exp((size & (size - 1)) == 0, (cast(int, (s) & ((size) -1)))))
+#define lmod(s, size) (check_exp((size & (size - 1)) == 0, (cast(int, (s) & ((size) -1)))))
 
 #define twoto(x) (1 << (x))
 #define sizenode(t) (twoto((t)->lsizenode))
@@ -278,8 +274,7 @@ LUAI_FUNC int luaO_int2fb (unsigned int x);
 LUAI_FUNC int luaO_fb2int (int x);
 LUAI_FUNC int luaO_rawequalObj (const TValue *t1, const TValue *t2);
 LUAI_FUNC int luaO_str2d (const char *s, lua_Number *result);
-LUAI_FUNC const char *luaO_pushvfstring (lua_State *L, const char *fmt,
-                                         va_list argp);
+LUAI_FUNC const char *luaO_pushvfstring (lua_State *L, const char *fmt, va_list argp);
 LUAI_FUNC const char *luaO_pushfstring (lua_State *L, const char *fmt, ...);
 LUAI_FUNC void luaO_chunkid (char *out, const char *source, size_t len);
 

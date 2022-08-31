@@ -34,26 +34,26 @@
 
 #if defined(LUA_USE_CXX_EXCEPTIONS)
 #define LUAI_THROW(L, c) throw(c)
-#define LUAI_TRY(L, c, a)                                                      \
-    try {                                                                      \
-        a                                                                      \
-    } catch (...) {                                                            \
-        if ((c)->status == 0)                                                  \
-            (c)->status = -1;                                                  \
+#define LUAI_TRY(L, c, a)                                                                                              \
+    try {                                                                                                              \
+        a                                                                                                              \
+    } catch (...) {                                                                                                    \
+        if ((c)->status == 0)                                                                                          \
+            (c)->status = -1;                                                                                          \
     }
 #define luai_jmpbuf int
 #elif defined(LUA_USE_POSIX)
 #define LUAI_THROW(L, c) _longjmp((c)->b, 1)
-#define LUAI_TRY(L, c, a)                                                      \
-    if (_setjmp((c)->b) == 0) {                                                \
-        a                                                                      \
+#define LUAI_TRY(L, c, a)                                                                                              \
+    if (_setjmp((c)->b) == 0) {                                                                                        \
+        a                                                                                                              \
     }
 #define luai_jmpbuf jmp_buf
 #else
 #define LUAI_THROW(L, c) longjmp((c)->b, 1)
-#define LUAI_TRY(L, c, a)                                                      \
-    if (setjmp((c)->b) == 0) {                                                 \
-        a                                                                      \
+#define LUAI_TRY(L, c, a)                                                                                              \
+    if (setjmp((c)->b) == 0) {                                                                                         \
+        a                                                                                                              \
     }
 #define luai_jmpbuf jmp_buf
 #endif
@@ -72,8 +72,7 @@ void luaD_seterrorobj (lua_State *L, int errcode, StkId oldtop) {
             break;
         }
         case LUA_ERRERR: {
-            setsvalue2s(L, oldtop,
-                        luaS_newliteral(L, "error in error handling"));
+            setsvalue2s(L, oldtop, luaS_newliteral(L, "error in error handling"));
             break;
         }
         case LUA_ERRSYNTAX:
@@ -303,10 +302,7 @@ static StkId tryfuncTM (lua_State *L, StkId func) {
     return func;
 }
 
-#define inc_ci(L)                                                              \
-    ((L->ci == L->end_ci)                                                      \
-         ? growCI(L)                                                           \
-         : (condhardstacktests(luaD_reallocCI(L, L->size_ci)), ++L->ci))
+#define inc_ci(L) ((L->ci == L->end_ci) ? growCI(L) : (condhardstacktests(luaD_reallocCI(L, L->size_ci)), ++L->ci))
 
 int luaD_precall (lua_State *L, StkId func, int nresults) {
     LClosure *cl;
@@ -334,8 +330,7 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
         } else { /* vararg function */
             int nargs = cast_int(L->top - func) - 1;
             base = adjust_varargs(L, p, nargs);
-            func =
-                restorestack(L, funcr); /* previous call may change the stack */
+            func = restorestack(L, funcr); /* previous call may change the stack */
         }
         ci = inc_ci(L); /* now `enter' new function */
         ci->func = func;
@@ -392,8 +387,7 @@ static StkId callrethooks (lua_State *L, StkId firstResult) {
     ptrdiff_t fr = savestack(L, firstResult); /* next call may change stack */
     luaD_callhook(L, LUA_HOOKRET, -1);
     if (f_isLua(L->ci)) { /* Lua function? */
-        while ((L->hookmask & LUA_MASKRET) &&
-               L->ci->tailcalls--) { /* tail calls */
+        while ((L->hookmask & LUA_MASKRET) && L->ci->tailcalls--) { /* tail calls */
             luaD_callhook(L, LUA_HOOKTAILRET, -1);
         }
     }
@@ -460,8 +454,7 @@ static void resume (lua_State *L, void *ud) {
             lua_assert(GET_OPCODE(*((ci - 1)->savedpc - 1)) == OP_CALL ||
                        GET_OPCODE(*((ci - 1)->savedpc - 1)) == OP_TAILCALL);
             if (luaD_poscall(L, firstArg)) { /* complete it... */
-                L->top =
-                    L->ci->top; /* and correct top if not multiple results */
+                L->top = L->ci->top; /* and correct top if not multiple results */
             }
         } else { /* yielded inside a hook: just continue its execution */
             L->base = L->ci->base;
@@ -531,8 +524,7 @@ LUA_API int lua_yield (lua_State *L, int nresults) {
     return -1;
 }
 
-int luaD_pcall (lua_State *L, Pfunc func, void *u, ptrdiff_t old_top,
-                ptrdiff_t ef) {
+int luaD_pcall (lua_State *L, Pfunc func, void *u, ptrdiff_t old_top, ptrdiff_t ef) {
     int status;
     unsigned short oldnCcalls = L->nCcalls;
     ptrdiff_t old_ci = saveci(L, L->ci);
@@ -543,8 +535,7 @@ int luaD_pcall (lua_State *L, Pfunc func, void *u, ptrdiff_t old_top,
     if (status != 0) { /* an error occurred? */
         StkId oldtop = restorestack(L, old_top);
         L->nCcalls = oldnCcalls;
-        L->ci = luaD_unwindci(L, restoreci(L, old_ci),
-                              L->ci); /* close open calls */
+        L->ci = luaD_unwindci(L, restoreci(L, old_ci), L->ci); /* close open calls */
         luaF_close(L, oldtop); /* close eventual pending closures */
         luaD_seterrorobj(L, status, oldtop); /* move error to stack top */
         L->base = L->ci->base;

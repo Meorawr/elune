@@ -42,8 +42,7 @@ static void fatal (const char *message) {
 }
 
 static void cannot (const char *what) {
-    fprintf(stderr, "%s: cannot %s %s: %s\n", progname, what, output,
-            strerror(errno));
+    fprintf(stderr, "%s: cannot %s %s: %s\n", progname, what, output, strerror(errno));
     exit(EXIT_FAILURE);
 }
 
@@ -388,8 +387,7 @@ static void printcode (const Proto *f) {
                 break;
             case OP_GETUPVAL:
             case OP_SETUPVAL:
-                printf("\t; %s",
-                       (f->sizeupvalues > 0) ? getstr(f->upvalues[b]) : "-");
+                printf("\t; %s", (f->sizeupvalues > 0) ? getstr(f->upvalues[b]) : "-");
                 break;
             case OP_GETGLOBAL:
             case OP_SETGLOBAL:
@@ -464,19 +462,16 @@ static void printheader (const Proto *f) {
         s = "(string)";
     }
 
-    printf("\n%s <%s:%d,%d> (%d instruction%s, %d bytes at %p)\n",
-           (f->linedefined == 0) ? "main" : "function", s, f->linedefined,
-           f->lastlinedefined, S(f->sizecode), /* expands to two args */
+    printf("\n%s <%s:%d,%d> (%d instruction%s, %d bytes at %p)\n", (f->linedefined == 0) ? "main" : "function", s,
+           f->linedefined, f->lastlinedefined, S(f->sizecode), /* expands to two args */
            f->sizecode * Sizeof(Instruction), VOID(f));
 
-    printf("%d%s param%s, %d slot%s, %d upvalue%s, ", f->numparams,
-           f->is_vararg ? "+" : "", SS(f->numparams),
+    printf("%d%s param%s, %d slot%s, %d upvalue%s, ", f->numparams, f->is_vararg ? "+" : "", SS(f->numparams),
            S(f->maxstacksize), /* expands to two args */
            S(f->nups) /* expands to two args */
     );
 
-    printf("%d local%s, %d constant%s, %d function%s\n",
-           S(f->sizelocvars), /* expands to two args */
+    printf("%d local%s, %d constant%s, %d function%s\n", S(f->sizelocvars), /* expands to two args */
            S(f->sizek), /* expands to two args */
            S(f->sizep) /* expands to two args */
     );

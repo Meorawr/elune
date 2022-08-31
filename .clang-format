@@ -1,6 +1,6 @@
 ---
 BasedOnStyle: LLVM
-ColumnLimit: 80
+ColumnLimit: 120
 Language: Cpp
 Standard: Cpp03
 ContinuationIndentWidth: 4

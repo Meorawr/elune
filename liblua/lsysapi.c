@@ -99,8 +99,7 @@ LUALIB_API lua_Number luaL_securerandom (lua_State *L) {
 #elif defined(LUA_USE_WINDOWS)
     /* Windows implementation */
     uint32_t i;
-    BCryptGenRandom(NULL, (PUCHAR) &i, sizeof(i),
-                    BCRYPT_USE_SYSTEM_PREFERRED_RNG);
+    BCryptGenRandom(NULL, (PUCHAR) &i, sizeof(i), BCRYPT_USE_SYSTEM_PREFERRED_RNG);
     return ((lua_Number) i / UINT32_MAX);
 #else
     /* Default implementation */
@@ -209,8 +208,7 @@ LUALIB_API int luaL_checkpopenmode (lua_State *L, const char *mode) {
 #if defined(LUA_USE_WINDOWS)
     /* Windows accepts "[rw][bt]?" as valid modes */
     return ((mode[0] == 'r' || mode[0] == 'w') &&
-            (mode[1] == '\0' ||
-             ((mode[1] == 'b' || mode[1] == 't') && mode[2] == '\0')));
+            (mode[1] == '\0' || ((mode[1] == 'b' || mode[1] == 't') && mode[2] == '\0')));
 #else
     /* By default, Lua accepts only "r" or "w" as valid modes */
     return ((mode[0] == 'r' || mode[0] == 'w') && mode[1] == '\0');

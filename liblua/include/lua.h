@@ -145,8 +145,7 @@ LUA_API void lua_pushnumber (lua_State *L, lua_Number n);
 LUA_API void lua_pushinteger (lua_State *L, lua_Integer n);
 LUA_API void lua_pushlstring (lua_State *L, const char *s, size_t l);
 LUA_API void lua_pushstring (lua_State *L, const char *s);
-LUA_API const char *lua_pushvfstring (lua_State *L, const char *fmt,
-                                      va_list argp);
+LUA_API const char *lua_pushvfstring (lua_State *L, const char *fmt, va_list argp);
 LUA_API const char *lua_pushfstring (lua_State *L, const char *fmt, ...);
 LUA_API void lua_pushcclosure (lua_State *L, lua_CFunction fn, int n);
 LUA_API void lua_pushboolean (lua_State *L, int b);
@@ -181,8 +180,7 @@ LUA_API int lua_setfenv (lua_State *L, int idx);
 LUA_API void lua_call (lua_State *L, int nargs, int nresults);
 LUA_API int lua_pcall (lua_State *L, int nargs, int nresults, int errfunc);
 LUA_API int lua_cpcall (lua_State *L, lua_CFunction func, void *ud);
-LUA_API int lua_load (lua_State *L, lua_Reader reader, void *dt,
-                      const char *chunkname);
+LUA_API int lua_load (lua_State *L, lua_Reader reader, void *dt, const char *chunkname);
 
 LUA_API int lua_dump (lua_State *L, lua_Writer writer, void *data);
 
@@ -248,8 +246,7 @@ LUA_API void lua_setallocf (lua_State *L, lua_Alloc f, void *ud);
 #define lua_isnone(L, n) (lua_type(L, (n)) == LUA_TNONE)
 #define lua_isnoneornil(L, n) (lua_type(L, (n)) <= 0)
 
-#define lua_pushliteral(L, s)                                                  \
-    lua_pushlstring(L, "" s, (sizeof(s) / sizeof(char)) - 1)
+#define lua_pushliteral(L, s) lua_pushlstring(L, "" s, (sizeof(s) / sizeof(char)) - 1)
 
 #define lua_setglobal(L, s) lua_setfield(L, LUA_GLOBALSINDEX, (s))
 #define lua_getglobal(L, s) lua_getfield(L, LUA_GLOBALSINDEX, (s))
@@ -346,8 +343,7 @@ LUA_API int lua_resumefrom (lua_State *L, lua_State *from, int nargs);
 LUA_API int lua_toint (lua_State *L, int idx);
 LUA_API long lua_tolong (lua_State *L, int idx);
 LUA_API void *lua_upvalueid (lua_State *L, int fidx, int n);
-LUA_API void lua_upvaluejoin (lua_State *L, int fidx1, int n1, int fidx2,
-                              int n2);
+LUA_API void lua_upvaluejoin (lua_State *L, int fidx1, int n1, int fidx2, int n2);
 
 /**
  * Security APIs
@@ -432,10 +428,8 @@ LUA_API void lua_collectstats (lua_State *L);
 LUA_API void lua_resetstats (lua_State *L);
 
 LUA_API void lua_getglobalstats (lua_State *L, lua_GlobalStats *stats);
-LUA_API void lua_getsourcestats (lua_State *L, const char *source,
-                                 lua_SourceStats *stats);
-LUA_API void lua_getfunctionstats (lua_State *L, int funcindex,
-                                   lua_FunctionStats *stats);
+LUA_API void lua_getsourcestats (lua_State *L, const char *source, lua_SourceStats *stats);
+LUA_API void lua_getfunctionstats (lua_State *L, int funcindex, lua_FunctionStats *stats);
 
 /**
  * Debugging and Exception APIs
@@ -456,8 +450,7 @@ LUA_API int lua_getexceptmask (lua_State *L);
 LUA_API void lua_setexceptmask (lua_State *L, int mask);
 
 LUA_API void lua_getscripttimeout (lua_State *L, lua_ScriptTimeout *timeout);
-LUA_API void lua_setscripttimeout (lua_State *L,
-                                   const lua_ScriptTimeout *timeout);
+LUA_API void lua_setscripttimeout (lua_State *L, const lua_ScriptTimeout *timeout);
 
 /* }====================================================================== */
 

@@ -89,8 +89,7 @@ static int luaB_getmetatable (lua_State *L) {
 static int luaB_setmetatable (lua_State *L) {
     int t = lua_type(L, 2);
     luaL_checktype(L, 1, LUA_TTABLE);
-    luaL_argcheck(L, t == LUA_TNIL || t == LUA_TTABLE, 2,
-                  "nil or table expected");
+    luaL_argcheck(L, t == LUA_TNIL || t == LUA_TTABLE, 2, "nil or table expected");
     if (luaL_getmetafield(L, 1, "__metatable")) {
         luaL_error(L, "cannot change a protected metatable");
     }
@@ -111,8 +110,7 @@ static void getfunc (lua_State *L, int opt) {
         }
         lua_getinfo(L, "f", &ar);
         if (lua_isnil(L, -1)) {
-            luaL_error(L, "no function environment for tail call at level %d",
-                       level);
+            luaL_error(L, "no function environment for tail call at level %d", level);
         }
     }
 }
@@ -120,8 +118,7 @@ static void getfunc (lua_State *L, int opt) {
 static int luaB_getfenv (lua_State *L) {
     getfunc(L, 1);
     if (lua_iscfunction(L, -1)) { /* is a C function? */
-        lua_pushvalue(L,
-                      LUA_GLOBALSINDEX); /* return the thread's global env. */
+        lua_pushvalue(L, LUA_GLOBALSINDEX); /* return the thread's global env. */
     } else {
         lua_getfenv(L, -1);
     }
@@ -180,13 +177,9 @@ static int luaB_gcinfo (lua_State *L) {
 }
 
 static int luaB_collectgarbage (lua_State *L) {
-    static const char *const opts[] = { "stop",       "restart", "collect",
-                                        "count",      "step",    "setpause",
-                                        "setstepmul", NULL };
-    static const int optsnum[] = { LUA_GCSTOP,      LUA_GCRESTART,
-                                   LUA_GCCOLLECT,   LUA_GCCOUNT,
-                                   LUA_GCSTEP,      LUA_GCSETPAUSE,
-                                   LUA_GCSETSTEPMUL };
+    static const char *const opts[] = { "stop", "restart", "collect", "count", "step", "setpause", "setstepmul", NULL };
+    static const int optsnum[] = { LUA_GCSTOP, LUA_GCRESTART,  LUA_GCCOLLECT,   LUA_GCCOUNT,
+                                   LUA_GCSTEP, LUA_GCSETPAUSE, LUA_GCSETSTEPMUL };
     int o = luaL_checkoption(L, 1, "collect", opts);
     int ex = luaL_optint(L, 2, 0);
     int res = lua_gc(L, optsnum[o], ex);
@@ -408,8 +401,7 @@ static int luaB_tostring (lua_State *L) {
             lua_pushliteral(L, "nil");
             break;
         default:
-            lua_pushfstring(L, "%s: %p", luaL_typename(L, 1),
-                            lua_topointer(L, 1));
+            lua_pushfstring(L, "%s: %p", luaL_typename(L, 1), lua_topointer(L, 1));
             break;
     }
     return 1;
@@ -487,8 +479,7 @@ static int luaB_securecall (lua_State *L) {
         lua_replace(L, 1);
     }
 
-    status =
-        lua_pcall(L, (lua_gettop(L) - 1), LUA_MULTRET, LUA_ERRORHANDLERINDEX);
+    status = lua_pcall(L, (lua_gettop(L) - 1), LUA_MULTRET, LUA_ERRORHANDLERINDEX);
     if (status != 0) {
         lua_pop(L, 1);
     }
@@ -571,8 +562,7 @@ static int luaB_hooksecurefunc (lua_State *L) {
     }
 
     if (!lua_tostring(L, 2) || !lua_isfunction(L, 3)) {
-        return luaL_error(
-            L, "Usage: hooksecurefunc([table,] \"function\", hookfunc)");
+        return luaL_error(L, "Usage: hooksecurefunc([table,] \"function\", hookfunc)");
     }
 
     lua_settop(L, 3);
@@ -582,13 +572,11 @@ static int luaB_hooksecurefunc (lua_State *L) {
     lua_exchangetaint(L, &savedts);
 
     if (!lua_isfunction(L, 4)) {
-        return luaL_error(L, "hooksecurefunc(): %s is not a function",
-                          lua_tostring(L, 2));
+        return luaL_error(L, "hooksecurefunc(): %s is not a function", lua_tostring(L, 2));
     }
 
     lua_insert(L, 3); /* [3] = origfunc, [4] = hookfunc */
-    lua_setvaluetaint(L, 3,
-                      savedts.stacktaint); /* lua_insert may taint origfunc */
+    lua_setvaluetaint(L, 3, savedts.stacktaint); /* lua_insert may taint origfunc */
     luaL_createsecurehook(L); /* [3] = securehook */
     lua_setvaluetaint(L, 3, NULL);
     lua_rawset(L, 1); /* table["function"] = securehook */
@@ -604,8 +592,7 @@ static int luaB_scrub (lua_State *L) {
     for (argi = 1; argi <= argc; ++argi) {
         type = lua_type(L, argi);
 
-        if (type != LUA_TNUMBER && type != LUA_TSTRING &&
-            type != LUA_TBOOLEAN) {
+        if (type != LUA_TNUMBER && type != LUA_TSTRING && type != LUA_TBOOLEAN) {
             lua_pushnil(L);
             lua_replace(L, argi);
         }
@@ -760,8 +747,7 @@ LUALIB_API int luaopen_wow_base (lua_State *L) {
     baselib_openshared(L);
 
     /* register print infrastructure */
-    if (luaL_loadbuffer(L, lua_print, sizeof(lua_print) - 1, "print.lua") !=
-        0) {
+    if (luaL_loadbuffer(L, lua_print, sizeof(lua_print) - 1, "print.lua") != 0) {
         lua_error(L);
     } else {
         lua_pushvalue(L, LUA_ENVIRONINDEX);

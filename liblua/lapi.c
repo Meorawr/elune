@@ -30,10 +30,10 @@
 
 #define api_checkvalidindex(L, i) api_check(L, (i) != luaO_nilobject)
 
-#define api_incr_top(L)                                                        \
-    {                                                                          \
-        api_check(L, L->top < L->ci->top);                                     \
-        L->top++;                                                              \
+#define api_incr_top(L)                                                                                                \
+    {                                                                                                                  \
+        api_check(L, L->top < L->ci->top);                                                                             \
+        L->top++;                                                                                                      \
     }
 
 static TValue *index2adr (lua_State *L, int idx) {
@@ -64,9 +64,7 @@ static TValue *index2adr (lua_State *L, int idx) {
             default: {
                 Closure *func = curr_func(L);
                 idx = LUA_GLOBALSINDEX - idx;
-                return (idx <= func->c.nupvalues)
-                           ? &func->c.upvalue[idx - 1]
-                           : cast(TValue *, luaO_nilobject);
+                return (idx <= func->c.nupvalues) ? &func->c.upvalue[idx - 1] : cast(TValue *, luaO_nilobject);
             }
         }
     }
@@ -264,9 +262,7 @@ LUA_API int lua_isuserdata (lua_State *L, int idx) {
 LUA_API int lua_rawequal (lua_State *L, int index1, int index2) {
     StkId o1 = index2adr(L, index1);
     StkId o2 = index2adr(L, index2);
-    return (o1 == luaO_nilobject || o2 == luaO_nilobject)
-               ? 0
-               : luaO_rawequalObj(o1, o2);
+    return (o1 == luaO_nilobject || o2 == luaO_nilobject) ? 0 : luaO_rawequalObj(o1, o2);
 }
 
 LUA_API int lua_equal (lua_State *L, int index1, int index2) {
@@ -276,8 +272,7 @@ LUA_API int lua_equal (lua_State *L, int index1, int index2) {
     lua_lock(L); /* may call tag method */
     o1 = index2adr(L, index1);
     o2 = index2adr(L, index2);
-    i = (o1 == luaO_nilobject || o2 == luaO_nilobject) ? 0
-                                                       : equalobj(L, o1, o2);
+    i = (o1 == luaO_nilobject || o2 == luaO_nilobject) ? 0 : equalobj(L, o1, o2);
     lua_unlock(L);
     return i;
 }
@@ -289,9 +284,7 @@ LUA_API int lua_lessthan (lua_State *L, int index1, int index2) {
     lua_lock(L); /* may call tag method */
     o1 = index2adr(L, index1);
     o2 = index2adr(L, index2);
-    i = (o1 == luaO_nilobject || o2 == luaO_nilobject)
-            ? 0
-            : luaV_lessthan(L, o1, o2);
+    i = (o1 == luaO_nilobject || o2 == luaO_nilobject) ? 0 : luaV_lessthan(L, o1, o2);
     lua_unlock(L);
     return i;
 }
@@ -446,8 +439,7 @@ LUA_API void lua_pushstring (lua_State *L, const char *s) {
     }
 }
 
-LUA_API const char *lua_pushvfstring (lua_State *L, const char *fmt,
-                                      va_list argp) {
+LUA_API const char *lua_pushvfstring (lua_State *L, const char *fmt, va_list argp) {
     const char *ret;
     lua_lock(L);
     luaC_checkGC(L);
@@ -731,14 +723,13 @@ LUA_API int lua_setfenv (lua_State *L, int idx) {
 ** `load' and `call' functions (run Lua code)
 */
 
-#define adjustresults(L, nres)                                                 \
-    {                                                                          \
-        if (nres == LUA_MULTRET && L->top >= L->ci->top)                       \
-            L->ci->top = L->top;                                               \
+#define adjustresults(L, nres)                                                                                         \
+    {                                                                                                                  \
+        if (nres == LUA_MULTRET && L->top >= L->ci->top)                                                               \
+            L->ci->top = L->top;                                                                                       \
     }
 
-#define checkresults(L, na, nr)                                                \
-    api_check(L, (nr) == LUA_MULTRET || (L->ci->top - L->top >= (nr) - (na)))
+#define checkresults(L, na, nr) api_check(L, (nr) == LUA_MULTRET || (L->ci->top - L->top >= (nr) - (na)))
 
 LUA_API void lua_call (lua_State *L, int nargs, int nresults) {
     StkId func;
@@ -817,8 +808,7 @@ LUA_API int lua_cpcall (lua_State *L, lua_CFunction func, void *ud) {
     return status;
 }
 
-LUA_API int lua_load (lua_State *L, lua_Reader reader, void *data,
-                      const char *chunkname) {
+LUA_API int lua_load (lua_State *L, lua_Reader reader, void *data, const char *chunkname) {
     ZIO z;
     int status;
     lua_lock(L);
@@ -1105,8 +1095,7 @@ static UpVal **getupvalref (lua_State *L, int fidx, int n, LClosure **pf) {
     StkId fi = index2adr(L, fidx);
     api_check(L, isLfunction(fi)); /* Lua function expected */
     f = &clvalue(fi)->l;
-    api_check(L,
-              (1 <= n && n <= f->p->sizeupvalues)); /* invalid upvalue index */
+    api_check(L, (1 <= n && n <= f->p->sizeupvalues)); /* invalid upvalue index */
     if (pf) {
         *pf = f;
     }
@@ -1128,8 +1117,7 @@ LUA_API void *lua_upvalueid (lua_State *L, int fidx, int n) {
     }
 }
 
-LUA_API void lua_upvaluejoin (lua_State *L, int fidx1, int n1, int fidx2,
-                              int n2) {
+LUA_API void lua_upvaluejoin (lua_State *L, int fidx1, int n1, int fidx2, int n2) {
     LClosure *f1;
     UpVal **up1 = getupvalref(L, fidx1, n1, &f1);
     UpVal **up2 = getupvalref(L, fidx2, n2, NULL);
@@ -1156,10 +1144,8 @@ static int gettaintmode (const lua_State *L) {
 }
 
 static void settaintmode (lua_State *L, int mode) {
-    L->ts.readmask =
-        ((mode & LUA_TAINTRDONLY) ? LUA_TAINTALLOWED : LUA_TAINTBLOCKED);
-    L->ts.writemask =
-        ((mode & LUA_TAINTWRONLY) ? LUA_TAINTALLOWED : LUA_TAINTBLOCKED);
+    L->ts.readmask = ((mode & LUA_TAINTRDONLY) ? LUA_TAINTALLOWED : LUA_TAINTBLOCKED);
+    L->ts.writemask = ((mode & LUA_TAINTWRONLY) ? LUA_TAINTALLOWED : LUA_TAINTBLOCKED);
 }
 
 static const char *gettaint (const TString *ts) {
@@ -1595,8 +1581,7 @@ LUA_API void lua_getglobalstats (lua_State *L, lua_GlobalStats *stats) {
     lua_unlock(L);
 }
 
-LUA_API void lua_getsourcestats (lua_State *L, const char *source,
-                                 lua_SourceStats *stats) {
+LUA_API void lua_getsourcestats (lua_State *L, const char *source, lua_SourceStats *stats) {
     TString *ts;
     SourceStats *st;
 
@@ -1616,8 +1601,7 @@ LUA_API void lua_getsourcestats (lua_State *L, const char *source,
     lua_unlock(L);
 }
 
-LUA_API void lua_getfunctionstats (lua_State *L, int funcindex,
-                                   lua_FunctionStats *stats) {
+LUA_API void lua_getfunctionstats (lua_State *L, int funcindex, lua_FunctionStats *stats) {
     StkId o;
     ClosureStats *cs;
 
@@ -1659,8 +1643,7 @@ LUA_API void lua_getscripttimeout (lua_State *L, lua_ScriptTimeout *timeout) {
     lua_unlock(L);
 }
 
-LUA_API void lua_setscripttimeout (lua_State *L,
-                                   const lua_ScriptTimeout *timeout) {
+LUA_API void lua_setscripttimeout (lua_State *L, const lua_ScriptTimeout *timeout) {
     lua_lock(L);
 
     if (timeout->ticks == 0 || timeout->instructions == 0) {

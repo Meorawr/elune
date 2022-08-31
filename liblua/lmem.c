@@ -34,8 +34,7 @@
 
 #define MINSIZEARRAY 4
 
-void *luaM_growaux_ (lua_State *L, void *block, int *size, size_t size_elems,
-                     int limit, const char *errormsg) {
+void *luaM_growaux_ (lua_State *L, void *block, int *size, size_t size_elems, int limit, const char *errormsg) {
     void *newblock;
     int newsize;
     if (*size >= limit / 2) { /* cannot double it? */

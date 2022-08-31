@@ -94,8 +94,7 @@ static int luaB_coresume (lua_State *L) {
 
 static int luaB_cocreate (lua_State *L) {
     lua_State *L1 = lua_newthread(L);
-    luaL_argcheck(L, lua_isfunction(L, 1) && !lua_iscfunction(L, 1), 1,
-                  "Lua function expected");
+    luaL_argcheck(L, lua_isfunction(L, 1) && !lua_iscfunction(L, 1), 1, "Lua function expected");
     lua_pushvalue(L, 1); /* move function to top */
     lua_xmove(L, L1, 1); /* move function from L to L1 */
     return 1;

@@ -153,8 +153,7 @@ void luaF_freeproto (lua_State *L, Proto *f) {
 }
 
 void luaF_freeclosure (lua_State *L, Closure *c) {
-    int size = (c->c.isC) ? sizeCclosure(c->c.nupvalues)
-                          : sizeLclosure(c->l.nupvalues);
+    int size = (c->c.isC) ? sizeCclosure(c->c.nupvalues) : sizeLclosure(c->l.nupvalues);
     if (c->c.stats) {
         luaM_free(L, c->c.stats);
     }

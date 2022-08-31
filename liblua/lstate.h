@@ -177,8 +177,7 @@ union GCObject {
 #define gco2h(o) check_exp((o)->gch.tt == LUA_TTABLE, &((o)->h))
 #define gco2p(o) check_exp((o)->gch.tt == LUA_TPROTO, &((o)->p))
 #define gco2uv(o) check_exp((o)->gch.tt == LUA_TUPVAL, &((o)->uv))
-#define ngcotouv(o)                                                            \
-    check_exp((o) == NULL || (o)->gch.tt == LUA_TUPVAL, &((o)->uv))
+#define ngcotouv(o) check_exp((o) == NULL || (o)->gch.tt == LUA_TUPVAL, &((o)->uv))
 #define gco2th(o) check_exp((o)->gch.tt == LUA_TTHREAD, &((o)->th))
 
 /* macro to convert any Lua object into a GCObject */
@@ -188,13 +187,11 @@ LUAI_FUNC lua_State *luaE_newthread (lua_State *L);
 LUAI_FUNC void luaE_freethread (lua_State *L, lua_State *L1);
 
 inline TString *luaE_maskreadtaint (lua_State *L, TString *taint) {
-    return cast(TString *,
-                (cast(uintptr_t, taint) & (L->ts.readmask | L->ts.vmexecmask)));
+    return cast(TString *, (cast(uintptr_t, taint) & (L->ts.readmask | L->ts.vmexecmask)));
 }
 
 inline TString *luaE_maskwritetaint (lua_State *L) {
-    return cast(TString *,
-                (cast(uintptr_t, L->ts.stacktaint) & (L->ts.writemask)));
+    return cast(TString *, (cast(uintptr_t, L->ts.stacktaint) & (L->ts.writemask)));
 }
 
 inline TString *luaE_maskalloctaint (lua_State *L, int tt) {

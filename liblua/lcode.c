@@ -48,8 +48,7 @@ void luaK_nil (FuncState *fs, int from, int n) {
             }
         }
     }
-    luaK_codeABC(fs, OP_LOADNIL, from, from + n - 1,
-                 0); /* else no optimization */
+    luaK_codeABC(fs, OP_LOADNIL, from, from + n - 1, 0); /* else no optimization */
 }
 
 int luaK_jump (FuncState *fs) {
@@ -141,8 +140,7 @@ static void removevalues (FuncState *fs, int list) {
     }
 }
 
-static void patchlistaux (FuncState *fs, int list, int vtarget, int reg,
-                          int dtarget) {
+static void patchlistaux (FuncState *fs, int list, int vtarget, int reg, int dtarget) {
     while (list != NO_JUMP) {
         int next = getjump(fs, list);
         if (patchtestreg(fs, list, reg)) {
@@ -226,8 +224,7 @@ static int addk (FuncState *fs, TValue *k, TValue *v) {
         return cast_int(nvalue(idx));
     } else { /* constant not found; create a new entry */
         setnvalue(L, idx, cast_num(fs->nk));
-        luaM_growvector(L, f->k, fs->nk, f->sizek, TValue, MAXARG_Bx,
-                        "constant table overflow");
+        luaM_growvector(L, f->k, fs->nk, f->sizek, TValue, MAXARG_Bx, "constant table overflow");
         while (oldsize < f->sizek) {
             setnilvalue(L, &f->k[oldsize++]);
         }
@@ -303,8 +300,7 @@ void luaK_dischargevars (FuncState *fs, expdesc *e) {
         case VINDEXED: {
             freereg(fs, e->u.s.aux);
             freereg(fs, e->u.s.info);
-            e->u.s.info =
-                luaK_codeABC(fs, OP_GETTABLE, 0, e->u.s.info, e->u.s.aux);
+            e->u.s.info = luaK_codeABC(fs, OP_GETTABLE, 0, e->u.s.info, e->u.s.aux);
             e->k = VRELOCABLE;
             break;
         }
@@ -499,8 +495,7 @@ void luaK_self (FuncState *fs, expdesc *e, expdesc *key) {
 
 static void invertjump (FuncState *fs, expdesc *e) {
     Instruction *pc = getjumpcontrol(fs, e->u.s.info);
-    lua_assert(testTMode(GET_OPCODE(*pc)) && GET_OPCODE(*pc) != OP_TESTSET &&
-               GET_OPCODE(*pc) != OP_TEST);
+    lua_assert(testTMode(GET_OPCODE(*pc)) && GET_OPCODE(*pc) != OP_TESTSET && GET_OPCODE(*pc) != OP_TEST);
     SETARG_A(*pc, !(GETARG_A(*pc)));
 }
 
@@ -681,8 +676,7 @@ static void codearith (FuncState *fs, OpCode op, expdesc *e1, expdesc *e2) {
     }
 }
 
-static void codecomp (FuncState *fs, OpCode op, int cond, expdesc *e1,
-                      expdesc *e2) {
+static void codecomp (FuncState *fs, OpCode op, int cond, expdesc *e1, expdesc *e2) {
     int o1 = luaK_exp2RK(fs, e1);
     int o2 = luaK_exp2RK(fs, e2);
     freeexp(fs, e2);
@@ -706,8 +700,7 @@ void luaK_prefix (FuncState *fs, UnOpr op, expdesc *e) {
     switch (op) {
         case OPR_MINUS: {
             if (!isnumeral(e)) {
-                luaK_exp2anyreg(
-                    fs, e); /* cannot operate on non-numeric constants */
+                luaK_exp2anyreg(fs, e); /* cannot operate on non-numeric constants */
             }
             codearith(fs, OP_UNM, e, &e2);
             break;
@@ -775,8 +768,7 @@ void luaK_posfix (FuncState *fs, BinOpr op, expdesc *e1, expdesc *e2) {
         }
         case OPR_CONCAT: {
             luaK_exp2val(fs, e2);
-            if (e2->k == VRELOCABLE &&
-                GET_OPCODE(getcode(fs, e2)) == OP_CONCAT) {
+            if (e2->k == VRELOCABLE && GET_OPCODE(getcode(fs, e2)) == OP_CONCAT) {
                 lua_assert(e1->u.s.info == GETARG_B(getcode(fs, e2)) - 1);
                 freeexp(fs, e1);
                 SETARG_B(getcode(fs, e2), e1->u.s.info);
@@ -837,12 +829,10 @@ static int luaK_code (FuncState *fs, Instruction i, int line) {
     Proto *f = fs->f;
     dischargejpc(fs); /* `pc' will change */
     /* put new instruction in code array */
-    luaM_growvector(fs->L, f->code, fs->pc, f->sizecode, Instruction,
-                    LUA_INT_MAX, "code size overflow");
+    luaM_growvector(fs->L, f->code, fs->pc, f->sizecode, Instruction, LUA_INT_MAX, "code size overflow");
     f->code[fs->pc] = i;
     /* save corresponding line information */
-    luaM_growvector(fs->L, f->lineinfo, fs->pc, f->sizelineinfo, int,
-                    LUA_INT_MAX, "code size overflow");
+    luaM_growvector(fs->L, f->lineinfo, fs->pc, f->sizelineinfo, int, LUA_INT_MAX, "code size overflow");
     f->lineinfo[fs->pc] = line;
     return fs->pc++;
 }

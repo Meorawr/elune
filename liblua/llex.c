@@ -25,13 +25,10 @@
 #define currIsNewline(ls) (ls->current == '\n' || ls->current == '\r')
 
 /* ORDER RESERVED */
-const char *const luaX_tokens[] = {
-    "and",    "break",    "do",     "else", "elseif", "end",   "false",
-    "for",    "function", "if",     "in",   "local",  "nil",   "not",
-    "or",     "repeat",   "return", "then", "true",   "until", "while",
-    "..",     "...",      "==",     ">=",   "<=",     "~=",    "<number>",
-    "<name>", "<string>", "<eof>",  NULL
-};
+const char *const luaX_tokens[] = { "and",      "break", "do",   "else",     "elseif", "end",      "false", "for",
+                                    "function", "if",    "in",   "local",    "nil",    "not",      "or",    "repeat",
+                                    "return",   "then",  "true", "until",    "while",  "..",       "...",   "==",
+                                    ">=",       "<=",    "~=",   "<number>", "<name>", "<string>", "<eof>", NULL };
 
 #define save_and_next(ls) (save(ls, ls->current), next(ls))
 
@@ -63,8 +60,7 @@ void luaX_init (lua_State *L) {
 const char *luaX_token2str (LexState *ls, int token) {
     if (token < FIRST_RESERVED) {
         lua_assert(token == cast(unsigned char, token));
-        return (iscntrl(token)) ? luaO_pushfstring(ls->L, "char(%d)", token)
-                                : luaO_pushfstring(ls->L, "%c", token);
+        return (iscntrl(token)) ? luaO_pushfstring(ls->L, "char(%d)", token) : luaO_pushfstring(ls->L, "%c", token);
     } else {
         return luaX_tokens[token - FIRST_RESERVED];
     }
@@ -164,8 +160,7 @@ static void trydecpoint (LexState *ls, SemInfo *seminfo) {
     buffreplace(ls, old, ls->decpoint); /* try updated decimal separator */
     if (!luaO_str2d(luaZ_buffer(ls->buff), &seminfo->r)) {
         /* format error with correct decimal point: no more options */
-        buffreplace(ls, ls->decpoint,
-                    '.'); /* undo change (for error message) */
+        buffreplace(ls, ls->decpoint, '.'); /* undo change (for error message) */
         luaX_lexerror(ls, "malformed number", TK_NUMBER);
     }
 }
@@ -211,10 +206,7 @@ static void read_long_string (LexState *ls, SemInfo *seminfo, int sep) {
     for (;;) {
         switch (ls->current) {
             case EOZ:
-                luaX_lexerror(ls,
-                              (seminfo) ? "unfinished long string"
-                                        : "unfinished long comment",
-                              TK_EOS);
+                luaX_lexerror(ls, (seminfo) ? "unfinished long string" : "unfinished long comment", TK_EOS);
                 break; /* to avoid warnings */
 #if defined(LUA_COMPAT_LSTR)
             case '[': {
@@ -223,8 +215,7 @@ static void read_long_string (LexState *ls, SemInfo *seminfo, int sep) {
                     cont++;
 #if LUA_COMPAT_LSTR == 1
                     if (sep == 0) {
-                        luaX_lexerror(ls, "nesting of [[...]] is deprecated",
-                                      '[');
+                        luaX_lexerror(ls, "nesting of [[...]] is deprecated", '[');
                     }
 #endif
                 }
@@ -263,8 +254,7 @@ static void read_long_string (LexState *ls, SemInfo *seminfo, int sep) {
     }
 endloop:
     if (seminfo) {
-        seminfo->ts = luaX_newstring(ls, luaZ_buffer(ls->buff) + (2 + sep),
-                                     luaZ_bufflen(ls->buff) - 2 * (2 + sep));
+        seminfo->ts = luaX_newstring(ls, luaZ_buffer(ls->buff) + (2 + sep), luaZ_bufflen(ls->buff) - 2 * (2 + sep));
     }
 }
 
@@ -322,8 +312,7 @@ static void read_string (LexState *ls, int del, SemInfo *seminfo) {
                                 next(ls);
                             } while (++i < 3 && isdigit(ls->current));
                             if (c > UCHAR_MAX) {
-                                luaX_lexerror(ls, "escape sequence too large",
-                                              TK_STRING);
+                                luaX_lexerror(ls, "escape sequence too large", TK_STRING);
                             }
                             save(ls, c);
                         }
@@ -339,8 +328,7 @@ static void read_string (LexState *ls, int del, SemInfo *seminfo) {
         }
     }
     save_and_next(ls); /* skip delimiter */
-    seminfo->ts = luaX_newstring(ls, luaZ_buffer(ls->buff) + 1,
-                                 luaZ_bufflen(ls->buff) - 2);
+    seminfo->ts = luaX_newstring(ls, luaZ_buffer(ls->buff) + 1, luaZ_bufflen(ls->buff) - 2);
 }
 
 static int llex (LexState *ls, SemInfo *seminfo) {
@@ -361,8 +349,7 @@ static int llex (LexState *ls, SemInfo *seminfo) {
                 next(ls);
                 if (ls->current == '[') {
                     int sep = skip_sep(ls);
-                    luaZ_resetbuffer(
-                        ls->buff); /* `skip_sep' may dirty the buffer */
+                    luaZ_resetbuffer(ls->buff); /* `skip_sep' may dirty the buffer */
                     if (sep >= 0) {
                         read_long_string(ls, NULL, sep); /* long comment */
                         luaZ_resetbuffer(ls->buff);
@@ -383,8 +370,7 @@ static int llex (LexState *ls, SemInfo *seminfo) {
                 } else if (sep == -1) {
                     return '[';
                 } else {
-                    luaX_lexerror(ls, "invalid long string delimiter",
-                                  TK_STRING);
+                    luaX_lexerror(ls, "invalid long string delimiter", TK_STRING);
                 }
             }
             case '=': {
@@ -460,8 +446,7 @@ static int llex (LexState *ls, SemInfo *seminfo) {
                     do {
                         save_and_next(ls);
                     } while (isalnum(ls->current) || ls->current == '_');
-                    ts = luaX_newstring(ls, luaZ_buffer(ls->buff),
-                                        luaZ_bufflen(ls->buff));
+                    ts = luaX_newstring(ls, luaZ_buffer(ls->buff), luaZ_bufflen(ls->buff));
                     if (ts->tsv.reserved > 0) { /* reserved word? */
                         return ts->tsv.reserved - 1 + FIRST_RESERVED;
                     } else {

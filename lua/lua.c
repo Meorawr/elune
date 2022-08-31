@@ -118,8 +118,7 @@ static int msghandler (lua_State *L) {
             lua_type(L, -1) == LUA_TSTRING) { /* that produces a string? */
             return 1; /* that is the message */
         } else {
-            msg = lua_pushfstring(L, "(error object is a %s value)",
-                                  luaL_typename(L, 1));
+            msg = lua_pushfstring(L, "(error object is a %s value)", luaL_typename(L, 1));
         }
     }
     luaL_traceback(L, L, msg, 1); /* append a standard traceback */
@@ -372,8 +371,7 @@ static int runargs (lua_State *L, char **argv, int n) {
                     extra = argv[++i];
                 }
                 lua_assert(extra != NULL);
-                status = (option == 'e') ? dostring(L, extra, "=(command line)")
-                                         : dolibrary(L, extra);
+                status = (option == 'e') ? dostring(L, extra, "=(command line)") : dolibrary(L, extra);
                 if (status != LUA_OK) {
                     return 0;
                 }
@@ -515,8 +513,7 @@ static int loadline (lua_State *L) {
         return -1; /* no input */
     }
     if ((status = addreturn(L)) != LUA_OK) { /* 'return ...' did not work? */
-        status =
-            multiline(L); /* try as command, maybe with continuation lines */
+        status = multiline(L); /* try as command, maybe with continuation lines */
     }
     lua_remove(L, 1); /* remove line from the stack */
     lua_assert(lua_gettop(L) == 1);
@@ -533,8 +530,7 @@ static void l_print (lua_State *L) {
         lua_getglobal(L, "print");
         lua_insert(L, 1);
         if (lua_pcall(L, n, 0, 0) != LUA_OK) {
-            l_message(progname, lua_pushfstring(L, "error calling 'print' (%s)",
-                                                lua_tostring(L, -1)));
+            l_message(progname, lua_pushfstring(L, "error calling 'print' (%s)", lua_tostring(L, -1)));
         }
     }
 }
@@ -617,8 +613,7 @@ static int pmain (lua_State *L) {
     }
     if (args & has_i) { /* -i option? */
         doREPL(L); /* do read-eval-print loop */
-    } else if (script == argc &&
-               !(args & (has_e | has_v))) { /* no arguments? */
+    } else if (script == argc && !(args & (has_e | has_v))) { /* no arguments? */
         if (luaL_stdinistty(L)) { /* running in interactive mode? */
             print_version();
             doREPL(L); /* do read-eval-print loop */

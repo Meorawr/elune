@@ -29,8 +29,8 @@ typedef struct {
 #define IF(c, s)
 #define error(S, s)
 #else
-#define IF(c, s)                                                               \
-    if (c)                                                                     \
+#define IF(c, s)                                                                                                       \
+    if (c)                                                                                                             \
     error(S, s)
 
 static void error (LoadState *S, const char *why) {

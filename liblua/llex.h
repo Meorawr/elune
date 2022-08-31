@@ -83,13 +83,11 @@ typedef struct LexState {
 } LexState;
 
 LUAI_FUNC void luaX_init (lua_State *L);
-LUAI_FUNC void luaX_setinput (lua_State *L, LexState *ls, ZIO *z,
-                              TString *source);
+LUAI_FUNC void luaX_setinput (lua_State *L, LexState *ls, ZIO *z, TString *source);
 LUAI_FUNC TString *luaX_newstring (LexState *ls, const char *str, size_t l);
 LUAI_FUNC void luaX_next (LexState *ls);
 LUAI_FUNC void luaX_lookahead (LexState *ls);
-LUAI_FUNC LUA_NORETURN void luaX_lexerror (LexState *ls, const char *msg,
-                                           int token);
+LUAI_FUNC LUA_NORETURN void luaX_lexerror (LexState *ls, const char *msg, int token);
 LUAI_FUNC LUA_NORETURN void luaX_syntaxerror (LexState *ls, const char *s);
 LUAI_FUNC const char *luaX_token2str (LexState *ls, int token);
 

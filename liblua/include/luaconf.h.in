@@ -163,16 +163,16 @@
 
 #if defined(LUA_USE_APICHECK)
 #include <assert.h>
-#define luai_apicheck(L, expr)                                                 \
-    {                                                                          \
-        lua_unused((L));                                                       \
-        assert(expr);                                                          \
+#define luai_apicheck(L, expr)                                                                                         \
+    {                                                                                                                  \
+        lua_unused((L));                                                                                               \
+        assert(expr);                                                                                                  \
     }
 #else
-#define luai_apicheck(L, expr)                                                 \
-    {                                                                          \
-        lua_unused((L));                                                       \
-        lua_unused((expr));                                                    \
+#define luai_apicheck(L, expr)                                                                                         \
+    {                                                                                                                  \
+        lua_unused((L));                                                                                               \
+        lua_unused((expr));                                                                                            \
     }
 #endif
 

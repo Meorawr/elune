@@ -62,27 +62,27 @@ typedef uint_least32_t Instruction;
 
 #define luai_userstateopen(L) lua_unused((L))
 #define luai_userstateclose(L) lua_unused((L))
-#define luai_userstatethread(L, L1)                                            \
-    {                                                                          \
-        lua_unused((L));                                                       \
-        lua_unused((L1));                                                      \
+#define luai_userstatethread(L, L1)                                                                                    \
+    {                                                                                                                  \
+        lua_unused((L));                                                                                               \
+        lua_unused((L1));                                                                                              \
     }
 #define luai_userstatefree(L) lua_unused((L))
-#define luai_userstateresume(L, n)                                             \
-    {                                                                          \
-        lua_unused((L));                                                       \
-        lua_unused((n));                                                       \
+#define luai_userstateresume(L, n)                                                                                     \
+    {                                                                                                                  \
+        lua_unused((L));                                                                                               \
+        lua_unused((n));                                                                                               \
     }
-#define luai_userstateyield(L, n)                                              \
-    {                                                                          \
-        lua_unused((L));                                                       \
-        lua_unused((n));                                                       \
+#define luai_userstateyield(L, n)                                                                                      \
+    {                                                                                                                  \
+        lua_unused((L));                                                                                               \
+        lua_unused((n));                                                                                               \
     }
 
-#define luai_threadyield(L)                                                    \
-    {                                                                          \
-        lua_unlock(L);                                                         \
-        lua_lock(L);                                                           \
+#define luai_threadyield(L)                                                                                            \
+    {                                                                                                                  \
+        lua_unlock(L);                                                                                                 \
+        lua_lock(L);                                                                                                   \
     }
 
 /* Stack reallocation tests */

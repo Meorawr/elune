@@ -331,8 +331,7 @@ static int g_read (lua_State *L, FILE *f, int first) {
                         success = read_line(L, f);
                         break;
                     case 'a': /* file */
-                        read_chars(L, f,
-                                   ~((size_t) 0)); /* read MAX_SIZE_T chars */
+                        read_chars(L, f, ~((size_t) 0)); /* read MAX_SIZE_T chars */
                         success = 1; /* always success */
                         break;
                     default:
@@ -372,8 +371,7 @@ static int io_readline (lua_State *L) {
     if (sucess) {
         return 1;
     } else { /* EOF */
-        if (lua_toboolean(L,
-                          lua_upvalueindex(2))) { /* generator created file? */
+        if (lua_toboolean(L, lua_upvalueindex(2))) { /* generator created file? */
             lua_settop(L, 0);
             lua_pushvalue(L, lua_upvalueindex(1));
             aux_close(L); /* close it */
@@ -390,8 +388,7 @@ static int g_write (lua_State *L, FILE *f, int arg) {
     for (; nargs--; arg++) {
         if (lua_type(L, arg) == LUA_TNUMBER) {
             /* optimization: could be done exactly as for strings */
-            status =
-                status && fprintf(f, LUA_NUMBER_FMT, lua_tonumber(L, arg)) > 0;
+            status = status && fprintf(f, LUA_NUMBER_FMT, lua_tonumber(L, arg)) > 0;
         } else {
             size_t l;
             const char *s = luaL_checklstring(L, arg, &l);

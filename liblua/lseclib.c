@@ -51,8 +51,7 @@ static int seclib_getvaluetaint (lua_State *L) {
 }
 
 static int seclib_getobjecttaint (lua_State *L) {
-    luaL_argcheck(L, (lua_type(L, 1) >= LUA_TSTRING), 1,
-                  "expected function, string, table, thread, or userdata");
+    luaL_argcheck(L, (lua_type(L, 1) >= LUA_TSTRING), 1, "expected function, string, table, thread, or userdata");
     lua_pushstring(L, lua_getvaluetaint(L, 1));
     return 1;
 }
@@ -131,8 +130,7 @@ static int seclib_setvaluetaint (lua_State *L) {
 }
 
 static int seclib_setobjecttaint (lua_State *L) {
-    luaL_argcheck(L, (lua_type(L, 1) >= LUA_TSTRING), 1,
-                  "expected function, string, table, thread, or userdata");
+    luaL_argcheck(L, (lua_type(L, 1) >= LUA_TSTRING), 1, "expected function, string, table, thread, or userdata");
     luaL_checkany(L, 2);
     lua_setobjecttaint(L, 1, luaL_optstring(L, 2, NULL));
     return 0;

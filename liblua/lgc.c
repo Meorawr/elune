@@ -27,8 +27,7 @@
 
 #define maskmarks cast_byte(~(bitmask(BLACKBIT) | WHITEBITS))
 
-#define makewhite(g, x)                                                        \
-    ((x)->gch.marked = cast_byte(((x)->gch.marked & maskmarks) | luaC_white(g)))
+#define makewhite(g, x) ((x)->gch.marked = cast_byte(((x)->gch.marked & maskmarks) | luaC_white(g)))
 
 #define white2gray(x) reset2bits((x)->gch.marked, WHITE0BIT, WHITE1BIT)
 #define black2gray(x) resetbit((x)->gch.marked, BLACKBIT)
@@ -41,17 +40,17 @@
 #define KEYWEAK bitmask(KEYWEAKBIT)
 #define VALUEWEAK bitmask(VALUEWEAKBIT)
 
-#define markvalue(g, o)                                                        \
-    {                                                                          \
-        checkconsistency(o);                                                   \
-        if (iscollectable(o) && iswhite(gcvalue(o)))                           \
-            reallymarkobject(g, gcvalue(o));                                   \
+#define markvalue(g, o)                                                                                                \
+    {                                                                                                                  \
+        checkconsistency(o);                                                                                           \
+        if (iscollectable(o) && iswhite(gcvalue(o)))                                                                   \
+            reallymarkobject(g, gcvalue(o));                                                                           \
     }
 
-#define markobject(g, t)                                                       \
-    {                                                                          \
-        if (iswhite(obj2gco(t)))                                               \
-            reallymarkobject(g, obj2gco(t));                                   \
+#define markobject(g, t)                                                                                               \
+    {                                                                                                                  \
+        if (iswhite(obj2gco(t)))                                                                                       \
+            reallymarkobject(g, obj2gco(t));                                                                           \
     }
 
 #define setthreshold(g) (g->GCthreshold = (g->estimate / 100) * g->gcpause)
@@ -140,8 +139,7 @@ size_t luaC_separateudata (lua_State *L, int all) {
             *p = curr->gch.next;
             /* link `curr' at the end of `tmudata' list */
             if (g->tmudata == NULL) { /* list is empty? */
-                g->tmudata = curr->gch.next =
-                    curr; /* creates a circular list */
+                g->tmudata = curr->gch.next = curr; /* creates a circular list */
             } else {
                 curr->gch.next = g->tmudata->gch.next;
                 g->tmudata->gch.next = curr;
@@ -159,28 +157,23 @@ size_t luaC_objectsize (const GCObject *o) {
         }
         case LUA_TTABLE: {
             const Table *h = gco2h(o);
-            return sizeof(Table) + sizeof(TValue) * h->sizearray +
-                   sizeof(Node) * sizenode(h);
+            return sizeof(Table) + sizeof(TValue) * h->sizearray + sizeof(Node) * sizenode(h);
         }
         case LUA_TFUNCTION: {
             const Closure *cl = gco2cl(o);
-            return (cl->c.isC) ? sizeCclosure(cl->c.nupvalues)
-                               : sizeLclosure(cl->l.nupvalues);
+            return (cl->c.isC) ? sizeCclosure(cl->c.nupvalues) : sizeLclosure(cl->l.nupvalues);
         }
         case LUA_TUSERDATA: {
             return sizeudata(gco2u(o));
         }
         case LUA_TTHREAD: {
             const lua_State *th = gco2th(o);
-            return sizeof(lua_State) + sizeof(TValue) * th->stacksize +
-                   sizeof(CallInfo) * th->size_ci;
+            return sizeof(lua_State) + sizeof(TValue) * th->stacksize + sizeof(CallInfo) * th->size_ci;
         }
         case LUA_TPROTO: {
             const Proto *p = gco2p(o);
-            return sizeof(Proto) + sizeof(Instruction) * p->sizecode +
-                   sizeof(Proto *) * p->sizep + sizeof(TValue) * p->sizek +
-                   sizeof(int) * p->sizelineinfo +
-                   sizeof(LocVar) * p->sizelocvars +
+            return sizeof(Proto) + sizeof(Instruction) * p->sizecode + sizeof(Proto *) * p->sizep +
+                   sizeof(TValue) * p->sizek + sizeof(int) * p->sizelineinfo + sizeof(LocVar) * p->sizelocvars +
                    sizeof(TString *) * p->sizeupvalues;
         }
         case LUA_TUPVAL: {
@@ -206,8 +199,7 @@ static int traversetable (global_State *g, Table *h) {
         weakvalue = (strchr(svalue(mode), 'v') != NULL);
         if (weakkey || weakvalue) { /* is really weak? */
             h->marked &= ~(KEYWEAK | VALUEWEAK); /* clear bits */
-            h->marked |= cast_byte((weakkey << KEYWEAKBIT) |
-                                   (weakvalue << VALUEWEAKBIT));
+            h->marked |= cast_byte((weakkey << KEYWEAKBIT) | (weakvalue << VALUEWEAKBIT));
             h->gclist = g->weak; /* must be cleared after GC, ... */
             g->weak = obj2gco(h); /* ... so put in the appropriate list */
         }
@@ -289,8 +281,7 @@ static void checkstacksizes (lua_State *L, StkId max) {
         luaD_reallocCI(L, L->size_ci / 2); /* still big enough... */
     }
     condhardstacktests(luaD_reallocCI(L, ci_used + 1));
-    if (4 * s_used < L->stacksize &&
-        2 * (BASIC_STACK_SIZE + EXTRA_STACK) < L->stacksize) {
+    if (4 * s_used < L->stacksize && 2 * (BASIC_STACK_SIZE + EXTRA_STACK) < L->stacksize) {
         luaD_reallocstack(L, L->stacksize / 2); /* still big enough... */
     }
     condhardstacktests(luaD_reallocstack(L, s_used));
@@ -383,8 +374,7 @@ static int iscleared (const TValue *o, int iskey) {
         stringmark(rawtsvalue(o)); /* strings are `values', so are never weak */
         return 0;
     }
-    return iswhite(gcvalue(o)) ||
-           (ttisuserdata(o) && (!iskey && isfinalized(uvalue(o))));
+    return iswhite(gcvalue(o)) || (ttisuserdata(o) && (!iskey && isfinalized(uvalue(o))));
 }
 
 /*
@@ -394,8 +384,7 @@ static void cleartable (GCObject *l) {
     while (l) {
         Table *h = gco2h(l);
         int i = h->sizearray;
-        lua_assert(testbit(h->marked, VALUEWEAKBIT) ||
-                   testbit(h->marked, KEYWEAKBIT));
+        lua_assert(testbit(h->marked, VALUEWEAKBIT) || testbit(h->marked, KEYWEAKBIT));
         if (testbit(h->marked, VALUEWEAKBIT)) {
             while (i--) {
                 TValue *o = &h->array[i];
@@ -457,8 +446,7 @@ static GCObject **sweeplist (lua_State *L, GCObject **p, size_t count) {
     global_State *g = G(L);
     int deadmask = otherwhite(g);
     while ((curr = *p) != NULL && count-- > 0) {
-        if (curr->gch.tt ==
-            LUA_TTHREAD) { /* sweep open upvalues of each thread */
+        if (curr->gch.tt == LUA_TTHREAD) { /* sweep open upvalues of each thread */
             sweepwholelist(L, &gco2th(curr)->openupval);
         }
         if ((curr->gch.marked ^ WHITEBITS) & deadmask) { /* not dead? */
@@ -480,8 +468,7 @@ static GCObject **sweeplist (lua_State *L, GCObject **p, size_t count) {
 static void checkSizes (lua_State *L) {
     global_State *g = G(L);
     /* check size of string hash */
-    if (g->strt.nuse < cast(uint_least32_t, g->strt.size / 4) &&
-        g->strt.size > LUAI_MINSTRTABSIZE * 2) {
+    if (g->strt.nuse < cast(uint_least32_t, g->strt.size / 4) && g->strt.size > LUAI_MINSTRTABSIZE * 2) {
         luaS_resize(L, g->strt.size / 2); /* table is too big */
     }
     /* check size of buffer */
@@ -532,8 +519,7 @@ void luaC_callGCTM (lua_State *L) {
 void luaC_freeall (lua_State *L) {
     global_State *g = G(L);
     int i;
-    g->currentwhite =
-        WHITEBITS | bitmask(SFIXEDBIT); /* mask to collect all elements */
+    g->currentwhite = WHITEBITS | bitmask(SFIXEDBIT); /* mask to collect all elements */
     sweepwholelist(L, &g->rootgc);
     for (i = 0; i < g->strt.size; i++) { /* free all string lists */
         sweepwholelist(L, &g->strt.hash[i]);
@@ -564,8 +550,7 @@ static void markroot (lua_State *L) {
 static void remarkupvals (global_State *g) {
     UpVal *uv;
     for (uv = g->uvhead.u.l.next; uv != &g->uvhead; uv = uv->u.l.next) {
-        lua_assert(uv->u.l.next->u.l.prev == uv &&
-                   uv->u.l.prev->u.l.next == uv);
+        lua_assert(uv->u.l.next->u.l.prev == uv && uv->u.l.prev->u.l.next == uv);
         if (isgray(obj2gco(uv)))
             markvalue(g, uv->v);
     }
@@ -673,8 +658,7 @@ void luaC_step (lua_State *L) {
     } while (lim > 0);
     if (g->gcstate != GCSpause) {
         if (g->gcdept < GCSTEPSIZE) {
-            g->GCthreshold =
-                g->totalbytes + GCSTEPSIZE; /* - lim/g->gcstepmul;*/
+            g->GCthreshold = g->totalbytes + GCSTEPSIZE; /* - lim/g->gcstepmul;*/
         } else {
             g->gcdept -= GCSTEPSIZE;
             g->GCthreshold = g->totalbytes;
