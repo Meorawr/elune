@@ -30,22 +30,25 @@
 #define LUA_MULTRET	(-1)
 
 
-/*
-** pseudo-indices
-*/
-#define LUA_ERRORHANDLERINDEX (-9999)
-#define LUA_REGISTRYINDEX     (-10000)
-#define LUA_ENVIRONINDEX      (-10001)
-#define LUA_GLOBALSINDEX      (-10002)
-#define lua_upvalueindex(i)   (LUA_GLOBALSINDEX-(i))
+/* Pseudo-indices accepted by most C APIs. */
+enum lua_PseudoIndex {
+  LUA_ERRORHANDLERINDEX = -9999,
+  LUA_REGISTRYINDEX = -10000,
+  LUA_ENVIRONINDEX = -10001,
+  LUA_GLOBALSINDEX = -10002,
+};
 
-/* thread status; 0 is OK */
-#define LUA_OK 0
-#define LUA_YIELD	1
-#define LUA_ERRRUN	2
-#define LUA_ERRSYNTAX	3
-#define LUA_ERRMEM	4
-#define LUA_ERRERR	5
+#define lua_upvalueindex(i) (LUA_GLOBALSINDEX-(i))
+
+/* Thread status values; 0 is OK. */
+enum lua_Status {
+  LUA_OK = 0,
+  LUA_YIELD = 1,
+  LUA_ERRRUN = 2,
+  LUA_ERRSYNTAX = 3,
+  LUA_ERRMEM = 4,
+  LUA_ERRERR = 5,
+};
 
 
 typedef struct lua_State lua_State;
@@ -68,28 +71,32 @@ typedef int (*lua_Writer) (lua_State *L, const void* p, size_t sz, void* ud);
 typedef void * (*lua_Alloc) (void *ud, void *ptr, size_t osize, size_t nsize);
 
 
-/*
-** basic types
-*/
-#define LUA_TNONE		(-1)
-
-#define LUA_TNIL		0
-#define LUA_TBOOLEAN		1
-#define LUA_TLIGHTUSERDATA	2
-#define LUA_TNUMBER		3
-#define LUA_TSTRING		4
-#define LUA_TTABLE		5
-#define LUA_TFUNCTION		6
-#define LUA_TUSERDATA		7
-#define LUA_TTHREAD		8
-
+/* Basic Lua types */
+enum lua_Type {
+  LUA_TNONE = -1,
+  LUA_TNIL = 0,
+  LUA_TBOOLEAN = 1,
+  LUA_TLIGHTUSERDATA = 2,
+  LUA_TNUMBER = 3,
+  LUA_TSTRING = 4,
+  LUA_TTABLE = 5,
+  LUA_TFUNCTION = 6,
+  LUA_TUSERDATA = 7,
+  LUA_TTHREAD = 8,
+};
 
 
 
 
-/* predefined values in the registry */
-#define LUA_RIDX_MAINTHREAD     1
-#define LUA_RIDX_LAST           LUA_RIDX_MAINTHREAD
+
+
+/* Predefined values in the registry. */
+enum lua_RegistryIndex {
+  LUA_NOREF = -2,
+  LUA_REFNIL = -1,
+  LUA_RIDX_MAINTHREAD = 1,
+  LUA_RIDX_LAST = LUA_RIDX_MAINTHREAD,
+};
 
 
 /*
@@ -231,14 +238,16 @@ LUA_API int  (lua_status) (lua_State *L);
 ** garbage-collection function and options
 */
 
-#define LUA_GCSTOP		0
-#define LUA_GCRESTART		1
-#define LUA_GCCOLLECT		2
-#define LUA_GCCOUNT		3
-#define LUA_GCCOUNTB		4
-#define LUA_GCSTEP		5
-#define LUA_GCSETPAUSE		6
-#define LUA_GCSETSTEPMUL	7
+enum lua_GCOption {
+  LUA_GCSTOP = 0,
+  LUA_GCRESTART = 1,
+  LUA_GCCOLLECT = 2,
+  LUA_GCCOUNT = 3,
+  LUA_GCCOUNTB = 4,
+  LUA_GCSTEP = 5,
+  LUA_GCSETPAUSE = 6,
+  LUA_GCSETSTEPMUL = 7,
+};
 
 LUA_API int (lua_gc) (lua_State *L, int what, int data);
 
@@ -319,20 +328,24 @@ LUA_API void lua_setlevel	(lua_State *from, lua_State *to);
 /*
 ** Event codes
 */
-#define LUA_HOOKCALL	0
-#define LUA_HOOKRET	1
-#define LUA_HOOKLINE	2
-#define LUA_HOOKCOUNT	3
-#define LUA_HOOKTAILRET 4
+enum lua_HookEvent {
+  LUA_HOOKCALL = 0,
+  LUA_HOOKRET = 1,
+  LUA_HOOKLINE = 2,
+  LUA_HOOKCOUNT = 3,
+  LUA_HOOKTAILRET = 4,
+};
 
 
 /*
 ** Event masks
 */
-#define LUA_MASKCALL	(1 << LUA_HOOKCALL)
-#define LUA_MASKRET	(1 << LUA_HOOKRET)
-#define LUA_MASKLINE	(1 << LUA_HOOKLINE)
-#define LUA_MASKCOUNT	(1 << LUA_HOOKCOUNT)
+enum lua_HookMask {
+  LUA_MASKCALL = (1 << LUA_HOOKCALL),
+  LUA_MASKRET = (1 << LUA_HOOKRET),
+  LUA_MASKLINE = (1 << LUA_HOOKLINE),
+  LUA_MASKCOUNT = (1 << LUA_HOOKCOUNT),
+};
 
 
 /**
