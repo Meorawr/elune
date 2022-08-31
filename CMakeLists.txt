@@ -210,17 +210,29 @@ if(BUILD_SUMMARY)
   message(STATUS "Lua library path:   ${LUA_PATH_DEFAULT}")
   message(STATUS "Lua C library path: ${LUA_CPATH_DEFAULT}")
 
-  message(STATUS "")
-  message(STATUS "Configured Features:")
-
   get_property(_variable_names DIRECTORY PROPERTY CACHE_VARIABLES)
   list(SORT _variable_names)
 
+  set(_enabled_features)
+
   foreach(_name IN LISTS _variable_names)
     if(_name MATCHES "^LUA_USE_")
-      message(STATUS " * ${_name}")
+      if(${${_name}})
+        list(APPEND _enabled_features ${_name})
+      endif()
     endif()
   endforeach()
+
+  list(SORT _enabled_features)
+
+  if(_enabled_features)
+    message(STATUS "")
+    message(STATUS "Configured Features:")
+
+    foreach(_name IN LISTS _enabled_features)
+      message(STATUS " * ${_name}")
+    endforeach()
+  endif()
 
   message(STATUS "")
 endif()
