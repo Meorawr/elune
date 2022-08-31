@@ -205,8 +205,8 @@ cmake_dependent_option(LUA_USE_READLINE "Link against the 'readline' library for
 # installed.
 
 configure_file(
-  "${PROJECT_SOURCE_DIR}/include/lua5.1/luaconf.h.in"
-  "${PROJECT_BINARY_DIR}/include/lua5.1/luaconf.h"
+  "${PROJECT_SOURCE_DIR}/liblua/include/luaconf.h.in"
+  "${PROJECT_BINARY_DIR}/liblua/include/luaconf.h"
   USE_SOURCE_PERMISSIONS
   ESCAPE_QUOTES
 )
@@ -215,14 +215,14 @@ configure_file(
 # Project Targets
 #
 
-add_subdirectory(src/liblua)
+add_subdirectory(liblua)
 
 if(BUILD_LUA)
-  add_subdirectory(src/lua)
+  add_subdirectory(lua)
 endif()
 
 if(BUILD_LUAC)
-  add_subdirectory(src/luac)
+  add_subdirectory(luac)
 endif()
 
 if(BUILD_TESTING)

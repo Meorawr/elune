@@ -31,6 +31,6 @@ function(elune_target_headers TARGET)
     set(_public_headers)
   endif()
 
-  list(APPEND _public_headers ${ARG_PUBLIC} ${ARG_INTERFACE})
+  list(APPEND _public_headers ${ARG_PUBLIC} ${ARG_INTERFACE} ${ARG_PRIVATE})
   set_target_properties(${TARGET} PROPERTIES PUBLIC_HEADER "${_public_headers}")
 endfunction()

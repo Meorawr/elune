@@ -38,8 +38,8 @@ target_compile_definitions(
 target_include_directories(
   liblua
   PUBLIC
-    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/lua5.1>
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/lua5.1>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
@@ -56,14 +56,13 @@ target_link_libraries(
 
 elune_target_headers(
   liblua
-  PUBLIC
-    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/lua5.1/luaconf.h>
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/lua5.1/lauxlib.h>
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/lua5.1/lua.h>
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/lua5.1/lua.hpp>
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/lua5.1/lualib.h>
   PRIVATE
-    ${PROJECT_SOURCE_DIR}/include/lua5.1/lsyslib.h
+    ${CMAKE_CURRENT_BINARY_DIR}/include/luaconf.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/lauxlib.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/lsyslib.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/lua.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/lua.hpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/lualib.h
 )
 
 target_sources(
