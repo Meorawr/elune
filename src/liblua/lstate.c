@@ -87,7 +87,7 @@ static void init_registry (lua_State *L, global_State *g) {
 */
 static void f_luaopen (lua_State *L, void *ud) {
   global_State *g = G(L);
-  UNUSED(ud);
+  lua_unused(ud);
   stack_init(L, L);  /* init stack */
   sethvalue(L, gt(L), luaH_new(L, 0, 2));  /* table of globals */
   init_registry(L, g);
@@ -243,7 +243,7 @@ LUA_API lua_State *lua_newstate (lua_Alloc f, void *ud) {
 
 
 static void callallgcTM (lua_State *L, void *ud) {
-  UNUSED(ud);
+  lua_unused(ud);
   luaC_callGCTM(L);  /* call GC metamethods for all udata */
 }
 

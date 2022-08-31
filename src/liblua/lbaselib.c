@@ -599,7 +599,7 @@ static int luaB_seterrorhandler (lua_State *L) {
 
 
 static void aux_getorigfunc_untainted (lua_State *L, void *ud) {
-  ((void) ud);  /* unused */
+  lua_unused(ud);
   lua_setstacktaint(L, NULL);
   lua_gettable(L, 1);
 }

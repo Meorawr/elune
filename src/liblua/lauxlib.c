@@ -693,7 +693,7 @@ LUALIB_API int luaL_issecureobject (lua_State *L, int idx) {
 
 
 static void aux_gettable_untainted (lua_State *L, void *ud) {
-  ((void) ud);  /* unused */
+  lua_unused(ud);
   lua_setstacktaint(L, NULL);
   lua_gettable(L, -2);
 }
@@ -749,7 +749,7 @@ LUALIB_API const char *luaL_getupvaluetaint (lua_State *L, int funcindex, int n)
 
 
 static void aux_settable_untainted (lua_State *L, void *ud) {
-  ((void) ud);  /* unused */
+  lua_unused(ud);
   lua_setstacktaint(L, NULL);
   lua_settable(L, -2);
 }

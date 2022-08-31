@@ -55,11 +55,6 @@ typedef uint_least32_t Instruction;
 #define api_check		luai_apicheck
 
 
-#ifndef UNUSED
-#define UNUSED(x)	((void)(x))	/* to avoid warnings */
-#endif
-
-
 #ifndef cast
 #define cast(t, exp)	((t)(exp))
 #endif

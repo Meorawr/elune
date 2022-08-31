@@ -380,7 +380,8 @@
 */
 #define LUA_COMPAT_OPENLIB 1
 
-
+#define lua_unused(x) ((void) sizeof((x)))
+#define lua_nop() ((void) 0)
 
 /*
 @@ luai_apicheck is the assert macro used by the Lua-C API.
@@ -391,9 +392,9 @@
 */
 #if defined(LUA_USE_APICHECK)
 #include <assert.h>
-#define luai_apicheck(L,o)	{ (void)L; assert(o); }
+#define luai_apicheck(L, expr) { lua_unused((L)); assert(expr); }
 #else
-#define luai_apicheck(L,o)	{ (void)L; }
+#define luai_apicheck(L, expr) { lua_unused((L)); lua_unused((expr)); }
 #endif
 
 
@@ -405,9 +406,9 @@
 */
 #if defined(LUA_USE_ASSERT)
 #include <assert.h>
-#define lua_assert(x) assert(x)
+#define lua_assert(expr) assert((expr))
 #else
-#define lua_assert(x) ((void) sizeof((x)))
+#define lua_assert(expr) lua_unused((expr))
 #endif
 
 
