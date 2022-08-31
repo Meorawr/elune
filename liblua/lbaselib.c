@@ -328,7 +328,7 @@ static int luaB_unpack (lua_State *L) {
     int n;
     luaL_checktype(L, 1, LUA_TTABLE);
     i = luaL_optint(L, 2, 1);
-    e = luaL_opt(L, luaL_checkint, 3, (int) lua_objlen(L, i));
+    e = luaL_opt(L, luaL_checkint, 3, (int) lua_objlen(L, 1));
     if (i > e) {
         return 0; /* empty range */
     }

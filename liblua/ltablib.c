@@ -134,7 +134,7 @@ static int table_concat (lua_State *L) {
     const char *sep = luaL_optlstring(L, 2, "", &lsep);
     luaL_checktype(L, 1, LUA_TTABLE);
     i = luaL_optint(L, 3, 1);
-    last = luaL_opt(L, luaL_checkint, 4, (int) lua_objlen(L, i));
+    last = luaL_opt(L, luaL_checkint, 4, (int) lua_objlen(L, 1));
     luaL_buffinit(L, &b);
     for (; i < last; i++) {
         addfield(L, &b, i);

@@ -1,8 +1,9 @@
 # Changelog
 
-## [Unreleased]
+## [v2.1]
 ### Changed
 - The `lua_Clock` typedef is now an `int64_t` to work around issues on 32-bit platforms.
+- Fixed a bug with `table.concat` and `unpack` using an incorrect default value for the optional `j` parameter.
 
 ## [v2.0]
 ### Added
