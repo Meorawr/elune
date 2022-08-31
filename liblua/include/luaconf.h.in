@@ -207,8 +207,12 @@
 
 /* Export declarations */
 
-#if defined(__cplusplus) && !defined(LUA_USE_CXX_LINKAGE)
+#if defined(__cplusplus)
+#if defined(LUA_USE_CXX_LINKAGE)
+#define LUA_DECL_EXTERN extern "C++"
+#else
 #define LUA_DECL_EXTERN extern "C"
+#endif
 #else
 #define LUA_DECL_EXTERN extern
 #endif
@@ -245,18 +249,20 @@
 /* Attribute declarations */
 
 #if defined(__has_c_attribute)
-#define LUA_HAS_C_ATTRIBUTE(x) __has_c_attribute(x)
+#define LUA_HAS_ATTRIBUTE(x) __has_c_attribute(x)
+#elif defined(__has_cpp_attribute) && defined(__cplusplus)
+#define LUA_HAS_ATTRIBUTE(x) __has_cpp_attribute(x)
 #else
-#define LUA_HAS_C_ATTRIBUTE(x) 0
+#define LUA_HAS_ATTRIBUTE(x) 0
 #endif
 
-#if LUA_HAS_C_ATTRIBUTE(noreturn)
+#if LUA_HAS_ATTRIBUTE(noreturn) || defined(__cplusplus)
 #define LUA_NORETURN [[noreturn]]
 #else
 #define LUA_NORETURN _Noreturn
 #endif
 
-#if LUA_HAS_C_ATTRIBUTE(fallthrough)
+#if LUA_HAS_ATTRIBUTE(fallthrough)
 #define LUA_FALLTHROUGH [[fallthrough]]
 #elif defined(__GNUC__)
 #define LUA_FALLTHROUGH __attribute__((fallthrough))
