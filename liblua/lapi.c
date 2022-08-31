@@ -1089,11 +1089,8 @@ LUA_API int lua_toint (lua_State *L, int idx) {
 LUA_API long lua_tolong (lua_State *L, int idx) {
     lua_Number d = lua_tonumber(L, idx);
 
-    /**
-     * Checking against INT_MIN/INT_MAX is accurate to reference; 64-bit LP64
-     * platforms still undergo 32-bit integer range checks ingame.
-     */
-
+    /* Checking against INT_MIN/INT_MAX is accurate to reference; LP64 platforms
+     * still undergo 32-bit integer range checks in-game. */
     if ((L->exceptmask & LUA_EXCEPTOVERFLOW) && (d < INT_MIN || d > INT_MAX)) {
         lua_lock(L);
         luaG_overflowerror(L, d);
@@ -1394,16 +1391,14 @@ LUA_API void lua_protecttaint (lua_State *L, lua_PFunction func, void *ud) {
     status = luaD_rawrunprotected(L, f_PTcall, &c);
 
     if (status != 0) {
-        /**
-         * Note that as we're re-throwing we don't unwind CIs here; whoever
+        /* Note that as we're re-throwing we don't unwind CIs here; whoever
          * catches this error is expected to unwind them instead.
          *
          * The taint for the top stack value is cleared as this is assumed to be
          * an error value; when the error is caught it'll be re-tainted
          * appropriately with the correct stack taint by 'luaD_seterrorobj' -or-
          * the stack top will be replaced with a fixed (and also tainted)
-         * string.
-         */
+         * string. */
 
         StkId err = L->top - 1;
         L->ts = savedts;

@@ -111,15 +111,11 @@ CallInfo *luaD_unwindci (lua_State *L, CallInfo *newci, CallInfo *oldci) {
     CallInfo *cibase;
     CallInfo *citop;
     CallInfo *ci;
-    int tailcall =
-        (newci == (oldci + 1)); /* Unwinding one place up the stack? */
+    int tailcall = (newci == (oldci + 1)); /* Going one level up the stack? */
 
-    /**
-     * Unwinding to the same stack slot occurs in a few conditions; notably when
+    /* Unwinding to the same stack slot occurs in a few conditions; notably when
      * closing a Lua state or when setting up a protected call that errors
-     * before 'L->ci' is incremented (eg. by attempting to call a non-function
-     * value).
-     */
+     * before 'L->ci' is incremented. In all cases, there's no cleanup. */
     if (oldci == newci) {
         return newci;
     }
@@ -145,7 +141,7 @@ CallInfo *luaD_unwindci (lua_State *L, CallInfo *newci, CallInfo *oldci) {
         lua_assert(newci == citop);
     }
 
-    /* Unwind the cis from top-to-bottom stopping at one above the base. */
+    /* Unwind the ci's from top-to-bottom stopping at one above the base. */
     for (ci = citop; ci != cibase; --ci) {
         Closure *cl = ci_func(ci);
         lua_assert(cl->c.nopencalls > 0);

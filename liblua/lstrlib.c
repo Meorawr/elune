@@ -948,11 +948,6 @@ static int str_split (lua_State *L) {
 
     int count = 0;
 
-    /**
-     * Keep the delimiter/source string on the stack so that they don't run the
-     * risk of being GCd while we're processing.
-     */
-
     lua_settop(L, 2);
 
     const char *begin = str;
@@ -969,7 +964,6 @@ static int str_split (lua_State *L) {
     }
 
     /* Process remainder of string if any exists. */
-
     if (begin <= end) {
         lua_pushstring(L, begin);
         ++count;
@@ -982,11 +976,6 @@ static int str_join (lua_State *L) {
     size_t seplen;
     const char *separator = luaL_checklstring(L, 1, &seplen);
     const int pieces = lua_gettop(L) - 1;
-
-    /**
-     * lua_concat can be used when the separator is empty or when there's
-     * zero or one piece to be joined.
-     */
 
     if (pieces <= 1 || seplen == 0) {
         lua_concat(L, pieces);
