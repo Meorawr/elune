@@ -27,8 +27,6 @@ static lua_State *luatest_newstate (void)
   lua_setprofilingenabled(L, 1);
   lua_settaintmode(L, LUA_TAINTRDRW);
   lua_atpanic(L, luatest_panichandler);
-  luaL_openlibs(L);
-  luaL_openwowlibs(L);
   return L;
 }
 
@@ -103,11 +101,7 @@ static void test_protecttaint_tainted_error (void)
 static int luatest_errorhandler (lua_State *L)
 {
   acutest_check_(0, __FILE__, __LINE__, "error handler");
-  lua_getfield(L, LUA_GLOBALSINDEX, "debug");
-  lua_getfield(L, -1, "traceback");
-  lua_pushstring(L, lua_tostring(L, 1)); /* message */
-  lua_pushinteger(L, 2);                 /* level */
-  lua_call(L, 2, 1);
+  luaL_traceback(L, L, lua_tostring(L, 1), 2);
   acutest_message_("%s", lua_tostring(L, -1));
   return 0;
 }
@@ -124,12 +118,45 @@ static int luatest_case (lua_State *L)
 static void test_scriptcases (void)
 {
   lua_State *L = luatest_newstate();
+  luaL_openwowlibs(L);
 
   /* Add custom test case registration function to environment. */
   lua_pushcclosure(L, &luatest_case, 0);
   lua_setfield(L, LUA_GLOBALSINDEX, "case");
 
   if (!TEST_CHECK((luaL_dofile(L, "luatest_scriptcases.lua") == 0))) {
+    TEST_MSG("%s", (luaL_optstring(L, -1, "<unknown script error>")));
+  }
+
+  lua_close(L);
+}
+
+static void test_coroutinescriptcases (void)
+{
+  lua_State *L = luatest_newstate();
+  luaL_openlibs(L);
+
+  /* Add custom test case registration function to environment. */
+  lua_pushcclosure(L, &luatest_case, 0);
+  lua_setfield(L, LUA_GLOBALSINDEX, "case");
+
+  if (!TEST_CHECK((luaL_dofile(L, "luatest_coroutine.lua") == 0))) {
+    TEST_MSG("%s", (luaL_optstring(L, -1, "<unknown script error>")));
+  }
+
+  lua_close(L);
+}
+
+static void test_profilingscriptcases (void)
+{
+  lua_State *L = luatest_newstate();
+  luaL_openlibs(L);
+
+  /* Add custom test case registration function to environment. */
+  lua_pushcclosure(L, &luatest_case, 0);
+  lua_setfield(L, LUA_GLOBALSINDEX, "case");
+
+  if (!TEST_CHECK((luaL_dofile(L, "luatest_profiling.lua") == 0))) {
     TEST_MSG("%s", (luaL_optstring(L, -1, "<unknown script error>")));
   }
 
@@ -160,6 +187,14 @@ TEST_LIST = {
   {
     .name = "scripted test cases",
     .func = test_scriptcases,
+  },
+  {
+    .name = "coroutine script tests",
+    .func = test_coroutinescriptcases,
+  },
+  {
+    .name = "profiling script tests",
+    .func = test_profilingscriptcases,
   },
   { .name = NULL, .func = NULL },
 };

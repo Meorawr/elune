@@ -37,6 +37,7 @@ function(elune_target_copy_file TARGET)
   target_sources(
     ${TARGET}
     PRIVATE
+      ${ARG_SOURCE}
       ${ARG_OUTPUT}
   )
 endfunction()

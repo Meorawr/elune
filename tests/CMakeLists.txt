@@ -32,11 +32,22 @@ target_sources(
   luatest
   PRIVATE
     luatest.c
-    luatest_scriptcases.lua
 )
 
 elune_target_copy_file(
   luatest
   SOURCE luatest_scriptcases.lua
   OUTPUT luatest_scriptcases.lua
+)
+
+elune_target_copy_file(
+  luatest
+  SOURCE luatest_coroutine.lua
+  OUTPUT luatest_coroutine.lua
+)
+
+elune_target_copy_file(
+  luatest
+  SOURCE luatest_profiling.lua
+  OUTPUT luatest_profiling.lua
 )
