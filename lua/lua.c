@@ -321,7 +321,6 @@ static int collectargs (char **argv, int *first) {
                 break;
             case 'e':
                 args |= has_e;
-                LUA_FALLTHROUGH;
                 goto check_has_argument;
             case 'L':
                 args |= has_L;
@@ -353,21 +352,25 @@ static int libargs (lua_State *L, char **argv, int n) {
 
     for (i = 1; i < n; i++) {
         int option = argv[i][1];
+        char *extra;
+
         lua_assert(argv[i][0] == '-'); /* already checked */
 
-        if (option == 'L') {
-            char *extra = argv[i] + 2; /* both options need an argument */
+        if (option == 'L' || option == 'e' || option == 'l') {
+            extra = argv[i] + 2; /* all options need an argument */
 
             if (*extra == '\0') {
                 extra = argv[++i];
             }
 
             lua_assert(extra != NULL);
+        }
 
+        if (option == 'L') {
             if (strcmp(extra, "lua") == 0) {
                 luaL_openlibsx(L, LUALIB_STANDARD);
                 loaded = 1;
-            } else if (strcmp(extra, "wow") == 0) {
+            } else if ((strcmp(extra, "elune") == 0) || strcmp(extra, "wow") == 0) {
                 luaL_openlibsx(L, LUALIB_ELUNE);
                 loaded = 1;
             } else if (strcmp(extra, "none") == 0) {
@@ -399,15 +402,22 @@ static int runargs (lua_State *L, char **argv, int n) {
         int option = argv[i][1];
         lua_assert(argv[i][0] == '-'); /* already checked */
         switch (option) {
+            case 'L':
             case 'e':
             case 'l': {
                 int status;
-                char *extra = argv[i] + 2; /* both options need an argument */
+                char *extra = argv[i] + 2; /* all options need an argument */
                 if (*extra == '\0') {
                     extra = argv[++i];
                 }
                 lua_assert(extra != NULL);
-                status = (option == 'e') ? dostring(L, extra, "=(command line)") : dolibrary(L, extra);
+                if (option == 'e') {
+                    status = dostring(L, extra, "=(command line)");
+                } else if (option == 'l') {
+                    status = dolibrary(L, extra);
+                } else {
+                    status = LUA_OK; /* ignored argument ('-L') */
+                }
                 if (status != LUA_OK) {
                     return 0;
                 }
