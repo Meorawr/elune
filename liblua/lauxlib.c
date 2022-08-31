@@ -611,6 +611,21 @@ LUALIB_API int luaL_getsubtable (lua_State *L, int idx, const char *fname) {
     }
 }
 
+LUALIB_API void luaL_requiref (lua_State *L, const char *modname, lua_CFunction openf, int glb) {
+    lua_pushcfunction(L, openf);
+    lua_pushstring(L, modname); /* argument to open function */
+    lua_call(L, 1, 1); /* open module */
+    luaL_getsubtable(L, LUA_REGISTRYINDEX, "_LOADED");
+    lua_pushvalue(L, -2); /* make copy of module (call result) */
+    lua_setfield(L, -2, modname); /* _LOADED[modname] = module */
+    lua_pop(L, 1); /* remove _LOADED table */
+
+    if (glb) {
+        lua_pushvalue(L, -1); /* copy of 'mod' */
+        lua_setglobal(L, modname); /* _G[modname] = module */
+    }
+}
+
 LUALIB_API void luaL_setfuncs (lua_State *L, const luaL_Reg *l, int nup) {
     luaL_checkstack(L, nup, "too many upvalues");
 
