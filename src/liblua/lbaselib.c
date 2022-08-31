@@ -626,34 +626,26 @@ static int luaB_scrub (lua_State *L) {
 }
 
 
-static const char lua_getprinthandler[] =
-  "local LOCAL_printhandler;\n"
-  "\n"
-  "return function()\n"
-  "  return LOCAL_printhandler;\n"
-  "end\n";
-
-
-static const char lua_setprinthandler[] =
-  "local LOCAL_printhandler;\n"
-  "local error = error;\n"
-  "local type = type;\n"
-  "\n"
-  "return function(func)\n"
-  "  if type(func) ~= 'function' then\n"
-  "    error('Invalid print handler');\n"
-  "  else\n"
-  "    LOCAL_printhandler = func;\n"
-  "  end\n"
-  "end\n";
-
-
 static const char lua_print[] =
   "local LOCAL_PrintHandler;\n"
+  "local error = error;\n"
   "local forceinsecure = forceinsecure;\n"
   "local geterrorhandler = geterrorhandler;\n"
   "local pcall = pcall;\n"
   "local securecall = securecall;\n"
+  "local type = type;\n"
+  "\n"
+  "function getprinthandler()\n"
+  "  return LOCAL_PrintHandler;\n"
+  "end\n"
+  "\n"
+  "function setprinthandler(func)\n"
+  "  if type(func) ~= 'function' then\n"
+  "    error('Invalid print handler');\n"
+  "  else\n"
+  "    LOCAL_PrintHandler = func;\n"
+  "  end\n"
+  "end\n"
   "\n"
   "local function print_inner(...)\n"
   "  forceinsecure();\n"
@@ -664,34 +656,10 @@ static const char lua_print[] =
   "  end\n"
   "end\n"
   "\n"
-  "return function(...)\n"
+  "function print(...)\n"
   "  securecall(pcall, print_inner, ...);\n"
-  "end\n";
-
-
-static const char lua_tostringall[] =
-  "local select = select;\n"
-  "local tostring = tostring;\n"
-  "local unpack = unpack;\n"
-  "\n"
-  "return function(...)\n"
-  "  local n = select('#', ...);\n"
-  "  if n == 1 then\n"
-  "    return tostring(...);\n"
-  "  elseif n == 2 then\n"
-  "    return tostring(a), tostring(b);\n"
-  "  elseif n == 3 then\n"
-  "    return tostring(a), tostring(b), tostring(c);\n"
-  "  elseif n == 0 then\n"
-  "    return;\n"
-  "  else\n"
-  "    local temp = { ... };\n"
-  "    for i = 1, n do\n"
-  "      temp[i] = tostring(temp[i]);\n"
-  "    end\n"
-  "    return unpack(temp);\n"
-  "  end\n"
-  "end\n";
+  "end\n"
+  "\n";
 
 
 /**
@@ -775,10 +743,6 @@ static void baselib_openshared (lua_State *L) {
   lua_setfield(L, -2, "__mode");  /* metatable(w).__mode = "kv" */
   lua_pushcclosure(L, luaB_newproxy, 1);
   lua_setglobal(L, "newproxy");  /* set global `newproxy' */
-
-  /* register Lua functions */
-  (void) luaL_dobuffer(L, lua_tostringall, "print.lua");
-  lua_setfield(L, -2, "tostringall");
 }
 
 
@@ -809,21 +773,18 @@ LUALIB_API int luaopen_wow_base (lua_State *L) {
   baselib_openshared(L);
 
   /* register print infrastructure */
-  (void) luaL_dobuffer(L, lua_getprinthandler, "print.lua");
+  if (luaL_loadbuffer(L, lua_print, sizeof(lua_print) - 1, "print.lua") != 0) {
+    lua_error(L);
+  } else {
+    lua_pushvalue(L, LUA_ENVIRONINDEX);
+    lua_setfenv(L, -2);  /* replace environment of loaded script */
+    lua_call(L, 0, 0);
+  }
+
+  /* assign default print handler */
+  lua_getfield(L, -1, "setprinthandler");
   lua_pushcclosure(L, luaB_print, 0);
-  lua_setupvalue(L, -2, 1);  /* set default print handler */
-  (void) luaL_dobuffer(L, lua_setprinthandler, "print.lua");
-  (void) luaL_dobuffer(L, lua_print, "print.lua");
-
-  /* join upvalues of 'LOCAL_PrintHandler' between loaded functions */
-  lua_getupvalue(L, -1, 3);  /* push 'print_inner' upvalue from 'print' */
-  lua_upvaluejoin(L, -1, 3, -4, 1);  /* join 'print_inner' to 'getprinthandler' */
-  lua_upvaluejoin(L, -3, 3, -4, 1);  /* join 'setprinthandler' to 'getprinthandler'  */
-  lua_pop(L, 1); /* pop 'print_inner' */
-
-  lua_setfield(L, -4, "print");
-  lua_setfield(L, -3, "setprinthandler");
-  lua_setfield(L, -2, "getprinthandler");
+  lua_call(L, 1, 0);
 
   return 1;
 }

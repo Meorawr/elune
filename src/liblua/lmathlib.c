@@ -306,68 +306,14 @@ static void mathlib_openshared (lua_State *L) {
 }
 
 
-static void mathlib_openglobal (lua_State *L, int idx) {
-  luaL_setfuncs(L, mathlib_global, 0);
-
-  lua_getfield(L, idx, "abs");
-  lua_setfield(L, -2, "abs");
-  lua_getfield(L, idx, "ceil");
-  lua_setfield(L, -2, "ceil");
-  lua_getfield(L, idx, "deg");
-  lua_setfield(L, -2, "deg");
-  lua_getfield(L, idx, "exp");
-  lua_setfield(L, -2, "exp");
-  lua_getfield(L, idx, "floor");
-  lua_setfield(L, -2, "floor");
-  lua_getfield(L, idx, "frexp");
-  lua_setfield(L, -2, "frexp");
-  lua_getfield(L, idx, "ldexp");
-  lua_setfield(L, -2, "ldexp");
-  lua_getfield(L, idx, "log");
-  lua_setfield(L, -2, "log");
-  lua_getfield(L, idx, "log10");
-  lua_setfield(L, -2, "log10");
-  lua_getfield(L, idx, "max");
-  lua_setfield(L, -2, "max");
-  lua_getfield(L, idx, "min");
-  lua_setfield(L, -2, "min");
-  lua_getfield(L, idx, "fmod");
-  lua_setfield(L, -2, "mod");
-  lua_getfield(L, idx, "pi");
-  lua_setfield(L, -2, "PI");
-  lua_getfield(L, idx, "rad");
-  lua_setfield(L, -2, "rad");
-  lua_getfield(L, idx, "random");
-  lua_setfield(L, -2, "random");
-  lua_getfield(L, idx, "sqrt");
-  lua_setfield(L, -2, "sqrt");
-
-  (void) luaL_dobuffer(L, "local math = math;\nreturn function(x) return math.deg(math.acos(x)); end;\n", "compat.lua");
-  lua_setfield(L, -2, "acos");
-  (void) luaL_dobuffer(L, "local math = math;\nreturn function(x) return math.deg(math.asin(x)); end;\n", "compat.lua");
-  lua_setfield(L, -2, "asin");
-  (void) luaL_dobuffer(L, "local math = math;\nreturn function(x) return math.deg(math.atan(x)); end;\n", "compat.lua");
-  lua_setfield(L, -2, "atan");
-  (void) luaL_dobuffer(L, "local math = math;\nreturn function(x, y) return math.deg(math.atan2(x, y)); end;\n", "compat.lua");
-  lua_setfield(L, -2, "atan2");
-  (void) luaL_dobuffer(L, "local math = math;\nreturn function(x) return math.cos(math.rad(x)); end;\n", "compat.lua");
-  lua_setfield(L, -2, "cos");
-  (void) luaL_dobuffer(L, "local math = math;\nreturn function(x) return math.sin(math.rad(x)); end;\n", "compat.lua");
-  lua_setfield(L, -2, "sin");
-  (void) luaL_dobuffer(L, "local math = math;\nreturn function(x) return math.tan(math.rad(x)); end;\n", "compat.lua");
-  lua_setfield(L, -2, "tan");
-}
-
-
 LUALIB_API int luaopen_math (lua_State *L) {
   /* open math library */
   luaL_register(L, LUA_MATHLIBNAME, mathlib_lua);
   mathlib_openshared(L);
 
-  /* open global functions and aliases */
+  /* open global functions */
   lua_pushvalue(L, LUA_GLOBALSINDEX);
   luaL_setfuncs(L, mathlib_global, 0);
-  mathlib_openglobal(L, -2);
   lua_pop(L, 1);
 
   return 1;
@@ -380,9 +326,9 @@ LUALIB_API int luaopen_wow_math (lua_State *L) {
   luaL_setfuncs(L, mathlib_wow, 0);
   mathlib_openshared(L);
 
-  /* open global functions and aliases */
+  /* open global functions */
   lua_pushvalue(L, LUA_ENVIRONINDEX);
-  mathlib_openglobal(L, -2);
+  luaL_setfuncs(L, mathlib_global, 0);
   lua_pop(L, 1);
 
   return 1;

@@ -20,6 +20,7 @@ static const luaL_Reg lualibs[] = {
   { .name = LUA_OSLIBNAME, .func = luaopen_os },
   { .name = LUA_STRLIBNAME, .func = luaopen_string },
   { .name = LUA_TABLIBNAME, .func = luaopen_table },
+  { .name = LUA_COMPATLIBNAME, .func = luaopen_compat },
   { .name = NULL, .func = NULL },
 };
 
@@ -33,6 +34,7 @@ static const luaL_Reg wowlibs[] = {
   /* { .name = LUA_OSLIBNAME, .func = luaopen_wow_os }, */
   /* { .name = LUA_STRLIBNAME, .func = luaopen_wow_string }, */
   /* { .name = LUA_TABLIBNAME, .func = luaopen_wow_table }, */
+  { .name = LUA_COMPATLIBNAME, .func = luaopen_compat },
   { .name = NULL, .func = NULL },
 };
 

@@ -91,7 +91,6 @@ LUALIB_API const char *(luaL_findtable) (lua_State *L, int idx, const char *fnam
 
 #define luaL_dofile(L, fn) (luaL_loadfile(L, fn) || lua_pcall(L, 0, LUA_MULTRET, 0))
 
-#define luaL_dobuffer(L, s, n) (luaL_loadbuffer(L, s, strlen(s), n) || lua_pcall(L, 0, LUA_MULTRET, 0))
 #define luaL_dostring(L, s) (luaL_loadstring(L, s) || lua_pcall(L, 0, LUA_MULTRET, 0))
 
 #define luaL_getmetatable(L,n) (lua_getfield(L, LUA_REGISTRYINDEX, (n)))
