@@ -11,6 +11,7 @@ list(PREPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 include(GNUInstallDirs)
 
 include(elune-configure-target)
+include(elune-target-public-headers)
 
 option(BUILD_SHARED_LIBS "Build Lua as a shared library?" ON)
 option(BUILD_TESTING "Build tests?" ${PROJECT_IS_TOP_LEVEL})

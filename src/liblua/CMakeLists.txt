@@ -53,43 +53,41 @@ target_link_libraries(
     sheredom::utf8h
 )
 
-set(
-  liblua_PUBLIC_HEADERS
-  "${PROJECT_SOURCE_DIR}/include/lua5.1/lauxlib.h"
-  "${PROJECT_SOURCE_DIR}/include/lua5.1/lua.h"
-  "${PROJECT_SOURCE_DIR}/include/lua5.1/lua.hpp"
-  "${PROJECT_SOURCE_DIR}/include/lua5.1/luaconf.h"
-  "${PROJECT_SOURCE_DIR}/include/lua5.1/lualib.h"
+elune_target_public_headers(
+  liblua
+  PRIVATE
+    ${PROJECT_SOURCE_DIR}/include/lua5.1/lauxlib.h
+    ${PROJECT_SOURCE_DIR}/include/lua5.1/lua.h
+    ${PROJECT_SOURCE_DIR}/include/lua5.1/lua.hpp
+    ${PROJECT_SOURCE_DIR}/include/lua5.1/luaconf.h
+    ${PROJECT_SOURCE_DIR}/include/lua5.1/lualib.h
 )
 
 target_sources(
   liblua
   PRIVATE
-    # Public headers
-    ${liblua_PUBLIC_HEADERS}
-
     # Core sources
-    lapi.c        lapi.h
-    lcode.c       lcode.h
-    ldebug.c      ldebug.h
-    ldo.c         ldo.h
+    lapi.c            lapi.h
+    lcode.c           lcode.h
+    ldebug.c          ldebug.h
+    ldo.c             ldo.h
     ldump.c
-    lfunc.c       lfunc.h
-    lgc.c         lgc.h
-    llex.c        llex.h
-    llimits.h
-    lmanip.h
-    lmem.c        lmem.h
-    lobject.c     lobject.h
-    lopcodes.c    lopcodes.h
-    lparser.c     lparser.h
-    lstate.c      lstate.h
-    lstring.c     lstring.h
-    ltable.c      ltable.h
-    ltm.c         ltm.h
-    lundump.c     lundump.h
-    lvm.c         lvm.h
-    lzio.c        lzio.h
+    lfunc.c           lfunc.h
+    lgc.c             lgc.h
+    llex.c            llex.h
+                      llimits.h
+                      lmanip.h
+    lmem.c            lmem.h
+    lobject.c         lobject.h
+    lopcodes.c        lopcodes.h
+    lparser.c         lparser.h
+    lstate.c          lstate.h
+    lstring.c         lstring.h
+    ltable.c          ltable.h
+    ltm.c             ltm.h
+    lundump.c         lundump.h
+    lvm.c             lvm.h
+    lzio.c            lzio.h
 
     # Library sources
     lauxlib.c
@@ -106,16 +104,4 @@ target_sources(
     lstrlib.c
     ltablib.c
     linit.c
-)
-
-source_group(
-  TREE    ${PROJECT_SOURCE_DIR}
-  PREFIX  "Header Files"
-  FILES   ${liblua_PUBLIC_HEADERS}
-)
-
-set_target_properties(
-  liblua
-  PROPERTIES
-    PUBLIC_HEADER "${liblua_PUBLIC_HEADERS}"  # Must be a string representation of a list.
 )
