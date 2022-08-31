@@ -190,30 +190,6 @@ LUALIB_API lua_Integer luaL_optinteger (lua_State *L, int narg, lua_Integer def)
 }
 
 
-LUALIB_API int (luaL_checkint) (lua_State *L, int narg) {
-  int i = lua_toint(L, narg);
-  if (i == 0 && !lua_isnumber(L, narg)) tag_error(L, narg, LUA_TNUMBER);
-  return i;
-}
-
-
-LUALIB_API int (luaL_optint) (lua_State *L, int narg, int def) {
-  return luaL_opt(L, luaL_checkint, narg, def);
-}
-
-
-LUALIB_API lua_State *(luaL_checkthread) (lua_State *L, int narg) {
-  lua_State *L1 = lua_tothread(L, narg);
-  if (!L1) tag_error(L, narg, LUA_TTHREAD);
-  return L1;
-}
-
-
-LUALIB_API lua_State *(luaL_optthread) (lua_State *L, int narg, lua_State *def) {
-  return luaL_opt(L, luaL_checkthread, narg, def);
-}
-
-
 LUALIB_API int luaL_getmetafield (lua_State *L, int obj, const char *event) {
   if (!lua_getmetatable(L, obj))  /* no metatable? */
     return 0;
@@ -661,12 +637,48 @@ LUALIB_API lua_State *luaL_newstate (void) {
   return L;
 }
 
+
 /*
 ** {======================================================================
-** Security API
+** Auxilliary Library Extension APIs
 ** =======================================================================
 */
 
+LUALIB_API int luaL_checkint (lua_State *L, int narg) {
+  int i = lua_toint(L, narg);
+
+  if (i == 0 && !lua_isnumber(L, narg)) {
+    luaL_typerror(L, narg, lua_typename(L, LUA_TNUMBER));
+  }
+
+  return i;
+}
+
+
+LUALIB_API int luaL_optint (lua_State *L, int narg, int def) {
+  return luaL_opt(L, luaL_checkint, narg, def);
+}
+
+
+LUALIB_API lua_State *luaL_checkthread (lua_State *L, int narg) {
+  lua_State *L1 = lua_tothread(L, narg);
+
+  if (!L1) {
+    luaL_typerror(L, narg, lua_typename(L, LUA_TTHREAD));
+  }
+
+  return L1;
+}
+
+
+LUALIB_API lua_State *luaL_optthread (lua_State *L, int narg, lua_State *def) {
+  return luaL_opt(L, luaL_checkthread, narg, def);
+}
+
+
+/**
+ * Security APIs
+ */
 
 LUALIB_API int luaL_issecure (lua_State *L) {
   return lua_getstacktaint(L) == NULL;

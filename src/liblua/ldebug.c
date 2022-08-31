@@ -274,39 +274,6 @@ LUA_API int lua_getinfo (lua_State *L, const char *what, lua_Debug *ar) {
 }
 
 
-LUA_API int lua_getexceptmask (lua_State *L) {
-  return cast_int(L->exceptmask);
-}
-
-
-LUA_API void lua_setexceptmask (lua_State *L, int mask) {
-  L->exceptmask = cast_byte(mask);
-}
-
-
-LUA_API void lua_getscripttimeout (lua_State *L, lua_ScriptTimeout *timeout) {
-  lua_lock(L);
-  timeout->ticks = L->baseexeclimit;
-  timeout->instructions = L->baseexeccount;
-  lua_unlock(L);
-}
-
-
-LUA_API void lua_setscripttimeout (lua_State *L, const lua_ScriptTimeout *timeout) {
-  lua_lock(L);
-
-  if (timeout->ticks == 0 || timeout->instructions == 0) {
-    L->baseexeclimit = 0;
-    L->baseexeccount = L->execcount = 0;
-  } else {
-    L->baseexeclimit = timeout->ticks;
-    L->baseexeccount = L->execcount = timeout->instructions;
-  }
-
-  lua_unlock(L);
-}
-
-
 /*
 ** {======================================================
 ** Symbolic Execution and code checker

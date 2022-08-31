@@ -52,12 +52,6 @@ LUALIB_API lua_Number (luaL_optnumber) (lua_State *L, int nArg, lua_Number def);
 LUALIB_API lua_Integer (luaL_checkinteger) (lua_State *L, int numArg);
 LUALIB_API lua_Integer (luaL_optinteger) (lua_State *L, int nArg, lua_Integer def);
 
-LUALIB_API int (luaL_checkint) (lua_State *L, int narg);
-LUALIB_API int (luaL_optint) (lua_State *L, int narg, int def);
-
-LUALIB_API lua_State *(luaL_checkthread) (lua_State *L, int narg);
-LUALIB_API lua_State *(luaL_optthread) (lua_State *L, int narg, lua_State *def);
-
 LUALIB_API void (luaL_checkstack) (lua_State *L, int sz, const char *msg);
 LUALIB_API void (luaL_checktype) (lua_State *L, int narg, int t);
 LUALIB_API void (luaL_checkany) (lua_State *L, int narg);
@@ -156,10 +150,19 @@ LUALIB_API void (luaL_pushresult) (luaL_Buffer *B);
 
 /*
 ** {======================================================================
-** Security API
+** Auxilliary Library Extension APIs
 ** =======================================================================
 */
 
+LUALIB_API int (luaL_checkint) (lua_State *L, int narg);
+LUALIB_API int (luaL_optint) (lua_State *L, int narg, int def);
+LUALIB_API lua_State *(luaL_checkthread) (lua_State *L, int narg);
+LUALIB_API lua_State *(luaL_optthread) (lua_State *L, int narg, lua_State *def);
+
+
+/**
+ * Security APIs
+ */
 
 LUALIB_API int (luaL_issecure) (lua_State *L);
 LUALIB_API int (luaL_issecurevalue) (lua_State *L, int idx);
@@ -192,6 +195,7 @@ LUALIB_API int (luaL_loadstringas) (lua_State *L, const char *s, lua_TaintState 
 
 
 /* }====================================================================== */
+
 
 #endif
 

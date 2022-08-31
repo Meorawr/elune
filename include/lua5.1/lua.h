@@ -54,7 +54,6 @@ enum lua_Status {
 typedef struct lua_State lua_State;
 
 typedef int (*lua_CFunction) (lua_State *L);
-typedef void (*lua_PFunction) (lua_State *L, void *ud);
 
 
 /*
@@ -86,10 +85,6 @@ enum lua_Type {
 };
 
 
-
-
-
-
 /* Predefined values in the registry. */
 enum lua_RegistryIndex {
   LUA_NOREF = -2,
@@ -114,9 +109,6 @@ typedef LUA_NUMBER lua_Number;
 /* Type for integer functions. */
 typedef LUA_INTEGER lua_Integer;
 
-/* Type used to represent clock ticks */
-typedef lua_Integer lua_Time;
-
 
 
 /*
@@ -132,14 +124,12 @@ LUA_API lua_CFunction (lua_atpanic) (lua_State *L, lua_CFunction panicf);
 /*
 ** basic stack manipulation
 */
-LUA_API int (lua_absindex) (lua_State *L, int idx);
 LUA_API int (lua_gettop) (lua_State *L);
 LUA_API void (lua_settop) (lua_State *L, int idx);
 LUA_API void (lua_pushvalue) (lua_State *L, int idx);
 LUA_API void (lua_remove) (lua_State *L, int idx);
 LUA_API void (lua_insert) (lua_State *L, int idx);
 LUA_API void (lua_replace) (lua_State *L, int idx);
-LUA_API void (lua_copy) (lua_State *L, int fromidx, int toidx);
 LUA_API int (lua_checkstack) (lua_State *L, int sz);
 
 LUA_API void (lua_xmove) (lua_State *from, lua_State *to, int n);
@@ -161,11 +151,9 @@ LUA_API int (lua_lessthan) (lua_State *L, int idx1, int idx2);
 
 LUA_API lua_Number (lua_tonumber) (lua_State *L, int idx);
 LUA_API lua_Integer (lua_tointeger) (lua_State *L, int idx);
-LUA_API int (lua_toint) (lua_State *L, int idx);
 LUA_API int (lua_toboolean) (lua_State *L, int idx);
 LUA_API const char *(lua_tolstring) (lua_State *L, int idx, size_t *len);
 LUA_API size_t (lua_objlen) (lua_State *L, int idx);
-LUA_API size_t (lua_objsize) (lua_State *L, int idx);
 LUA_API lua_CFunction (lua_tocfunction) (lua_State *L, int idx);
 LUA_API void *(lua_touserdata) (lua_State *L, int idx);
 LUA_API lua_State *(lua_tothread) (lua_State *L, int idx);
@@ -228,7 +216,6 @@ LUA_API int (lua_dump) (lua_State *L, lua_Writer writer, void *data);
 */
 LUA_API int (lua_yield) (lua_State *L, int nresults);
 LUA_API int (lua_resume) (lua_State *L, int nargs);
-LUA_API int (lua_resumefrom) (lua_State *L, lua_State *from, int nargs);
 LUA_API int (lua_status) (lua_State *L);
 
 /*
@@ -344,48 +331,6 @@ enum lua_HookMask {
 };
 
 
-/**
- * Exception masks; these can be enabled through the 'lua_setexceptmask()'
- * API to raise errors on certain events.
- *
- * By default all exceptions are disabled, even if this would cause a deviation
- * from reference client behavior.
- */
-typedef enum lua_ExceptMask {
-  /**
-   * Raises errors on division or modulo VM operations on non-finite values
-   * where either operand undergoes implicit conversions from a non-numeric
-   * value.
-   *
-   * Enable this to match reference client behavior.
-   */
-  LUA_EXCEPTFPECOERCE = (1 << 0),
-
-  /**
-   * Raises errors on division or modulo VM operations on non-finite values,
-   * including those where both operands are numeric.
-   *
-   * Enable this to match reference client behavior for test builds (beta/ptr).
-   */
-  LUA_EXCEPTFPESTRICT = (1 << 1),
-
-  /**
-   * Raises errors on integer overflow with the 'lua_toint()' API, which is
-   * used by various Lua functions including 'string.format()' for "%d" format
-   * specifiers.
-   *
-   * Enable this to match reference client behavior.
-   */
-  LUA_EXCEPTOVERFLOW = (1 << 2),
-} lua_ExceptMask;
-
-typedef lua_Integer lua_clock_t;
-
-typedef struct lua_ScriptTimeout {
-  lua_clock_t ticks;  /* How long to allow script execution before timing out? */
-  int instructions;  /* How many instructions should pass between each check? */
-} lua_ScriptTimeout;
-
 typedef struct lua_Debug lua_Debug;  /* activation record */
 
 
@@ -404,12 +349,6 @@ LUA_API int (lua_sethook) (lua_State *L, lua_Hook func, int mask, int count);
 LUA_API lua_Hook (lua_gethook) (lua_State *L);
 LUA_API int (lua_gethookmask) (lua_State *L);
 LUA_API int (lua_gethookcount) (lua_State *L);
-
-LUA_API int (lua_getexceptmask) (lua_State *L);
-LUA_API void (lua_setexceptmask) (lua_State *L, int mask);
-
-LUA_API void (lua_getscripttimeout) (lua_State *L, lua_ScriptTimeout *timeout);
-LUA_API void (lua_setscripttimeout) (lua_State *L, const lua_ScriptTimeout *timeout);
 
 
 struct lua_Debug {
@@ -432,57 +371,29 @@ struct lua_Debug {
 
 /*
 ** {======================================================================
-** Profiling API
+** Lua Core Extension APIs
 ** =======================================================================
 */
 
-
-typedef struct lua_GlobalStats {
-  size_t bytesused;  /* total number of bytes in use */
-  size_t bytesallocated;  /* total number of bytes allocated */
-} lua_GlobalStats;
-
-typedef struct lua_SourceStats {
-  lua_clock_t execticks;  /* ticks spent executing owned functions */
-  size_t bytesowned;  /* total byte size owned objects */
-} lua_SourceStats;
-
-typedef struct lua_FunctionStats {
-  int calls;  /* number of calls */
-  lua_clock_t ownticks;  /* ticks spent executing this function */
-  lua_clock_t subticks;  /* as above but including calls to subroutines */
-} lua_FunctionStats;
-
-LUA_API lua_clock_t (lua_gettickcount) (lua_State *L);
-LUA_API lua_clock_t (lua_gettickfrequency) (lua_State *L);
-
-LUA_API int (lua_isprofilingenabled) (lua_State *L);
-LUA_API void (lua_setprofilingenabled) (lua_State *L, int enable);
-
-LUA_API void (lua_collectstats) (lua_State *L);
-LUA_API void (lua_resetstats) (lua_State *L);
-
-LUA_API void (lua_getglobalstats) (lua_State *L, lua_GlobalStats *stats);
-LUA_API void (lua_getsourcestats) (lua_State *L, const char *source, lua_SourceStats *stats);
-LUA_API void (lua_getfunctionstats) (lua_State *L, int funcindex, lua_FunctionStats *stats);
+LUA_API int (lua_absindex) (lua_State *L, int idx);
+LUA_API void (lua_copy) (lua_State *L, int fromidx, int toidx);
+LUA_API size_t (lua_objsize) (lua_State *L, int idx);
+LUA_API int (lua_resumefrom) (lua_State *L, lua_State *from, int nargs);
+LUA_API int (lua_toint) (lua_State *L, int idx);
 
 
-/* }====================================================================== */
+/**
+ * Security APIs
+ */
 
+typedef void (*lua_PFunction) (lua_State *L, void *ud);
 
-/*
-** {======================================================================
-** Security API
-** =======================================================================
-*/
-
-
-typedef enum lua_TaintMode {
-  LUA_TAINTDISABLED,  /* disable all propagation of taint */
-  LUA_TAINTRDONLY,  /* propagate taint to stack on reads only */
-  LUA_TAINTWRONLY,  /* propagate taint to values on writes only */
-  LUA_TAINTRDRW,  /* propagate taint on all reads and writes */
-} lua_TaintMode;
+enum lua_TaintMode {
+  LUA_TAINTDISABLED,  /* Disable all propagation of taint. */
+  LUA_TAINTRDONLY,  /* Propagate taint to stack on reads only. */
+  LUA_TAINTWRONLY,  /* Propagate taint to values on writes only. */
+  LUA_TAINTRDRW,  /* Propagate taint on all reads and writes. */
+};
 
 typedef struct lua_TaintState {
   int mode;
@@ -491,9 +402,9 @@ typedef struct lua_TaintState {
   const char *newclosuretaint;
 } lua_TaintState;
 
-LUA_API int  (lua_gettaintmode) (lua_State *L);
+LUA_API int (lua_gettaintmode) (lua_State *L);
 LUA_API void (lua_settaintmode) (lua_State *L, int mode);
-LUA_API int  (lua_istaintexpected) (lua_State *L);
+LUA_API int (lua_istaintexpected) (lua_State *L);
 
 LUA_API void (lua_taintstack) (lua_State *L, const char *name);
 LUA_API void (lua_taintvalue) (lua_State *L, int idx);
@@ -523,7 +434,66 @@ LUA_API void (lua_cleartaint) (lua_State *L);
 LUA_API void (lua_resettaint) (lua_State *L);
 
 
+/**
+ * Profiling and Statistics APIs
+ */
+
+typedef lua_Integer lua_Time;
+
+typedef struct lua_GlobalStats {
+  size_t bytesused;  /* total number of bytes in use */
+  size_t bytesallocated;  /* total number of bytes allocated */
+} lua_GlobalStats;
+
+typedef struct lua_SourceStats {
+  lua_Time execticks;  /* ticks spent executing owned functions */
+  size_t bytesowned;  /* total byte size owned objects */
+} lua_SourceStats;
+
+typedef struct lua_FunctionStats {
+  int calls;  /* number of calls */
+  lua_Time ownticks;  /* ticks spent executing this function */
+  lua_Time subticks;  /* as above but including calls to subroutines */
+} lua_FunctionStats;
+
+LUA_API lua_Time (lua_gettickcount) (lua_State *L);
+LUA_API lua_Time (lua_gettickfrequency) (lua_State *L);
+
+LUA_API int (lua_isprofilingenabled) (lua_State *L);
+LUA_API void (lua_setprofilingenabled) (lua_State *L, int enable);
+
+LUA_API void (lua_collectstats) (lua_State *L);
+LUA_API void (lua_resetstats) (lua_State *L);
+
+LUA_API void (lua_getglobalstats) (lua_State *L, lua_GlobalStats *stats);
+LUA_API void (lua_getsourcestats) (lua_State *L, const char *source, lua_SourceStats *stats);
+LUA_API void (lua_getfunctionstats) (lua_State *L, int funcindex, lua_FunctionStats *stats);
+
+
+/**
+ * Debugging and Exception APIs
+ */
+
+enum lua_ExceptMask {
+  LUA_EXCEPTFPECOERCE = (1 << 0),
+  LUA_EXCEPTFPESTRICT = (1 << 1),
+  LUA_EXCEPTOVERFLOW = (1 << 2),
+};
+
+typedef struct lua_ScriptTimeout {
+  lua_Time ticks;  /* how long to allow script execution before timing out? */
+  int instructions;  /* how many instructions should pass between each check? */
+} lua_ScriptTimeout;
+
+LUA_API int (lua_getexceptmask) (lua_State *L);
+LUA_API void (lua_setexceptmask) (lua_State *L, int mask);
+
+LUA_API void (lua_getscripttimeout) (lua_State *L, lua_ScriptTimeout *timeout);
+LUA_API void (lua_setscripttimeout) (lua_State *L, const lua_ScriptTimeout *timeout);
+
+
 /* }====================================================================== */
+
 
 /******************************************************************************
 * Copyright (C) 1994-2012 Lua.org, PUC-Rio.  All rights reserved.

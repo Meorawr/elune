@@ -158,15 +158,6 @@ LUA_API lua_State *lua_newthread (lua_State *L) {
 */
 
 
-LUA_API int lua_absindex (lua_State *L, int idx) {
-  if (idx > 0 || idx <= LUA_ERRORHANDLERINDEX) {
-    return idx;
-  } else {
-    return cast_int(L->top - L->base) + idx + 1;
-  }
-}
-
-
 LUA_API int lua_gettop (lua_State *L) {
   return cast_int(L->top - L->base);
 }
@@ -237,16 +228,6 @@ LUA_API void lua_replace (lua_State *L, int idx) {
   api_checknelems(L, 1);
   moveto(L, L->top - 1, idx);
   L->top--;
-  lua_unlock(L);
-}
-
-
-LUA_API void lua_copy (lua_State *L, int fromidx, int toidx) {
-  StkId fr;
-  lua_lock(L);
-  fr = index2adr(L, fromidx);
-  api_checkvalidindex(L, fr);
-  moveto(L, fr, toidx);
   lua_unlock(L);
 }
 
@@ -359,19 +340,6 @@ LUA_API lua_Integer lua_tointeger (lua_State *L, int idx) {
 }
 
 
-LUA_API int lua_toint (lua_State *L, int idx) {
-  lua_Number n = lua_tonumber(L, idx);
-
-  if ((L->exceptmask & LUA_EXCEPTOVERFLOW) && (n < INT_MIN || n > INT_MAX)) {
-    lua_lock(L);
-    luaG_overflowerror(L, n);
-    lua_unlock(L);
-  }
-
-  return (int) n;
-}
-
-
 LUA_API int lua_toboolean (lua_State *L, int idx) {
   const TValue *o = index2adr(L, idx);
   return !l_isfalse(o);
@@ -411,19 +379,6 @@ LUA_API size_t lua_objlen (lua_State *L, int idx) {
     }
     default: return 0;
   }
-}
-
-
-LUA_API size_t lua_objsize (lua_State *L, int idx) {
-  StkId o;
-  size_t s;
-
-  lua_lock(L);
-  o = index2adr(L, idx);
-  s = (iscollectable(o) ? luaC_objectsize(gcvalue(o)) : 0);
-  lua_unlock(L);
-
-  return s;
 }
 
 
@@ -1137,230 +1092,61 @@ LUA_API const char *lua_setupvalue (lua_State *L, int funcindex, int n) {
 
 /*
 ** {======================================================================
-** Stats and Profiling API
+** Lua Core Extension APIs
 ** =======================================================================
 */
 
 
-LUA_API lua_Time lua_gettickcount (lua_State *L) {
-  lua_Time ticks;
-  lua_lock(L);
-  ticks = luaG_gettickcount(G(L));
-  lua_unlock(L);
-  return ticks;
-}
-
-
-LUA_API lua_Time lua_gettickfrequency (lua_State *L) {
-  lua_Time rate;
-  lua_lock(L);
-  rate = luaG_gettickfrequency(G(L));
-  lua_unlock(L);
-  return rate;
-}
-
-
-static SourceStats *getsourcestats (global_State *g, TString *owner) {
-  SourceStats *st = g->sourcestats;
-  SourceStats *pt = NULL;
-
-  while (st != NULL && st->owner != owner) {
-    pt = st;
-    st = st->next;
-  }
-
-  if (st != NULL && pt != NULL) {
-    /* Re-link to place this object at the head of stats list. */
-    pt->next = st->next;
-    st->next = g->sourcestats;
-    g->sourcestats = st;
-  }
-
-  return st;
-}
-
-
-static SourceStats *newsourcestats (global_State *g, TString *owner) {
-  SourceStats *st = getsourcestats(g, owner);
-
-  if (st == NULL) {
-    st = luaM_new(g->mainthread, SourceStats);
-    st->owner = owner;
-    st->execticks = 0;
-    st->bytesowned = 0;
-    st->next = g->sourcestats;
-    g->sourcestats = st;
-  }
-
-  return st;
-}
-
-
-static void resetsourcestats (global_State *g) {
-  SourceStats *st;
-
-  /* Reset source-owned statistics */
-  for (st = g->sourcestats; st != NULL; st = st->next) {
-    st->execticks = 0;
-    st->bytesowned = 0;
-  }
-}
-
-
-static void resetfunctionstats (global_State *g) {
-  GCObject *o;
-
-  for (o = g->rootgc; o != NULL; o = o->gch.next) {
-    if (ttisfunction(&o->gch)) {
-      ClosureStats *cs = gco2cl(o)->c.stats;
-
-      if (cs != NULL) {
-        cs->calls = 0;
-        cs->ownticks = 0;
-        cs->subticks = 0;
-      }
-    }
-  }
-}
-
-
-LUA_API int lua_isprofilingenabled (lua_State *L) {
-  int enabled;
-
-  lua_lock(L);
-  enabled = G(L)->enablestats;
-  lua_unlock(L);
-
-  return enabled;
-}
-
-
-LUA_API void lua_setprofilingenabled (lua_State *L, int enable) {
-  global_State *g;
-
-  lua_lock(L);
-  g = G(L);
-
-  if (enable && !g->enablestats) {  /* Enabling? */
-    GCObject *o;
-    luaC_checkGC(L);
-
-    /* Allocate closure statistics */
-    for (o = g->rootgc; o != NULL; o = o->gch.next) {
-      if (ttisfunction(&o->gch)) {
-        Closure *cl = gco2cl(o);
-
-        if (cl->c.stats == NULL) {
-          cl->c.stats = luaF_newclosurestats(g->mainthread);
-        }
-      }
-    }
-  }
-
-  g->enablestats = cast_byte(enable);
-  lua_unlock(L);
-}
-
-
-LUA_API void lua_collectstats (lua_State *L) {
-  global_State *g;
-  GCObject *o;
-
-  lua_lock(L);
-  g = G(L);
-
-  luaC_checkGC(L);
-  resetsourcestats(g);
-
-  for (o = g->rootgc; o != NULL; o = o->gch.next) {
-    SourceStats *st = newsourcestats(g, o->gch.taint);
-
-    st->bytesowned += luaC_objectsize(o);
-
-    if (ttisfunction(&o->gch)) {
-      ClosureStats *cs = gco2cl(o)->c.stats;
-
-      if (cs != NULL) {
-        st->execticks += cs->ownticks;
-      }
-    }
-  }
-
-  lua_unlock(L);
-}
-
-
-LUA_API void lua_resetstats (lua_State *L) {
-  lua_lock(L);
-  resetsourcestats(G(L));
-  resetfunctionstats(G(L));
-  lua_unlock(L);
-}
-
-
-LUA_API void lua_getglobalstats (lua_State *L, lua_GlobalStats *stats) {
-  global_State *g;
-  lua_lock(L);
-  g = G(L);
-  stats->bytesused = g->totalbytes;
-  stats->bytesallocated = g->bytesallocated;
-  lua_unlock(L);
-}
-
-
-LUA_API void lua_getsourcestats (lua_State *L, const char *source, lua_SourceStats *stats) {
-  TString *ts;
-  SourceStats *st;
-
-  lua_lock(L);
-  luaC_checkGC(L);
-  ts = ((source != NULL) ? luaS_new(L, source) : NULL);
-  st = getsourcestats(G(L), ts);
-
-  if (st != NULL) {
-    stats->execticks = st->execticks;
-    stats->bytesowned = st->bytesowned;
+LUA_API int lua_absindex (lua_State *L, int idx) {
+  if (idx > 0 || idx <= LUA_ERRORHANDLERINDEX) {
+    return idx;
   } else {
-    stats->execticks = 0;
-    stats->bytesowned = 0;
+    return cast_int(L->top - L->base) + idx + 1;
   }
+}
 
+
+LUA_API void lua_copy (lua_State *L, int fromidx, int toidx) {
+  StkId fr;
+  lua_lock(L);
+  fr = index2adr(L, fromidx);
+  api_checkvalidindex(L, fr);
+  moveto(L, fr, toidx);
   lua_unlock(L);
 }
 
 
-LUA_API void lua_getfunctionstats (lua_State *L, int funcindex, lua_FunctionStats *stats) {
+LUA_API size_t lua_objsize (lua_State *L, int idx) {
   StkId o;
-  ClosureStats *cs;
+  size_t s;
 
   lua_lock(L);
-  o = index2adr(L, funcindex);
-  api_checkvalidindex(L, o);
-  api_check(L, ttisfunction(o));
-  cs = clvalue(o)->c.stats;
-
-  if (cs != NULL) {
-    stats->calls = cs->calls;
-    stats->ownticks = cs->ownticks;
-    stats->subticks = cs->subticks;
-  } else {
-    stats->calls = 0;
-    stats->ownticks = 0;
-    stats->subticks = 0;
-  }
-
+  o = index2adr(L, idx);
+  s = (iscollectable(o) ? luaC_objectsize(gcvalue(o)) : 0);
   lua_unlock(L);
+
+  return s;
 }
 
 
-/* }====================================================================== */
+LUA_API int lua_toint (lua_State *L, int idx) {
+  lua_Number d = lua_tonumber(L, idx);
+  int i;
+
+  if ((L->exceptmask & LUA_EXCEPTOVERFLOW) && (d < INT_MIN || d > INT_MAX)) {
+    lua_lock(L);
+    luaG_overflowerror(L, d);
+    lua_unlock(L);
+  }
+
+  lua_number2int(i, d);
+  return i;
+}
 
 
-/*
-** {======================================================================
-** Security API
-** =======================================================================
-*/
+/**
+ * Core Security APIs
+ */
 
 
 static int gettaintmode (const lua_State *L) {
@@ -1613,8 +1399,8 @@ LUA_API void lua_exchangetaint (lua_State *L, lua_TaintState *ts) {
 
 
 struct PTCallS {
-    lua_PFunction func;
-    void *ud;
+  lua_PFunction func;
+  void *ud;
 };
 
 
@@ -1639,16 +1425,15 @@ LUA_API void lua_protecttaint (lua_State *L, lua_PFunction func, void *ud) {
 
   if (status != 0) {
     /**
-     * Re-throw the captured error after restoring the taint state. We also
-     * clear taint off the top value on the stack (typically an error). This
-     * is safe as - eventually - 'luaD_throw' will lead to a pcall or panic
-     * handler and invoke 'luaD_seterrorobj' which will (depending on the error)
-     * do a stack-to-stack move of this top value, which applies any expected
-     * taint.
+     * Note that as we're re-throwing we don't unwind CIs here; whoever catches
+     * this error is expected to unwind them instead.
      *
-     * Note that as we're re-throwing we don't unwind CIs here. This will be
-     * handled by the next catch point.
+     * The taint for the top stack value is cleared as this is assumed to be
+     * an error value; when the error is caught it'll be re-tainted
+     * appropriately with the correct stack taint by 'luaD_seterrorobj' -or-
+     * the stack top will be replaced with a fixed (and also tainted) string.
      */
+
     StkId err = L->top - 1;
     L->ts = savedts;
     err->taint = NULL;
@@ -1687,5 +1472,258 @@ LUA_API void lua_resettaint (lua_State *L) {
   }
 }
 
+
+/**
+ * Core Profiling and Statistics APIs
+ */
+
+
+LUA_API lua_Time lua_gettickcount (lua_State *L) {
+  lua_Time ticks;
+  lua_lock(L);
+  ticks = luaG_gettickcount(G(L));
+  lua_unlock(L);
+  return ticks;
+}
+
+
+LUA_API lua_Time lua_gettickfrequency (lua_State *L) {
+  lua_Time rate;
+  lua_lock(L);
+  rate = luaG_gettickfrequency(G(L));
+  lua_unlock(L);
+  return rate;
+}
+
+
+static SourceStats *getsourcestats (global_State *g, TString *owner) {
+  SourceStats *st = g->sourcestats;
+  SourceStats *pt = NULL;
+
+  while (st != NULL && st->owner != owner) {
+    pt = st;
+    st = st->next;
+  }
+
+  if (st != NULL && pt != NULL) {
+    /* Re-link to place this object at the head of stats list. */
+    pt->next = st->next;
+    st->next = g->sourcestats;
+    g->sourcestats = st;
+  }
+
+  return st;
+}
+
+
+static SourceStats *newsourcestats (global_State *g, TString *owner) {
+  SourceStats *st = getsourcestats(g, owner);
+
+  if (st == NULL) {
+    st = luaM_new(g->mainthread, SourceStats);
+    st->owner = owner;
+    st->execticks = 0;
+    st->bytesowned = 0;
+    st->next = g->sourcestats;
+    g->sourcestats = st;
+  }
+
+  return st;
+}
+
+
+static void resetsourcestats (global_State *g) {
+  SourceStats *st;
+
+  /* Reset source-owned statistics */
+  for (st = g->sourcestats; st != NULL; st = st->next) {
+    st->execticks = 0;
+    st->bytesowned = 0;
+  }
+}
+
+
+static void resetfunctionstats (global_State *g) {
+  GCObject *o;
+
+  for (o = g->rootgc; o != NULL; o = o->gch.next) {
+    if (ttisfunction(&o->gch)) {
+      ClosureStats *cs = gco2cl(o)->c.stats;
+
+      if (cs != NULL) {
+        cs->calls = 0;
+        cs->ownticks = 0;
+        cs->subticks = 0;
+      }
+    }
+  }
+}
+
+
+LUA_API int lua_isprofilingenabled (lua_State *L) {
+  int enabled;
+
+  lua_lock(L);
+  enabled = G(L)->enablestats;
+  lua_unlock(L);
+
+  return enabled;
+}
+
+
+LUA_API void lua_setprofilingenabled (lua_State *L, int enable) {
+  global_State *g;
+
+  lua_lock(L);
+  g = G(L);
+
+  if (enable && !g->enablestats) {  /* Enabling? */
+    GCObject *o;
+    luaC_checkGC(L);
+
+    /* Allocate closure statistics */
+    for (o = g->rootgc; o != NULL; o = o->gch.next) {
+      if (ttisfunction(&o->gch)) {
+        Closure *cl = gco2cl(o);
+
+        if (cl->c.stats == NULL) {
+          cl->c.stats = luaF_newclosurestats(g->mainthread);
+        }
+      }
+    }
+  }
+
+  g->enablestats = cast_byte(enable);
+  lua_unlock(L);
+}
+
+
+LUA_API void lua_collectstats (lua_State *L) {
+  global_State *g;
+  GCObject *o;
+
+  lua_lock(L);
+  g = G(L);
+
+  luaC_checkGC(L);
+  resetsourcestats(g);
+
+  for (o = g->rootgc; o != NULL; o = o->gch.next) {
+    SourceStats *st = newsourcestats(g, o->gch.taint);
+
+    st->bytesowned += luaC_objectsize(o);
+
+    if (ttisfunction(&o->gch)) {
+      ClosureStats *cs = gco2cl(o)->c.stats;
+
+      if (cs != NULL) {
+        st->execticks += cs->ownticks;
+      }
+    }
+  }
+
+  lua_unlock(L);
+}
+
+
+LUA_API void lua_resetstats (lua_State *L) {
+  lua_lock(L);
+  resetsourcestats(G(L));
+  resetfunctionstats(G(L));
+  lua_unlock(L);
+}
+
+
+LUA_API void lua_getglobalstats (lua_State *L, lua_GlobalStats *stats) {
+  global_State *g;
+  lua_lock(L);
+  g = G(L);
+  stats->bytesused = g->totalbytes;
+  stats->bytesallocated = g->bytesallocated;
+  lua_unlock(L);
+}
+
+
+LUA_API void lua_getsourcestats (lua_State *L, const char *source, lua_SourceStats *stats) {
+  TString *ts;
+  SourceStats *st;
+
+  lua_lock(L);
+  luaC_checkGC(L);
+  ts = ((source != NULL) ? luaS_new(L, source) : NULL);
+  st = getsourcestats(G(L), ts);
+
+  if (st != NULL) {
+    stats->execticks = st->execticks;
+    stats->bytesowned = st->bytesowned;
+  } else {
+    stats->execticks = 0;
+    stats->bytesowned = 0;
+  }
+
+  lua_unlock(L);
+}
+
+
+LUA_API void lua_getfunctionstats (lua_State *L, int funcindex, lua_FunctionStats *stats) {
+  StkId o;
+  ClosureStats *cs;
+
+  lua_lock(L);
+  o = index2adr(L, funcindex);
+  api_checkvalidindex(L, o);
+  api_check(L, ttisfunction(o));
+  cs = clvalue(o)->c.stats;
+
+  if (cs != NULL) {
+    stats->calls = cs->calls;
+    stats->ownticks = cs->ownticks;
+    stats->subticks = cs->subticks;
+  } else {
+    stats->calls = 0;
+    stats->ownticks = 0;
+    stats->subticks = 0;
+  }
+
+  lua_unlock(L);
+}
+
+
+/**
+ * Core Debugging and Exception APIs
+ */
+
+
+LUA_API int lua_getexceptmask (lua_State *L) {
+  return cast_int(L->exceptmask);
+}
+
+
+LUA_API void lua_setexceptmask (lua_State *L, int mask) {
+  L->exceptmask = cast_byte(mask);
+}
+
+
+LUA_API void lua_getscripttimeout (lua_State *L, lua_ScriptTimeout *timeout) {
+  lua_lock(L);
+  timeout->ticks = L->baseexeclimit;
+  timeout->instructions = L->baseexeccount;
+  lua_unlock(L);
+}
+
+
+LUA_API void lua_setscripttimeout (lua_State *L, const lua_ScriptTimeout *timeout) {
+  lua_lock(L);
+
+  if (timeout->ticks == 0 || timeout->instructions == 0) {
+    L->baseexeclimit = 0;
+    L->baseexeccount = L->execcount = 0;
+  } else {
+    L->baseexeclimit = timeout->ticks;
+    L->baseexeccount = L->execcount = timeout->instructions;
+  }
+
+  lua_unlock(L);
+}
 
 /* }====================================================================== */
