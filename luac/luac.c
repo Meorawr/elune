@@ -530,8 +530,9 @@ static void printupvalues (const Proto *f)
 
   printf("upvalues (%d) for %p:\n", n, VOID(f));
 
-  if (f->upvalues == NULL)
+  if (f->upvalues == NULL) {
     return;
+  }
 
   for (i = 0; i < n; i++) {
     printf("\t%d\t%s\n", i, getstr(f->upvalues[i]));

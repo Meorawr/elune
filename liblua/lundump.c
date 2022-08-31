@@ -77,9 +77,9 @@ static TString *LoadString (LoadState *S)
 {
   size_t size;
   LoadVar(S, size);
-  if (size == 0)
+  if (size == 0) {
     return NULL;
-  else {
+  } else {
     char *s = luaZ_openspace(S->L, S->b, size);
     LoadBlock(S, s, size);
     return luaS_newlstr(S->L, s, size - 1); /* remove trailing '\0' */
@@ -102,8 +102,9 @@ static void LoadConstants (LoadState *S, Proto *f)
   n = LoadInt(S);
   f->k = luaM_newvector(S->L, n, TValue);
   f->sizek = n;
-  for (i = 0; i < n; i++)
+  for (i = 0; i < n; i++) {
     setnilvalue(S->L, &f->k[i]);
+  }
   for (i = 0; i < n; i++) {
     TValue *o = &f->k[i];
     int t = LoadChar(S);
@@ -128,10 +129,12 @@ static void LoadConstants (LoadState *S, Proto *f)
   n = LoadInt(S);
   f->p = luaM_newvector(S->L, n, Proto *);
   f->sizep = n;
-  for (i = 0; i < n; i++)
+  for (i = 0; i < n; i++) {
     f->p[i] = NULL;
-  for (i = 0; i < n; i++)
+  }
+  for (i = 0; i < n; i++) {
     f->p[i] = LoadFunction(S, f->source);
+  }
 }
 
 static void LoadDebug (LoadState *S, Proto *f)
@@ -144,8 +147,9 @@ static void LoadDebug (LoadState *S, Proto *f)
   n = LoadInt(S);
   f->locvars = luaM_newvector(S->L, n, LocVar);
   f->sizelocvars = n;
-  for (i = 0; i < n; i++)
+  for (i = 0; i < n; i++) {
     f->locvars[i].varname = NULL;
+  }
   for (i = 0; i < n; i++) {
     f->locvars[i].varname = LoadString(S);
     f->locvars[i].startpc = LoadInt(S);
@@ -154,23 +158,27 @@ static void LoadDebug (LoadState *S, Proto *f)
   n = LoadInt(S);
   f->upvalues = luaM_newvector(S->L, n, TString *);
   f->sizeupvalues = n;
-  for (i = 0; i < n; i++)
+  for (i = 0; i < n; i++) {
     f->upvalues[i] = NULL;
-  for (i = 0; i < n; i++)
+  }
+  for (i = 0; i < n; i++) {
     f->upvalues[i] = LoadString(S);
+  }
 }
 
 static Proto *LoadFunction (LoadState *S, TString *p)
 {
   Proto *f;
-  if (++S->L->nCcalls > LUAI_MAXCCALLS)
+  if (++S->L->nCcalls > LUAI_MAXCCALLS) {
     error(S, "code too deep");
+  }
   f = luaF_newproto(S->L);
   setptvalue2s(S->L, S->L->top, f);
   incr_top(S->L);
   f->source = LoadString(S);
-  if (f->source == NULL)
+  if (f->source == NULL) {
     f->source = p;
+  }
   f->linedefined = LoadInt(S);
   f->lastlinedefined = LoadInt(S);
   f->nups = LoadByte(S);
@@ -201,12 +209,13 @@ static void LoadHeader (LoadState *S)
 Proto *luaU_undump (lua_State *L, ZIO *Z, Mbuffer *buff, const char *name)
 {
   LoadState S;
-  if (*name == '@' || *name == '=')
+  if (*name == '@' || *name == '=') {
     S.name = name + 1;
-  else if (*name == LUA_SIGNATURE[0])
+  } else if (*name == LUA_SIGNATURE[0]) {
     S.name = "binary string";
-  else
+  } else {
     S.name = name;
+  }
   S.L = L;
   S.Z = Z;
   S.b = buff;

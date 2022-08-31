@@ -25,19 +25,21 @@ static const char *const statnames[] = {
 
 static int auxstatus (lua_State *L, lua_State *co)
 {
-  if (L == co)
+  if (L == co) {
     return CO_RUN;
+  }
   switch (lua_status(co)) {
   case LUA_YIELD:
     return CO_SUS;
   case 0: {
     lua_Debug ar;
-    if (lua_getstack(co, 0, &ar) > 0) /* does it have frames? */
-      return CO_NOR;                  /* it is running */
-    else if (lua_gettop(co) == 0)
+    if (lua_getstack(co, 0, &ar) > 0) { /* does it have frames? */
+      return CO_NOR;                    /* it is running */
+    } else if (lua_gettop(co) == 0) {
       return CO_DEAD;
-    else
+    } else {
       return CO_SUS; /* initial state */
+    }
   }
   default: /* some error occured */
     return CO_DEAD;
@@ -55,8 +57,9 @@ static int luaB_costatus (lua_State *L)
 static int auxresume (lua_State *L, lua_State *co, int narg)
 {
   int status = auxstatus(L, co);
-  if (!lua_checkstack(co, narg))
+  if (!lua_checkstack(co, narg)) {
     luaL_error(L, "too many arguments to resume");
+  }
   if (status != CO_SUS) {
     lua_pushfstring(L, "cannot resume %s coroutine", statnames[status]);
     return -1; /* error flag */
@@ -65,8 +68,9 @@ static int auxresume (lua_State *L, lua_State *co, int narg)
   status = lua_resumefrom(co, L, narg);
   if (status == 0 || status == LUA_YIELD) {
     int nres = lua_gettop(co);
-    if (!lua_checkstack(L, nres + 1))
+    if (!lua_checkstack(L, nres + 1)) {
       luaL_error(L, "too many results to resume");
+    }
     lua_xmove(co, L, nres); /* move yielded values */
     return nres;
   } else {
@@ -131,8 +135,9 @@ static int luaB_coyield (lua_State *L)
 
 static int luaB_corunning (lua_State *L)
 {
-  if (lua_pushthread(L))
+  if (lua_pushthread(L)) {
     lua_pushnil(L); /* main thread is not a coroutine */
+  }
   return 1;
 }
 

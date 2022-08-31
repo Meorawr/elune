@@ -48,8 +48,9 @@ static int db_setfenv (lua_State *L)
 {
   luaL_checktype(L, 2, LUA_TTABLE);
   lua_settop(L, 2);
-  if (lua_setfenv(L, 1) == 0)
+  if (lua_setfenv(L, 1) == 0) {
     luaL_error(L, "'setfenv' cannot change environment of given object");
+  }
   return 1;
 }
 
@@ -81,8 +82,9 @@ static void treatstackoption (lua_State *L, lua_State *L1, const char *fname)
   if (L == L1) {
     lua_pushvalue(L, -2);
     lua_remove(L, -3);
-  } else
+  } else {
     lua_xmove(L1, L, 1);
+  }
   lua_setfield(L, -2, fname);
 }
 
@@ -102,10 +104,12 @@ static int db_getinfo (lua_State *L)
     options = lua_tostring(L, -1);
     lua_pushvalue(L, arg + 1);
     lua_xmove(L, L1, 1);
-  } else
+  } else {
     return luaL_argerror(L, arg + 1, "function or level expected");
-  if (!lua_getinfo(L1, options, &ar))
+  }
+  if (!lua_getinfo(L1, options, &ar)) {
     return luaL_argerror(L, arg + 2, "invalid option");
+  }
   lua_createtable(L, 0, 2);
   if (strchr(options, 'S')) {
     settabss(L, "source", ar.source);
@@ -114,18 +118,22 @@ static int db_getinfo (lua_State *L)
     settabsi(L, "lastlinedefined", ar.lastlinedefined);
     settabss(L, "what", ar.what);
   }
-  if (strchr(options, 'l'))
+  if (strchr(options, 'l')) {
     settabsi(L, "currentline", ar.currentline);
-  if (strchr(options, 'u'))
+  }
+  if (strchr(options, 'u')) {
     settabsi(L, "nups", ar.nups);
+  }
   if (strchr(options, 'n')) {
     settabss(L, "name", ar.name);
     settabss(L, "namewhat", ar.namewhat);
   }
-  if (strchr(options, 'L'))
+  if (strchr(options, 'L')) {
     treatstackoption(L, L1, "activelines");
-  if (strchr(options, 'f'))
+  }
+  if (strchr(options, 'f')) {
     treatstackoption(L, L1, "func");
+  }
   return 1; /* return table */
 }
 
@@ -135,8 +143,9 @@ static int db_getlocal (lua_State *L)
   lua_State *L1 = getthread(L, &arg);
   lua_Debug ar;
   const char *name;
-  if (!lua_getstack(L1, luaL_checkint(L, arg + 1), &ar)) /* out of range? */
+  if (!lua_getstack(L1, luaL_checkint(L, arg + 1), &ar)) { /* out of range? */
     return luaL_argerror(L, arg + 1, "level out of range");
+  }
   name = lua_getlocal(L1, &ar, luaL_checkint(L, arg + 2));
   if (name) {
     lua_xmove(L1, L, 1);
@@ -154,8 +163,9 @@ static int db_setlocal (lua_State *L)
   int arg;
   lua_State *L1 = getthread(L, &arg);
   lua_Debug ar;
-  if (!lua_getstack(L1, luaL_checkint(L, arg + 1), &ar)) /* out of range? */
+  if (!lua_getstack(L1, luaL_checkint(L, arg + 1), &ar)) { /* out of range? */
     return luaL_argerror(L, arg + 1, "level out of range");
+  }
   luaL_checkany(L, arg + 3);
   lua_settop(L, arg + 3);
   lua_xmove(L, L1, 1);
@@ -168,11 +178,13 @@ static int auxupvalue (lua_State *L, int get)
   const char *name;
   int n = luaL_checkint(L, 2);
   luaL_checktype(L, 1, LUA_TFUNCTION);
-  if (lua_iscfunction(L, 1))
+  if (lua_iscfunction(L, 1)) {
     return 0; /* cannot touch C upvalues from Lua */
+  }
   name = get ? lua_getupvalue(L, 1, n) : lua_setupvalue(L, 1, n);
-  if (name == NULL)
+  if (name == NULL) {
     return 0;
+  }
   lua_pushstring(L, name);
   lua_insert(L, -(get + 1));
   return get + 1;
@@ -203,10 +215,11 @@ static void hookf (lua_State *L, lua_Debug *ar)
   lua_rawget(L, -2);
   if (lua_isfunction(L, -1)) {
     lua_pushstring(L, hooknames[(int) ar->event]);
-    if (ar->currentline >= 0)
+    if (ar->currentline >= 0) {
       lua_pushinteger(L, ar->currentline);
-    else
+    } else {
       lua_pushnil(L);
+    }
     lua_assert(lua_getinfo(L, "lS", ar));
     lua_call(L, 2, 0);
   }
@@ -215,26 +228,33 @@ static void hookf (lua_State *L, lua_Debug *ar)
 static int makemask (const char *smask, int count)
 {
   int mask = 0;
-  if (strchr(smask, 'c'))
+  if (strchr(smask, 'c')) {
     mask |= LUA_MASKCALL;
-  if (strchr(smask, 'r'))
+  }
+  if (strchr(smask, 'r')) {
     mask |= LUA_MASKRET;
-  if (strchr(smask, 'l'))
+  }
+  if (strchr(smask, 'l')) {
     mask |= LUA_MASKLINE;
-  if (count > 0)
+  }
+  if (count > 0) {
     mask |= LUA_MASKCOUNT;
+  }
   return mask;
 }
 
 static char *unmakemask (int mask, char *smask)
 {
   int i = 0;
-  if (mask & LUA_MASKCALL)
+  if (mask & LUA_MASKCALL) {
     smask[i++] = 'c';
-  if (mask & LUA_MASKRET)
+  }
+  if (mask & LUA_MASKRET) {
     smask[i++] = 'r';
-  if (mask & LUA_MASKLINE)
+  }
+  if (mask & LUA_MASKLINE) {
     smask[i++] = 'l';
+  }
   smask[i] = '\0';
   return smask;
 }
@@ -285,9 +305,9 @@ static int db_gethook (lua_State *L)
   char buff[4];
   int mask = lua_gethookmask(L1);
   lua_Hook hook = lua_gethook(L1);
-  if (hook != NULL && hook != hookf) /* external hook? */
+  if (hook != NULL && hook != hookf) { /* external hook? */
     lua_pushliteral(L, "external hook");
-  else {
+  } else {
     gethooktable(L);
     lua_pushlightuserdata(L, L1);
     lua_rawget(L, -2); /* get hook */
@@ -332,9 +352,9 @@ static int db_traceback (lua_State *L)
   int arg;
   lua_State *L1 = getthread(L, &arg);
   const char *msg = lua_tostring(L, arg + 1);
-  if (msg == NULL && !lua_isnoneornil(L, arg + 1)) /* non-string 'msg'? */
-    lua_pushvalue(L, arg + 1);                     /* return it untouched */
-  else {
+  if (msg == NULL && !lua_isnoneornil(L, arg + 1)) { /* non-string 'msg'? */
+    lua_pushvalue(L, arg + 1);                       /* return it untouched */
+  } else {
     int level = luaL_optint(L, arg + 2, (L == L1) ? 1 : 0);
     luaL_traceback(L, L1, msg, level);
   }
@@ -400,12 +420,15 @@ static int db_getexceptmask (lua_State *L)
   mask = lua_getexceptmask(L);
 
   int i = 0;
-  if (mask & LUA_EXCEPTFPECOERCE)
+  if (mask & LUA_EXCEPTFPECOERCE) {
     smask[i++] = 'f';
-  if (mask & LUA_EXCEPTFPESTRICT)
+  }
+  if (mask & LUA_EXCEPTFPESTRICT) {
     smask[i++] = 'F';
-  if (mask & LUA_EXCEPTOVERFLOW)
+  }
+  if (mask & LUA_EXCEPTOVERFLOW) {
     smask[i++] = 'o';
+  }
   smask[i] = '\0';
 
   lua_pushstring(L1, smask);
@@ -423,12 +446,15 @@ static int db_setexceptmask (lua_State *L)
   smask = luaL_checkstring(L, arg + 1);
 
   mask = 0;
-  if (strchr(smask, 'f'))
+  if (strchr(smask, 'f')) {
     mask |= LUA_EXCEPTFPECOERCE;
-  if (strchr(smask, 'F'))
+  }
+  if (strchr(smask, 'F')) {
     mask |= LUA_EXCEPTFPESTRICT;
-  if (strchr(smask, 'o'))
+  }
+  if (strchr(smask, 'o')) {
     mask |= LUA_EXCEPTOVERFLOW;
+  }
 
   lua_setexceptmask(L1, mask);
   return 0;

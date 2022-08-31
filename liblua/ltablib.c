@@ -24,8 +24,9 @@ static int table_foreachi (lua_State *L)
     lua_pushinteger(L, i); /* 1st argument */
     lua_rawgeti(L, 1, i);  /* 2nd argument */
     lua_call(L, 2, 1);
-    if (!lua_isnil(L, -1))
+    if (!lua_isnil(L, -1)) {
       return 1;
+    }
     lua_pop(L, 1); /* remove nil result */
   }
   return 0;
@@ -41,8 +42,9 @@ static int table_foreach (lua_State *L)
     lua_pushvalue(L, -3); /* key */
     lua_pushvalue(L, -3); /* value */
     lua_call(L, 2, 1);
-    if (!lua_isnil(L, -1))
+    if (!lua_isnil(L, -1)) {
       return 1;
+    }
     lua_pop(L, 2); /* remove value and result */
   }
   return 0;
@@ -57,8 +59,9 @@ static int table_maxn (lua_State *L)
     lua_pop(L, 1); /* remove value */
     if (lua_type(L, -1) == LUA_TNUMBER) {
       lua_Number v = lua_tonumber(L, -1);
-      if (v > max)
+      if (v > max) {
         max = v;
+      }
     }
   }
   lua_pushnumber(L, max);
@@ -89,8 +92,9 @@ static int table_insert (lua_State *L)
   case 3: {
     int i;
     pos = luaL_checkint(L, 2); /* 2nd argument is the position */
-    if (pos > e)
-      e = pos;                  /* `grow' array if necessary */
+    if (pos > e) {
+      e = pos; /* `grow' array if necessary */
+    }
     for (i = e; i > pos; i--) { /* move up elements */
       lua_rawgeti(L, 1, i - 1);
       lua_rawseti(L, 1, i); /* t[i] = t[i-1] */
@@ -109,9 +113,10 @@ static int table_remove (lua_State *L)
 {
   int e = aux_getn(L, 1);
   int pos = luaL_optint(L, 2, e);
-  if (!(1 <= pos && pos <= e)) /* position is outside bounds? */
-    return 0;                  /* nothing to remove */
-  lua_rawgeti(L, 1, pos);      /* result = t[pos] */
+  if (!(1 <= pos && pos <= e)) { /* position is outside bounds? */
+    return 0;                    /* nothing to remove */
+  }
+  lua_rawgeti(L, 1, pos); /* result = t[pos] */
   for (; pos < e; pos++) {
     lua_rawgeti(L, 1, pos + 1);
     lua_rawseti(L, 1, pos); /* t[pos] = t[pos+1] */
@@ -145,8 +150,9 @@ static int table_concat (lua_State *L)
     addfield(L, &b, i);
     luaL_addlstring(&b, sep, lsep);
   }
-  if (i == last) /* add last value (if interval was not empty) */
+  if (i == last) { /* add last value (if interval was not empty) */
     addfield(L, &b, i);
+  }
   luaL_pushresult(&b);
   return 1;
 }
@@ -175,8 +181,9 @@ static int sort_comp (lua_State *L, int a, int b)
     res = lua_toboolean(L, -1);
     lua_pop(L, 1);
     return res;
-  } else /* a < b? */
+  } else { /* a < b? */
     return lua_lessthan(L, a, b);
+  }
 }
 
 static void auxsort (lua_State *L, int l, int u)
@@ -186,27 +193,31 @@ static void auxsort (lua_State *L, int l, int u)
     /* sort elements a[l], a[(l+u)/2] and a[u] */
     lua_rawgeti(L, 1, l);
     lua_rawgeti(L, 1, u);
-    if (sort_comp(L, -1, -2)) /* a[u] < a[l]? */
-      set2(L, l, u);          /* swap a[l] - a[u] */
-    else
+    if (sort_comp(L, -1, -2)) { /* a[u] < a[l]? */
+      set2(L, l, u);            /* swap a[l] - a[u] */
+    } else {
       lua_pop(L, 2);
-    if (u - l == 1)
+    }
+    if (u - l == 1) {
       break; /* only 2 elements */
+    }
     i = (l + u) / 2;
     lua_rawgeti(L, 1, i);
     lua_rawgeti(L, 1, l);
-    if (sort_comp(L, -2, -1)) /* a[i]<a[l]? */
+    if (sort_comp(L, -2, -1)) { /* a[i]<a[l]? */
       set2(L, i, l);
-    else {
+    } else {
       lua_pop(L, 1); /* remove a[l] */
       lua_rawgeti(L, 1, u);
-      if (sort_comp(L, -1, -2)) /* a[u]<a[i]? */
+      if (sort_comp(L, -1, -2)) { /* a[u]<a[i]? */
         set2(L, i, u);
-      else
+      } else {
         lua_pop(L, 2);
+      }
     }
-    if (u - l == 2)
-      break;              /* only 3 elements */
+    if (u - l == 2) {
+      break; /* only 3 elements */
+    }
     lua_rawgeti(L, 1, i); /* Pivot */
     lua_pushvalue(L, -1);
     lua_rawgeti(L, 1, u - 1);
@@ -217,14 +228,16 @@ static void auxsort (lua_State *L, int l, int u)
     for (;;) { /* invariant: a[l..i] <= P <= a[j..u] */
       /* repeat ++i until a[i] >= P */
       while (lua_rawgeti(L, 1, ++i), sort_comp(L, -1, -2)) {
-        if (i > u)
+        if (i > u) {
           luaL_error(L, "invalid order function for sorting");
+        }
         lua_pop(L, 1); /* remove a[i] */
       }
       /* repeat --j until a[j] <= P */
       while (lua_rawgeti(L, 1, --j), sort_comp(L, -3, -1)) {
-        if (j < l)
+        if (j < l) {
           luaL_error(L, "invalid order function for sorting");
+        }
         lua_pop(L, 1); /* remove a[j] */
       }
       if (j < i) {
@@ -254,9 +267,10 @@ static void auxsort (lua_State *L, int l, int u)
 static int table_sort (lua_State *L)
 {
   int n = aux_getn(L, 1);
-  luaL_checkstack(L, 40, ""); /* assume array is smaller than 2^40 */
-  if (!lua_isnoneornil(L, 2)) /* is there a 2nd argument? */
+  luaL_checkstack(L, 40, "");   /* assume array is smaller than 2^40 */
+  if (!lua_isnoneornil(L, 2)) { /* is there a 2nd argument? */
     luaL_checktype(L, 2, LUA_TFUNCTION);
+  }
   lua_settop(L, 2); /* make sure there is two arguments */
   auxsort(L, 1, n);
   return 0;

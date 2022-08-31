@@ -96,8 +96,9 @@ static void DumpConstants (const Proto *f, DumpState *D)
   }
   n = f->sizep;
   DumpInt(n, D);
-  for (i = 0; i < n; i++)
+  for (i = 0; i < n; i++) {
     DumpFunction(f->p[i], f->source, D);
+  }
 }
 
 static void DumpDebug (const Proto *f, DumpState *D)
@@ -114,8 +115,9 @@ static void DumpDebug (const Proto *f, DumpState *D)
   }
   n = (D->strip) ? 0 : f->sizeupvalues;
   DumpInt(n, D);
-  for (i = 0; i < n; i++)
+  for (i = 0; i < n; i++) {
     DumpString(f->upvalues[i], D);
+  }
 }
 
 static void DumpFunction (const Proto *f, const TString *p, DumpState *D)

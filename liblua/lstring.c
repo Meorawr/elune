@@ -18,12 +18,14 @@ void luaS_resize (lua_State *L, int newsize)
   GCObject **newhash;
   stringtable *tb;
   int i;
-  if (G(L)->gcstate == GCSsweepstring)
+  if (G(L)->gcstate == GCSsweepstring) {
     return; /* cannot resize during GC traverse */
+  }
   newhash = luaM_newvector(L, newsize, GCObject *);
   tb = &G(L)->strt;
-  for (i = 0; i < newsize; i++)
+  for (i = 0; i < newsize; i++) {
     newhash[i] = NULL;
+  }
   /* rehash */
   for (i = 0; i < tb->size; i++) {
     GCObject *p = tb->hash[i];
@@ -47,8 +49,9 @@ static TString *newlstr (lua_State *L, const char *str, size_t l,
 {
   TString *ts;
   stringtable *tb;
-  if (l + 1 > (LUA_SIZE_MAX - sizeof(TString)) / sizeof(char))
+  if (l + 1 > (LUA_SIZE_MAX - sizeof(TString)) / sizeof(char)) {
     luaM_toobig(L);
+  }
   ts =
     cast(TString *, luaM_malloc(L, (l + 1) * sizeof(char) + sizeof(TString)));
   ts->tsv.len = l;
@@ -64,8 +67,10 @@ static TString *newlstr (lua_State *L, const char *str, size_t l,
   ts->tsv.next = tb->hash[h]; /* chain new entry */
   tb->hash[h] = obj2gco(ts);
   tb->nuse++;
-  if (tb->nuse > cast(uint_least32_t, tb->size) && tb->size <= LUA_INT_MAX / 2)
+  if (tb->nuse > cast(uint_least32_t, tb->size) &&
+      tb->size <= LUA_INT_MAX / 2) {
     luaS_resize(L, tb->size * 2); /* too crowded */
+  }
   return ts;
 }
 
@@ -76,15 +81,17 @@ TString *luaS_newlstr (lua_State *L, const char *str, size_t l)
   size_t step =
     (l >> 5) + 1; /* if string is too long, don't hash all its chars */
   size_t l1;
-  for (l1 = l; l1 >= step; l1 -= step) /* compute hash */
+  for (l1 = l; l1 >= step; l1 -= step) { /* compute hash */
     h = h ^ ((h << 5) + (h >> 2) + cast(unsigned char, str[l1 - 1]));
+  }
   for (o = G(L)->strt.hash[lmod(h, G(L)->strt.size)]; o != NULL;
        o = o->gch.next) {
     TString *ts = rawgco2ts(o);
     if (ts->tsv.len == l && (memcmp(str, getstr(ts), l) == 0)) {
       /* string may be dead */
-      if (isdead(G(L), o))
+      if (isdead(G(L), o)) {
         changewhite(o);
+      }
       return ts;
     }
   }
@@ -94,8 +101,9 @@ TString *luaS_newlstr (lua_State *L, const char *str, size_t l)
 Udata *luaS_newudata (lua_State *L, size_t s, Table *e)
 {
   Udata *u;
-  if (s > LUA_SIZE_MAX - sizeof(Udata))
+  if (s > LUA_SIZE_MAX - sizeof(Udata)) {
     luaM_toobig(L);
+  }
   u = cast(Udata *, luaM_malloc(L, s + sizeof(Udata)));
   u->uv.marked = luaC_white(G(L)); /* is not finalized */
   u->uv.tt = LUA_TUSERDATA;

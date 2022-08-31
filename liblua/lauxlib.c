@@ -30,16 +30,19 @@
 LUALIB_API int luaL_argerror (lua_State *L, int narg, const char *extramsg)
 {
   lua_Debug ar;
-  if (!lua_getstack(L, 0, &ar)) /* no stack frame? */
+  if (!lua_getstack(L, 0, &ar)) { /* no stack frame? */
     return luaL_error(L, "bad argument #%d (%s)", narg, extramsg);
+  }
   lua_getinfo(L, "n", &ar);
   if (strcmp(ar.namewhat, "method") == 0) {
-    narg--;        /* do not count `self' */
-    if (narg == 0) /* error is in the self argument itself? */
+    narg--;          /* do not count `self' */
+    if (narg == 0) { /* error is in the self argument itself? */
       return luaL_error(L, "calling '%s' on bad self (%s)", ar.name, extramsg);
+    }
   }
-  if (ar.name == NULL)
+  if (ar.name == NULL) {
     ar.name = "?";
+  }
   return luaL_error(L, "bad argument #%d to '%s' (%s)", narg, ar.name,
                     extramsg);
 }
@@ -88,9 +91,11 @@ LUALIB_API int luaL_checkoption (lua_State *L, int narg, const char *def,
   const char *name =
     (def) ? luaL_optstring(L, narg, def) : luaL_checkstring(L, narg);
   int i;
-  for (i = 0; lst[i]; i++)
-    if (strcmp(lst[i], name) == 0)
+  for (i = 0; lst[i]; i++) {
+    if (strcmp(lst[i], name) == 0) {
       return i;
+    }
+  }
   return luaL_argerror(L, narg,
                        lua_pushfstring(L, "invalid option '%s'", name));
 }
@@ -98,8 +103,9 @@ LUALIB_API int luaL_checkoption (lua_State *L, int narg, const char *def,
 LUALIB_API int luaL_newmetatable (lua_State *L, const char *tname)
 {
   lua_getfield(L, LUA_REGISTRYINDEX, tname); /* get registry.name */
-  if (!lua_isnil(L, -1))                     /* name already in use? */
+  if (!lua_isnil(L, -1)) {                   /* name already in use? */
     return 0; /* leave previous value on top, but return 0 */
+  }
   lua_pop(L, 1);
   lua_newtable(L); /* create metatable */
   lua_pushvalue(L, -1);
@@ -125,27 +131,31 @@ LUALIB_API void *luaL_checkudata (lua_State *L, int ud, const char *tname)
 
 LUALIB_API void luaL_checkstack (lua_State *L, int space, const char *mes)
 {
-  if (!lua_checkstack(L, space))
+  if (!lua_checkstack(L, space)) {
     luaL_error(L, "stack overflow (%s)", mes);
+  }
 }
 
 LUALIB_API void luaL_checktype (lua_State *L, int narg, int t)
 {
-  if (lua_type(L, narg) != t)
+  if (lua_type(L, narg) != t) {
     tag_error(L, narg, t);
+  }
 }
 
 LUALIB_API void luaL_checkany (lua_State *L, int narg)
 {
-  if (lua_type(L, narg) == LUA_TNONE)
+  if (lua_type(L, narg) == LUA_TNONE) {
     luaL_argerror(L, narg, "value expected");
+  }
 }
 
 LUALIB_API const char *luaL_checklstring (lua_State *L, int narg, size_t *len)
 {
   const char *s = lua_tolstring(L, narg, len);
-  if (!s)
+  if (!s) {
     tag_error(L, narg, LUA_TSTRING);
+  }
   return s;
 }
 
@@ -153,18 +163,21 @@ LUALIB_API const char *luaL_optlstring (lua_State *L, int narg, const char *def,
                                         size_t *len)
 {
   if (lua_isnoneornil(L, narg)) {
-    if (len)
+    if (len) {
       *len = (def ? strlen(def) : 0);
+    }
     return def;
-  } else
+  } else {
     return luaL_checklstring(L, narg, len);
+  }
 }
 
 LUALIB_API lua_Number luaL_checknumber (lua_State *L, int narg)
 {
   lua_Number d = lua_tonumber(L, narg);
-  if (d == 0 && !lua_isnumber(L, narg)) /* avoid extra test when d is not 0 */
+  if (d == 0 && !lua_isnumber(L, narg)) { /* avoid extra test when d is not 0 */
     tag_error(L, narg, LUA_TNUMBER);
+  }
   return d;
 }
 
@@ -176,8 +189,9 @@ LUALIB_API lua_Number luaL_optnumber (lua_State *L, int narg, lua_Number def)
 LUALIB_API lua_Integer luaL_checkinteger (lua_State *L, int narg)
 {
   lua_Integer d = lua_tointeger(L, narg);
-  if (d == 0 && !lua_isnumber(L, narg)) /* avoid extra test when d is not 0 */
+  if (d == 0 && !lua_isnumber(L, narg)) { /* avoid extra test when d is not 0 */
     tag_error(L, narg, LUA_TNUMBER);
+  }
   return d;
 }
 
@@ -188,8 +202,9 @@ LUALIB_API lua_Integer luaL_optinteger (lua_State *L, int narg, lua_Integer def)
 
 LUALIB_API int luaL_getmetafield (lua_State *L, int obj, const char *event)
 {
-  if (!lua_getmetatable(L, obj)) /* no metatable? */
+  if (!lua_getmetatable(L, obj)) { /* no metatable? */
     return 0;
+  }
   lua_pushstring(L, event);
   lua_rawget(L, -2);
   if (lua_isnil(L, -1)) {
@@ -204,8 +219,9 @@ LUALIB_API int luaL_getmetafield (lua_State *L, int obj, const char *event)
 LUALIB_API int luaL_callmeta (lua_State *L, int obj, const char *event)
 {
   obj = lua_absindex(L, obj);
-  if (!luaL_getmetafield(L, obj, event)) /* no metafield? */
+  if (!luaL_getmetafield(L, obj, event)) { /* no metafield? */
     return 0;
+  }
   lua_pushvalue(L, obj);
   lua_call(L, 1, 1);
   return 1;
@@ -220,8 +236,9 @@ LUALIB_API void(luaL_register)(lua_State *L, const char *libname,
 static int libsize (const luaL_Reg *l)
 {
   int size = 0;
-  for (; l->name; l++)
+  for (; l->name; l++) {
     size++;
+  }
   return size;
 }
 
@@ -236,8 +253,9 @@ LUALIB_API void luaI_openlib (lua_State *L, const char *libname,
     if (!lua_istable(L, -1)) {    /* not found? */
       lua_pop(L, 1);              /* remove previous result */
       /* try global variable (and create one if it does not exist) */
-      if (luaL_findtable(L, LUA_GLOBALSINDEX, libname, size) != NULL)
+      if (luaL_findtable(L, LUA_GLOBALSINDEX, libname, size) != NULL) {
         luaL_error(L, "name conflict for module '%s'", libname);
+      }
       lua_pushvalue(L, -1);
       lua_setfield(L, -3, libname); /* _LOADED[libname] = new table */
     }
@@ -246,8 +264,9 @@ LUALIB_API void luaI_openlib (lua_State *L, const char *libname,
   }
   for (; l->name; l++) {
     int i;
-    for (i = 0; i < nup; i++) /* copy upvalues to the top */
+    for (i = 0; i < nup; i++) { /* copy upvalues to the top */
       lua_pushvalue(L, -nup);
+    }
     lua_pushcclosure(L, l->func, nup);
     lua_setfield(L, -(nup + 2), l->name);
   }
@@ -278,8 +297,9 @@ LUALIB_API const char *luaL_findtable (lua_State *L, int idx, const char *fname,
   lua_pushvalue(L, idx);
   do {
     e = strchr(fname, '.');
-    if (e == NULL)
+    if (e == NULL) {
       e = fname + strlen(fname);
+    }
     lua_pushlstring(L, fname, e - fname);
     lua_rawget(L, -2);
     if (lua_isnil(L, -1)) {                            /* no such field? */
@@ -312,9 +332,9 @@ LUALIB_API const char *luaL_findtable (lua_State *L, int idx, const char *fname,
 static int emptybuffer (luaL_Buffer *B)
 {
   size_t l = bufflen(B);
-  if (l == 0)
+  if (l == 0) {
     return 0; /* put nothing on stack */
-  else {
+  } else {
     lua_pushlstring(B->L, B->buffer, l);
     B->p = B->buffer;
     B->lvl++;
@@ -333,8 +353,9 @@ static void adjuststack (luaL_Buffer *B)
       if (B->lvl - toget + 1 >= LIMIT || toplen > l) {
         toplen += l;
         toget++;
-      } else
+      } else {
         break;
+      }
     } while (toget < B->lvl);
     lua_concat(L, toget);
     B->lvl = B->lvl - toget + 1;
@@ -343,15 +364,17 @@ static void adjuststack (luaL_Buffer *B)
 
 LUALIB_API char *luaL_prepbuffer (luaL_Buffer *B)
 {
-  if (emptybuffer(B))
+  if (emptybuffer(B)) {
     adjuststack(B);
+  }
   return B->buffer;
 }
 
 LUALIB_API void luaL_addlstring (luaL_Buffer *B, const char *s, size_t l)
 {
-  while (l--)
+  while (l--) {
     luaL_addchar(B, *s++);
+  }
 }
 
 LUALIB_API void luaL_addstring (luaL_Buffer *B, const char *s)
@@ -376,9 +399,10 @@ LUALIB_API void luaL_addvalue (luaL_Buffer *B)
     B->p += vl;
     lua_pop(L, 1); /* remove from stack */
   } else {
-    if (emptybuffer(B))
+    if (emptybuffer(B)) {
       lua_insert(L, -2); /* put buffer before new value */
-    B->lvl++;            /* add new value into B stack */
+    }
+    B->lvl++; /* add new value into B stack */
     adjuststack(B);
   }
 }
@@ -449,8 +473,9 @@ static const char *getF (lua_State *L, void *ud, size_t *size)
     *size = 1;
     return "\n";
   }
-  if (feof(lf->f))
+  if (feof(lf->f)) {
     return NULL;
+  }
   *size = fread(lf->buff, 1, sizeof(lf->buff), lf->f);
   return (*size > 0) ? lf->buff : NULL;
 }
@@ -477,31 +502,37 @@ LUALIB_API int luaL_loadfile (lua_State *L, const char *filename)
   } else {
     lua_pushfstring(L, "@%s", filename);
     lf.f = fopen(filename, "r");
-    if (lf.f == NULL)
+    if (lf.f == NULL) {
       return errfile(L, "open", fnameindex);
+    }
   }
   c = getc(lf.f);
   if (c == '#') { /* Unix exec. file? */
     lf.extraline = 1;
-    while ((c = getc(lf.f)) != EOF && c != '\n')
+    while ((c = getc(lf.f)) != EOF && c != '\n') {
       ; /* skip first line */
-    if (c == '\n')
+    }
+    if (c == '\n') {
       c = getc(lf.f);
+    }
   }
   if (c == LUA_SIGNATURE[0] && filename) { /* binary file? */
     lf.f = freopen(filename, "rb", lf.f);  /* reopen in binary mode */
-    if (lf.f == NULL)
+    if (lf.f == NULL) {
       return errfile(L, "reopen", fnameindex);
+    }
     /* skip eventual `#!...' */
-    while ((c = getc(lf.f)) != EOF && c != LUA_SIGNATURE[0])
+    while ((c = getc(lf.f)) != EOF && c != LUA_SIGNATURE[0]) {
       ;
+    }
     lf.extraline = 0;
   }
   ungetc(c, lf.f);
   status = lua_load(L, getF, &lf, lua_tostring(L, -1));
   readstatus = ferror(lf.f);
-  if (filename)
+  if (filename) {
     fclose(lf.f); /* close file (even in case of errors) */
+  }
   if (readstatus) {
     lua_settop(L, fnameindex); /* ignore results from `lua_load' */
     return errfile(L, "read", fnameindex);
@@ -519,8 +550,9 @@ static const char *getS (lua_State *L, void *ud, size_t *size)
 {
   LoadS *ls = (LoadS *) ud;
   (void) L;
-  if (ls->size == 0)
+  if (ls->size == 0) {
     return NULL;
+  }
   *size = ls->size;
   ls->size = 0;
   return ls->s;
@@ -565,8 +597,9 @@ static int panic (lua_State *L)
 LUALIB_API lua_State *luaL_newstate (void)
 {
   lua_State *L = lua_newstate(l_alloc, NULL);
-  if (L)
+  if (L) {
     lua_atpanic(L, &panic);
+  }
   return L;
 }
 
@@ -651,14 +684,15 @@ enum { TRACELEVELS2 = 10 }; /* size of the second part of the stack */
 
 static void pushfuncname (lua_State *L, const lua_Debug *ar)
 {
-  if (*ar->namewhat != '\0') /* is there a name? */
+  if (*ar->namewhat != '\0') { /* is there a name? */
     lua_pushfstring(L, "function '%s'", ar->name);
-  else if (*ar->what == 'm') /* main? */
+  } else if (*ar->what == 'm') { /* main? */
     lua_pushliteral(L, "main chunk");
-  else if (*ar->what == 'C' || *ar->what == 't')
+  } else if (*ar->what == 'C' || *ar->what == 't') {
     lua_pushliteral(L, "?");
-  else
+  } else {
     lua_pushfstring(L, "function <%s:%d>", ar->short_src, ar->linedefined);
+  }
 }
 
 static int countlevels (lua_State *L)
@@ -673,10 +707,11 @@ static int countlevels (lua_State *L)
   /* do a binary search */
   while (li < le) {
     int m = (li + le) / 2;
-    if (lua_getstack(L, m, &ar))
+    if (lua_getstack(L, m, &ar)) {
       li = m + 1;
-    else
+    } else {
       le = m;
+    }
   }
   return le - 1;
 }
@@ -688,8 +723,9 @@ LUALIB_API void luaL_traceback (lua_State *L, lua_State *L1, const char *msg,
   int top = lua_gettop(L);
   int numlevels = countlevels(L1);
   int mark = (numlevels > TRACELEVELS1 + TRACELEVELS2) ? TRACELEVELS1 : 0;
-  if (msg)
+  if (msg) {
     lua_pushfstring(L, "%s\n", msg);
+  }
   lua_pushliteral(L, "stack traceback:");
   while (lua_getstack(L1, level++, &ar)) {
     if (level == mark) {                /* too many levels? */
@@ -698,8 +734,9 @@ LUALIB_API void luaL_traceback (lua_State *L, lua_State *L1, const char *msg,
     } else {
       lua_getinfo(L1, "Sln", &ar);
       lua_pushfstring(L, "\n\t%s:", ar.short_src);
-      if (ar.currentline > 0)
+      if (ar.currentline > 0) {
         lua_pushfstring(L, "%d:", ar.currentline);
+      }
       lua_pushliteral(L, " in ");
       pushfuncname(L, &ar);
       lua_concat(L, lua_gettop(L) - top);
@@ -762,8 +799,9 @@ LUALIB_API const char *luaL_getlocaltaint (lua_State *L, const lua_Debug *ar,
   lua_checkstack(L, 1);
   lua_savetaint(L, &savedts);
   lua_setstacktaint(L, NULL);
-  if (lua_getlocal(L, ar, n))
+  if (lua_getlocal(L, ar, n)) {
     lua_pop(L, 1);
+  }
   taint = lua_getstacktaint(L);
   lua_restoretaint(L, &savedts);
 
@@ -778,8 +816,9 @@ LUALIB_API const char *luaL_getupvaluetaint (lua_State *L, int funcindex, int n)
   lua_checkstack(L, 1);
   lua_savetaint(L, &savedts);
   lua_setstacktaint(L, NULL);
-  if (lua_getupvalue(L, funcindex, n))
+  if (lua_getupvalue(L, funcindex, n)) {
     lua_pop(L, 1);
+  }
   taint = lua_getstacktaint(L);
   lua_restoretaint(L, &savedts);
 
@@ -843,8 +882,9 @@ LUALIB_API int luaL_securecall (lua_State *L, int nargs, int nresults,
                                 int errfunc)
 {
   int status = luaL_securepcall(L, nargs, nresults, errfunc);
-  if (status != 0)
+  if (status != 0) {
     lua_pop(L, 1);
+  }
   return status;
 }
 
@@ -928,8 +968,9 @@ static int f_securedelegate (lua_State *L)
   lua_restoretaint(L, &savedts);
   lua_settoptaint(L, nresults, lua_getstacktaint(L));
 
-  if (status != 0)
+  if (status != 0) {
     lua_error(L);
+  }
   return nresults;
 }
 
@@ -951,8 +992,9 @@ static int f_securehook (lua_State *L)
   /* Set up and call initial function */
   lua_checkstack(L, nargs + 1);
   lua_pushvalue(L, lua_upvalueindex(1));
-  for (argi = 1; argi <= nargs; ++argi)
+  for (argi = 1; argi <= nargs; ++argi) {
     lua_pushvalue(L, argi);
+  }
   lua_call(L, nargs, LUA_MULTRET);
   nresults = (lua_gettop(L) - nargs);
 
@@ -960,11 +1002,13 @@ static int f_securehook (lua_State *L)
   lua_checkstack(L, nargs + 1);
   lua_savetaint(L, &savedts);
   lua_pushvalue(L, lua_upvalueindex(2));
-  for (argi = 1; argi <= nargs; ++argi)
+  for (argi = 1; argi <= nargs; ++argi) {
     lua_pushvalue(L, argi);
+  }
   status = lua_pcall(L, nargs, 0, LUA_ERRORHANDLERINDEX);
-  if (status != 0)
+  if (status != 0) {
     lua_pop(L, 1);
+  }
   lua_restoretaint(L, &savedts);
 
   return nresults;
@@ -1006,8 +1050,9 @@ LUALIB_API int luaL_cpcallas (lua_State *L, lua_CFunction func, void *ud,
   lua_exchangetaint(L, ts);
   status = lua_cpcall(L, func, ud);
   lua_exchangetaint(L, ts);
-  if (status != 0)
+  if (status != 0) {
     lua_setvaluetaint(L, -1, lua_getstacktaint(L));
+  }
 
   return status;
 }

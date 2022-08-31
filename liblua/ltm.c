@@ -47,8 +47,9 @@ const TValue *luaT_gettm (Table *events, TMS event, TString *ename)
   if (ttisnil(tm)) {                         /* no tag method? */
     events->flags |= cast_byte(1u << event); /* cache this fact */
     return NULL;
-  } else
+  } else {
     return tm;
+  }
 }
 
 const TValue *luaT_gettmbyobj (lua_State *L, const TValue *o, TMS event)
