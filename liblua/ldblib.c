@@ -10,7 +10,6 @@
 #include "lua.h"
 
 #include "lauxlib.h"
-#include "lsyslib.h"
 #include "lualib.h"
 
 static int db_getregistry (lua_State *L)
@@ -305,7 +304,7 @@ static int db_debug (lua_State *L)
     const char *line;
     size_t len;
 
-    if (luaI_readline(L, "lua_debug> ") != 0) {
+    if (luaL_readline(L, "lua_debug> ") != 0) {
       return 0; /* error reading line */
     }
 
@@ -317,11 +316,11 @@ static int db_debug (lua_State *L)
 
     if (luaL_loadbuffer(L, line, len, "=(debug command)") ||
         lua_pcall(L, 0, 0, 0)) {
-      luaI_writestringerror("%s\n", lua_tostring(L, -1));
+      luaL_writestringerror("%s\n", lua_tostring(L, -1));
     }
 
     if (len > 0) {
-      luaI_saveline(L, line);
+      luaL_saveline(L, line);
     }
 
     lua_settop(L, 0); /* pop line and any errors */

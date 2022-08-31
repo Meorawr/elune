@@ -59,7 +59,6 @@ elune_target_headers(
   PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}/include/luaconf.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/lauxlib.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/lsyslib.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/lua.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/lua.hpp
     ${CMAKE_CURRENT_SOURCE_DIR}/include/lualib.h
@@ -85,7 +84,7 @@ target_sources(
     lparser.c         lparser.h
     lstate.c          lstate.h
     lstring.c         lstring.h
-    lsyslib.c
+    lsysapi.c
     ltable.c          ltable.h
     ltm.c             ltm.h
     lundump.c         lundump.h

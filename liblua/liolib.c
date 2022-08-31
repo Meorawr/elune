@@ -12,7 +12,6 @@
 #include "lua.h"
 
 #include "lauxlib.h"
-#include "lsyslib.h"
 #include "lualib.h"
 
 #define IO_INPUT 1
@@ -101,7 +100,7 @@ static int io_noclose (lua_State *L)
 static int io_pclose (lua_State *L)
 {
   FILE **p = tofilep(L);
-  int ok = luaI_pclose(L, *p);
+  int ok = luaL_pclose(L, *p);
   *p = NULL;
   return pushresult(L, ok, NULL);
 }
@@ -170,8 +169,8 @@ static int io_popen (lua_State *L)
   const char *filename = luaL_checkstring(L, 1);
   const char *mode = luaL_optstring(L, 2, "r");
   FILE **pf = newfile(L);
-  luaL_argcheck(L, luaI_checkpmode(L, mode), 2, "invalid mode");
-  *pf = luaI_popen(L, filename, mode);
+  luaL_argcheck(L, luaL_checkpopenmode(L, mode), 2, "invalid mode");
+  *pf = luaL_popen(L, filename, mode);
   return (*pf == NULL) ? pushresult(L, 0, filename) : 1;
 }
 

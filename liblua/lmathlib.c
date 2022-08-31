@@ -7,7 +7,6 @@
 #include "lua.h"
 
 #include "lauxlib.h"
-#include "lsyslib.h"
 #include "lualib.h"
 
 #include <math.h>
@@ -232,7 +231,7 @@ static int math_fastrandom (lua_State *L)
 
 static int math_securerandom (lua_State *L)
 {
-  return randomrange(L, luaI_securerandom(L));
+  return randomrange(L, luaL_securerandom(L));
 }
 
 static int math_randomseed (lua_State *L)

@@ -10,8 +10,6 @@
 
 #include "lua.h"
 
-#include "lsyslib.h"
-
 #include "lapi.h"
 #include "lcode.h"
 #include "ldebug.h"
@@ -682,6 +680,9 @@ void luaG_runerror (lua_State *L, const char *fmt, ...)
   va_end(argp);
   luaG_errormsg(L);
 }
+
+LUAI_FUNC lua_Clock luaI_clocktime (lua_State *L);
+LUAI_FUNC lua_Clock luaI_clockrate (lua_State *L);
 
 void luaG_init (global_State *g)
 {

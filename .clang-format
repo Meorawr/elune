@@ -16,7 +16,7 @@ IncludeBlocks: Regroup
 IncludeCategories:
   - Regex: '^(<|")(lua|luaconf).h'
     Priority: 1
-  - Regex: '^(<|")(lauxlib|lsyslib|lualib).h'
+  - Regex: '^(<|")(lauxlib|lualib).h'
     Priority: 2
   - Regex: '^"l[[:alnum:]]+.h"$'
     Priority: 3

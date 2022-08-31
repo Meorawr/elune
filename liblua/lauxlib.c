@@ -18,7 +18,6 @@
 #include "lua.h"
 
 #include "lauxlib.h"
-#include "lsyslib.h"
 
 #define FREELIST_REF 0 /* free list of references */
 
@@ -558,7 +557,7 @@ static void *l_alloc (void *ud, void *ptr, size_t osize, size_t nsize)
 
 static int panic (lua_State *L)
 {
-  luaI_writestringerror("PANIC: unprotected error in call to Lua API (%s)\n",
+  luaL_writestringerror("PANIC: unprotected error in call to Lua API (%s)\n",
                         lua_tostring(L, -1));
   return 0; /* return to Lua to abort */
 }

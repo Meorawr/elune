@@ -7,7 +7,6 @@
 #include "lua.h"
 
 #include "lauxlib.h"
-#include "lsyslib.h"
 #include "lualib.h"
 
 #include <ctype.h>
@@ -29,11 +28,11 @@ static int luaB_print (lua_State *L)
     if (s == NULL)
       return luaL_error(L, "'tostring' must return a string to 'print'");
     if (i > 1)
-      luaI_writestring("\t", 1);
-    luaI_writestring(s, l);
+      luaL_writestring("\t", 1);
+    luaL_writestring(s, l);
     lua_pop(L, 1); /* pop result */
   }
-  luaI_writeline();
+  luaL_writeline();
   return 0;
 }
 

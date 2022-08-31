@@ -13,7 +13,6 @@
 #include "lua.h"
 
 #include "lauxlib.h"
-#include "lsyslib.h"
 #include "lualib.h"
 
 static int os_pushresult (lua_State *L, int i, const char *filename)
@@ -51,7 +50,7 @@ static int os_rename (lua_State *L)
 
 static int os_tmpname (lua_State *L)
 {
-  if (luaI_tmpname(L) != 0) {
+  if (luaL_tmpname(L) != 0) {
     return luaL_error(L, "unable to generate a unique filename");
   } else {
     return 1;
