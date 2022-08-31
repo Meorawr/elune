@@ -707,6 +707,67 @@ LUALIB_API void luaL_setfuncs (lua_State *L, const luaL_Reg *l, int nup) {
 
 
 /**
+ * Message and error reporting functions
+ */
+
+enum { TRACELEVELS1 = 12 };  /* size of the first part of the stack */
+enum { TRACELEVELS2 = 10 };  /* size of the second part of the stack */
+
+
+static void pushfuncname (lua_State *L, const lua_Debug *ar) {
+  if (*ar->namewhat != '\0')  /* is there a name? */
+    lua_pushfstring(L, "function " LUA_QS, ar->name);
+  else if (*ar->what == 'm')  /* main? */
+    lua_pushliteral(L, "main chunk");
+  else if (*ar->what == 'C' || *ar->what == 't')
+    lua_pushliteral(L, "?");
+  else
+    lua_pushfstring(L, "function <%s:%d>", ar->short_src, ar->linedefined);
+}
+
+
+static int countlevels (lua_State *L) {
+  lua_Debug ar;
+  int li = 1, le = 1;
+  /* find an upper bound */
+  while (lua_getstack(L, le, &ar)) { li = le; le *= 2; }
+  /* do a binary search */
+  while (li < le) {
+    int m = (li + le)/2;
+    if (lua_getstack(L, m, &ar)) li = m + 1;
+    else le = m;
+  }
+  return le - 1;
+}
+
+
+LUALIB_API void luaL_traceback (lua_State *L, lua_State *L1, const char *msg, int level) {
+  lua_Debug ar;
+  int top = lua_gettop(L);
+  int numlevels = countlevels(L1);
+  int mark = (numlevels > TRACELEVELS1 + TRACELEVELS2) ? TRACELEVELS1 : 0;
+  if (msg) lua_pushfstring(L, "%s\n", msg);
+  lua_pushliteral(L, "stack traceback:");
+  while (lua_getstack(L1, level++, &ar)) {
+    if (level == mark) {  /* too many levels? */
+      lua_pushliteral(L, "\n\t...");  /* add a '...' */
+      level = numlevels - TRACELEVELS2;  /* and skip to last ones */
+    }
+    else {
+      lua_getinfo(L1, "Sln", &ar);
+      lua_pushfstring(L, "\n\t%s:", ar.short_src);
+      if (ar.currentline > 0)
+        lua_pushfstring(L, "%d:", ar.currentline);
+      lua_pushliteral(L, " in ");
+      pushfuncname(L, &ar);
+      lua_concat(L, lua_gettop(L) - top);
+    }
+  }
+  lua_concat(L, lua_gettop(L) - top);
+}
+
+
+/**
  * Security APIs
  */
 
