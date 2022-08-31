@@ -27,12 +27,11 @@
 #include "lvm.h"
 
 
-
-const char lua_ident[] =
-  "$Lua: " LUA_RELEASE " " LUA_COPYRIGHT " $\n"
-  "$Authors: " LUA_AUTHORS " $\n"
-  "$URL: www.lua.org $\n";
-
+LUA_API const char lua_ident[] =
+  "$LuaVersion: " LUA_RELEASE "  " LUA_COPYRIGHT " $"
+  "$LuaAuthors: " LUA_AUTHORS " $"
+  "$EluneVersion: " ELUNE_RELEASE "  " ELUNE_COPYRIGHT " $"
+  "$EluneAuthors: " ELUNE_AUTHORS " $";
 
 
 #define api_checknelems(L, n)	api_check(L, (n) <= (L->top - L->base))
