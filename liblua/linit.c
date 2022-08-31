@@ -27,7 +27,7 @@ static const luaL_Reg lualibs[] = {
     /* clang-format on */
 };
 
-static const luaL_Reg wowlibs[] = {
+static const luaL_Reg reflibs[] = {
     { LUA_BASELIBNAME, luaopen_wow_base },
     { LUA_BITLIBNAME, luaopen_wow_bit },
     { LUA_DBLIBNAME, luaopen_wow_debug },
@@ -51,9 +51,24 @@ static void openlibs (lua_State *L, const luaL_Reg *lib) {
 }
 
 LUALIB_API void luaL_openlibs (lua_State *L) {
-    openlibs(L, lualibs);
+    luaL_openlibsx(L, LUALIB_STANDARD);
 }
 
-LUALIB_API void luaL_openwowlibs (lua_State *L) {
-    openlibs(L, wowlibs);
+LUALIB_API void luaL_openlibsx (lua_State *L, int type) {
+    switch (type) {
+        case LUALIB_STANDARD:
+            openlibs(L, lualibs);
+            break;
+        case LUALIB_REFERENCE:
+            openlibs(L, reflibs);
+            break;
+    }
+}
+
+LUALIB_API int luaopen_wow (lua_State *L) {
+    lua_createtable(L, 0, 2);
+    lua_pushvalue(L, -1);
+    lua_replace(L, LUA_ENVIRONINDEX);
+    luaL_openlibsx(L, LUALIB_REFERENCE);
+    return 1;
 }

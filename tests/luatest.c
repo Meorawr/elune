@@ -106,7 +106,7 @@ static int luatest_case (lua_State *L) {
 
 static void test_scriptcases (void) {
     lua_State *L = luatest_newstate();
-    luaL_openwowlibs(L);
+    luaL_openlibsx(L, LUALIB_REFERENCE);
 
     /* Add custom test case registration function to environment. */
     lua_pushcclosure(L, &luatest_case, 0);

@@ -74,9 +74,8 @@ static void print_usage (const char *badoption) {
         "  -p         enable profiling and statistics collection\n"
         "  -t         load and execute scripts insecurely\n"
         "  -v         show version information\n"
-        "  -w         load WoW-compatible standard libraries\n"
         "  -E         ignore environment variables\n"
-        "  -L         disable loading Lua standard libraries\n"
+        "  -L lua|wow require base library set(s) on startup\n"
         "  -T         disable taint propagation on startup\n"
         "  --         stop handling options\n"
         "  -          stop handling options and execute stdin\n",
@@ -261,9 +260,8 @@ enum {
     has_e = 8, /* -e */
     has_E = 16, /* -E */
     has_p = 32, /* -p */
-    has_w = 64, /* -w */
+    has_T = 64, /* -T */
     has_L = 128, /* -L */
-    has_T = 256, /* -T */
 };
 
 /*
@@ -306,18 +304,6 @@ static int collectargs (char **argv, int *first) {
                     return has_error; /* invalid option */
                 }
                 break;
-            case 'w':
-                if (argv[i][2] != '\0') { /* extra characters? */
-                    return has_error; /* invalid option */
-                }
-                args |= has_w;
-                break;
-            case 'L':
-                if (argv[i][2] != '\0') { /* extra characters? */
-                    return has_error; /* invalid option */
-                }
-                args |= has_L;
-                break;
             case 'T':
                 if (argv[i][2] != '\0') { /* extra characters? */
                     return has_error; /* invalid option */
@@ -336,7 +322,12 @@ static int collectargs (char **argv, int *first) {
             case 'e':
                 args |= has_e;
                 LUA_FALLTHROUGH;
-            case 'l': /* both options need an argument */
+                goto check_has_argument;
+            case 'L':
+                args |= has_L;
+                goto check_has_argument;
+            case 'l': /* all three options need an argument */
+            check_has_argument:
                 if (argv[i][2] == '\0') { /* no concatenated argument? */
                     i++; /* try next 'argv' */
                     if (argv[i] == NULL || argv[i][0] == '-') {
@@ -351,6 +342,49 @@ static int collectargs (char **argv, int *first) {
     }
     *first = i; /* no script name */
     return args;
+}
+
+/*
+** Processes option 'L' to load base libraries for the Lua state.
+*/
+static int libargs (lua_State *L, char **argv, int n) {
+    int i;
+    int loaded = 0;
+
+    for (i = 1; i < n; i++) {
+        int option = argv[i][1];
+        lua_assert(argv[i][0] == '-'); /* already checked */
+
+        if (option == 'L') {
+            char *extra = argv[i] + 2; /* both options need an argument */
+
+            if (*extra == '\0') {
+                extra = argv[++i];
+            }
+
+            lua_assert(extra != NULL);
+
+            if (strcmp(extra, "lua") == 0) {
+                luaL_openlibsx(L, LUALIB_STANDARD);
+                loaded = 1;
+            } else if (strcmp(extra, "wow") == 0) {
+                luaL_openlibsx(L, LUALIB_REFERENCE);
+                loaded = 1;
+            } else {
+                lua_pushfstring(L, "unknown base library type: %s", extra);
+                report(L, LUA_ERRRUN);
+                return 0;
+            }
+        }
+    }
+
+    if (!loaded) {
+        /* Load both libraries with standard taking priority by default. */
+        luaL_openlibsx(L, LUALIB_REFERENCE);
+        luaL_openlibsx(L, LUALIB_STANDARD);
+    }
+
+    return 1;
 }
 
 /*
@@ -590,11 +624,8 @@ static int pmain (lua_State *L) {
         lua_pushboolean(L, 1); /* signal for libraries to ignore env. vars. */
         lua_setfield(L, LUA_REGISTRYINDEX, "LUA_NOENV");
     }
-    if (!(args & has_L)) { /* option '-L' not specified? */
-        luaL_openlibs(L); /* open lua standard libraries */
-    }
-    if (args & has_w) { /* option '-w'? */
-        luaL_openwowlibs(L); /* open WoW standard libraries */
+    if (!libargs(L, argv, script)) { /* execute argument -L */
+        return 0; /* something failed */
     }
     createargtable(L, argv, argc, script); /* create table 'arg' */
     lua_pushcclosure(L, errhandler, 0);

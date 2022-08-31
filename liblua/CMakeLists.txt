@@ -106,7 +106,6 @@ target_sources(
     lstatslib.c
     lstrlib.c
     ltablib.c
-    lwowlib.c
     linit.c
 )
 
