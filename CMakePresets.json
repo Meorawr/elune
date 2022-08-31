@@ -24,7 +24,6 @@
     },
     {
       "name": "windows",
-      "displayName": "Windows",
       "inherits": "base",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "cl.exe",
@@ -40,34 +39,7 @@
       }
     },
     {
-      "name": "windows-amd64",
-      "displayName": "Windows (amd64)",
-      "inherits": "windows",
-      "toolset": {
-        "strategy": "external",
-        "value": "host=x64"
-      },
-      "architecture": {
-        "strategy": "external",
-        "value": "x64"
-      }
-    },
-    {
-      "name": "windows-x86",
-      "displayName": "Windows (x86)",
-      "inherits": "windows",
-      "toolset": {
-        "strategy": "external",
-        "value": "host=x86"
-      },
-      "architecture": {
-        "strategy": "external",
-        "value": "x86"
-      }
-    },
-    {
       "name": "linux",
-      "displayName": "Linux",
       "inherits": "base",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "gcc",
@@ -77,7 +49,6 @@
     },
     {
       "name": "macos",
-      "displayName": "macOS",
       "inherits": "base",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang",
@@ -89,63 +60,18 @@
   "buildPresets": [
     {
       "name": "windows",
-      "displayName": "Windows (optimized)",
       "configurePreset": "windows",
       "configuration": "Release"
-    },
-    {
-      "name": "windows-debug",
-      "displayName": "Windows (unoptimized)",
-      "configurePreset": "windows",
-      "configuration": "Debug"
-    },
-    {
-      "name": "windows-amd64",
-      "displayName": "Windows amd64 (optimized)",
-      "configurePreset": "windows-amd64",
-      "configuration": "Release"
-    },
-    {
-      "name": "windows-amd64-debug",
-      "displayName": "Windows amd64 (unoptimized)",
-      "configurePreset": "windows-amd64",
-      "configuration": "Debug"
-    },
-    {
-      "name": "windows-x86",
-      "displayName": "Windows x86 (optimized)",
-      "configurePreset": "windows-x86",
-      "configuration": "Release"
-    },
-    {
-      "name": "windows-x86-debug",
-      "displayName": "Windows x86 (unoptimized)",
-      "configurePreset": "windows-x86",
-      "configuration": "Debug"
     },
     {
       "name": "macos",
-      "displayName": "macOS (optimized)",
       "configurePreset": "macos",
       "configuration": "Release"
-    },
-    {
-      "name": "macos-debug",
-      "displayName": "macOS (unoptimized)",
-      "configurePreset": "macos",
-      "configuration": "Debug"
     },
     {
       "name": "linux",
-      "displayName": "Linux (optimized)",
       "configurePreset": "linux",
       "configuration": "Release"
-    },
-    {
-      "name": "linux-debug",
-      "displayName": "Linux (unoptimized)",
-      "configurePreset": "linux",
-      "configuration": "Debug"
     }
   ]
 }
