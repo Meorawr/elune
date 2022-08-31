@@ -1140,6 +1140,42 @@ LUA_API int lua_toint (lua_State *L, int idx) {
 }
 
 
+static UpVal **getupvalref (lua_State *L, int fidx, int n, LClosure **pf) {
+  LClosure *f;
+  StkId fi = index2adr(L, fidx);
+  api_check(L, isLfunction(fi));  /* Lua function expected */
+  f = &clvalue(fi)->l;
+  api_check(L, (1 <= n && n <= f->p->sizeupvalues));  /* invalid upvalue index */
+  if (pf) *pf = f;
+  return &f->upvals[n - 1];  /* get its upvalue pointer */
+}
+
+
+LUA_API void *lua_upvalueid (lua_State *L, int fidx, int n) {
+  StkId fi = index2adr(L, fidx);
+  api_check(L, ttisfunction(fi));
+
+  if (isLfunction(fi)) {  /* Lua closure */
+    return *getupvalref(L, fidx, n, NULL);
+  } else if (iscfunction(fi)) { /* C closure */
+    CClosure *f = &clvalue(fi)->c;
+    api_check(L, 1 <= n && n <= f->nupvalues);  /* invalid upvalue index */
+    return &f->upvalue[n - 1];
+  } else {
+    return NULL;
+  }
+}
+
+
+LUA_API void lua_upvaluejoin (lua_State *L, int fidx1, int n1, int fidx2, int n2) {
+  LClosure *f1;
+  UpVal **up1 = getupvalref(L, fidx1, n1, &f1);
+  UpVal **up2 = getupvalref(L, fidx2, n2, NULL);
+  *up1 = *up2;
+  luaC_objbarrier(L, f1, *up2);
+}
+
+
 /**
  * Core Security APIs
  */
