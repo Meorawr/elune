@@ -1,5 +1,5 @@
 /*
-** tainted-lua tests
+** elune tests
 **
 ** Licensed under the terms of the MIT License; see full copyright information
 ** in the "LICENSE" file or at <http://www.lua.org/license.html>

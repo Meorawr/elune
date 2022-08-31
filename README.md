@@ -1,6 +1,6 @@
-# tainted-lua
+# elune
 
-tainted-lua is a customized Lua 5.1 implementation extending the virtual machine with a tainted execution model based off the World of Warcraft user interface environment.
+elune is a customized Lua 5.1 implementation extending the virtual machine with a tainted execution model based off the World of Warcraft user interface environment.
 
 A high-level overview of how the tainted execution model works can be boiled down to these three points.
 

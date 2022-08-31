@@ -1,8 +1,8 @@
-add_executable(tainted-luatest)
-add_executable(meorawr::tainted-luatest ALIAS tainted-luatest)
+add_executable(luatest)
+add_executable(elune::luatest ALIAS luatest)
 
 set_target_properties(
-  tainted-luatest
+  luatest
   PROPERTIES
     OUTPUT_NAME "luatest"
     C_EXTENSIONS OFF
@@ -11,14 +11,14 @@ set_target_properties(
 )
 
 target_link_libraries(
-  tainted-luatest
+  luatest
   PRIVATE
-    meorawr::tainted-liblua
+    elune::liblua
     mity::acutest
 )
 
 target_sources(
-  tainted-luatest
+  luatest
   PRIVATE
     luatest.c
     luatest_scriptcases.lua
@@ -28,7 +28,7 @@ target_sources(
 # embedded automatically.
 
 get_property(GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
-get_property(RUNTIME_OUTPUT_DIRECTORY TARGET tainted-luatest PROPERTY RUNTIME_OUTPUT_DIRECTORY)
+get_property(RUNTIME_OUTPUT_DIRECTORY TARGET luatest PROPERTY RUNTIME_OUTPUT_DIRECTORY)
 
 set(luatest_script_source "${CMAKE_CURRENT_SOURCE_DIR}/luatest_scriptcases.lua")
 set(luatest_script_output "${RUNTIME_OUTPUT_DIRECTORY}/$<$<BOOL:${GENERATOR_IS_MULTI_CONFIG}>:$<CONFIG>/>luatest_scriptcases.lua")
@@ -47,7 +47,7 @@ set_source_files_properties(
 )
 
 target_sources(
-  tainted-luatest
+  luatest
   PRIVATE
     ${luatest_script_source}
     ${luatest_script_output}

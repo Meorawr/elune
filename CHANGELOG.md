@@ -47,5 +47,5 @@
 - Added all math library extensions present in the in-game environment as well as their global aliases.
 - Added all global aliases to the OS libary functions as present in the in-game environment.
 
-[Unreleased]: https://github.com/Meorawr/tainted-lua/compare/v1...HEAD
-[v1]: https://github.com/Meorawr/tainted-lua/releases/tag/v1
+[Unreleased]: https://github.com/Meorawr/elune/compare/v1...HEAD
+[v1]: https://github.com/Meorawr/elune/releases/tag/v1

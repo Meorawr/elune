@@ -10,14 +10,14 @@ check_symbol_exists(BCryptGenRandom "windows.h;bcrypt.h" LUA_USE_BCRYPT_GEN_RAND
 set(CMAKE_REQUIRED_LIBRARIES)
 
 # -----------------------------------------------------------------------------
-# Lua library target (meorawr::tainted-liblua)
+# Lua library target (elune::liblua)
 # -----------------------------------------------------------------------------
 
-add_library(tainted-liblua)
-add_library(meorawr::tainted-liblua ALIAS tainted-liblua)
+add_library(liblua)
+add_library(elune::liblua ALIAS liblua)
 
 set_target_properties(
-  tainted-liblua
+  liblua
   PROPERTIES
     OUTPUT_NAME ${LIBLUA_OUTPUT_NAME}
     C_EXTENSIONS OFF
@@ -26,12 +26,12 @@ set_target_properties(
 )
 
 target_compile_definitions(
-  tainted-liblua
+  liblua
   PUBLIC
     $<$<PLATFORM_ID:Linux>:LUA_USE_LINUX>
     $<$<PLATFORM_ID:Darwin>:LUA_USE_MACOSX>
     $<$<PLATFORM_ID:Windows>:LUA_USE_WINDOWS>
-    $<$<AND:$<PLATFORM_ID:Windows>,$<STREQUAL:$<TARGET_PROPERTY:tainted-liblua,TYPE>,SHARED_LIBRARY>>:LUA_BUILD_AS_DLL>
+    $<$<AND:$<PLATFORM_ID:Windows>,$<STREQUAL:$<TARGET_PROPERTY:liblua,TYPE>,SHARED_LIBRARY>>:LUA_BUILD_AS_DLL>
   PRIVATE
     $<$<CONFIG:Debug>:LUA_USE_ASSERT>     # Enable internal assertions on debug builds.
     $<$<CONFIG:Debug>:LUA_USE_APICHECK>   # Enable public API assertions on debug builds.
@@ -43,13 +43,13 @@ target_compile_definitions(
 )
 
 target_include_directories(
-  tainted-liblua
+  liblua
   PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 target_link_libraries(
-  tainted-liblua
+  liblua
   PRIVATE
     $<$<PLATFORM_ID:Darwin,Linux>:dl>
     $<$<PLATFORM_ID:Darwin,Linux>:m>
@@ -60,7 +60,7 @@ target_link_libraries(
 set(liblua_PUBLIC_HEADERS lua.h lauxlib.h lualib.h luaconf.h lua.hpp)
 
 target_sources(
-  tainted-liblua
+  liblua
   PRIVATE
     # Public headers
     ${liblua_PUBLIC_HEADERS}
@@ -112,20 +112,20 @@ source_group(
 )
 
 set_target_properties(
-  tainted-liblua
+  liblua
   PROPERTIES
     PUBLIC_HEADER "${liblua_PUBLIC_HEADERS}"  # Must be a string representation of a list.
 )
 
 # -----------------------------------------------------------------------------
-# Lua interpreter target (meorawr::tainted-lua)
+# Lua interpreter target (elune::lua)
 # -----------------------------------------------------------------------------
 
-add_executable(tainted-lua)
-add_executable(meorawr::tainted-lua ALIAS tainted-lua)
+add_executable(lua)
+add_executable(elune::lua ALIAS lua)
 
 set_target_properties(
-  tainted-lua
+  lua
   PROPERTIES
     OUTPUT_NAME ${LUA_OUTPUT_NAME}
     C_EXTENSIONS OFF
@@ -136,27 +136,27 @@ set_target_properties(
 )
 
 target_link_libraries(
-  tainted-lua
+  lua
   PRIVATE
-    meorawr::tainted-liblua
+    elune::liblua
     $<$<PLATFORM_ID:Darwin,Linux>:readline>
 )
 
 target_sources(
-  tainted-lua
+  lua
   PRIVATE
     lua.c
 )
 
 # -----------------------------------------------------------------------------
-# Lua compiler target (meorawr::tainted-luac)
+# Lua compiler target (elune::luac)
 # -----------------------------------------------------------------------------
 
-add_executable(tainted-luac)
-add_executable(meorawr::tainted-luac ALIAS tainted-luac)
+add_executable(luac)
+add_executable(elune::luac ALIAS luac)
 
 set_target_properties(
-  tainted-luac
+  luac
   PROPERTIES
     OUTPUT_NAME ${LUAC_OUTPUT_NAME}
     C_EXTENSIONS OFF
@@ -165,15 +165,15 @@ set_target_properties(
 )
 
 target_link_libraries(
-  tainted-luac
+  luac
   PRIVATE
-    $<TARGET_GENEX_EVAL:tainted-liblua,$<TARGET_PROPERTY:tainted-liblua,LINK_LIBRARIES>>
+    $<TARGET_GENEX_EVAL:liblua,$<TARGET_PROPERTY:liblua,LINK_LIBRARIES>>
 )
 
 target_sources(
-  tainted-luac
+  luac
   PRIVATE
     luac.c
     print.c
-    $<TARGET_OBJECTS:tainted-liblua>
+    $<TARGET_OBJECTS:liblua>
 )

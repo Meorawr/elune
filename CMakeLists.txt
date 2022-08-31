@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.21)
 
 project(
-  tainted-lua
-  DESCRIPTION "Lua 5.1 with support for World of Warcraft-style tainted execution"
-  HOMEPAGE_URL "https://github.com/Meorawr/tainted-lua"
+  elune
+  DESCRIPTION "Customized Lua 5.1 distribution aimed at replicating the World of Warcraft addon environment"
+  HOMEPAGE_URL "https://github.com/Meorawr/elune"
   LANGUAGES C
 )
 
@@ -39,9 +39,9 @@ endif()
 if(BUILD_INSTALL)
   install(
     TARGETS
-      tainted-liblua
-      tainted-lua
-      tainted-luac
+      liblua
+      lua
+      luac
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
