@@ -25,7 +25,6 @@ set_target_properties(
   PROPERTIES
     DEFINE_SYMBOL "LUA_BUILD_EXPORT"
     OUTPUT_NAME ${LIBLUA_OUTPUT_NAME}
-    SOVERSION 5.1.5
 )
 
 target_compile_definitions(
