@@ -2,7 +2,8 @@
 
 ## [Unreleased]
 ### Added
-- Added `strsplittable(delim, str[, limit])` string API.
+- Added `debugstack([thread, ][level, ntop, nbase, ...])` library API.
+- Added `strsplittable(delim, str[, limit])` library API.
 ### Changed
 - Fixed an issue where `strsplit()` would ignore the value supplied to the `limit` parameter.
 

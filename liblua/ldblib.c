@@ -460,6 +460,97 @@ static int db_debugprofilestop (lua_State *L) {
     return 1;
 }
 
+static int db_stack (lua_State *L) {
+    lua_State *L1 = L;
+    int level = 1;
+    int ntop = 12;
+    int nbase = 10;
+    int firstpart = 1;
+    int startlevel;
+    lua_Debug ar;
+
+    /* This is basically the Lua 5.0 version of debug.traceback, with added
+     * support for an optional thread and the top/base parameters. */
+
+    if (lua_type(L, 1) == LUA_TTHREAD) {
+        /* This is technically broken and can crash if the thread is garbage
+         * collected mid-stack generation - but such behavior is accurate to
+         * reference so... */
+        L1 = lua_tothread(L, 1);
+        lua_remove(L, 1);
+    }
+
+    if (lua_isnumber(L, 1)) {
+        level = (int) lua_tonumber(L, 1);
+        lua_remove(L, 1);
+    }
+
+    if (lua_isnumber(L, 1)) {
+        ntop = (int) lua_tonumber(L, 1);
+        lua_remove(L, 1);
+    }
+
+    if (lua_isnumber(L, 1)) {
+        nbase = (int) lua_tonumber(L, 1);
+        lua_remove(L, 1);
+    }
+
+    if (lua_gettop(L) == 0) {
+        lua_pushliteral(L, "");
+    } else if (!lua_isstring(L, 1)) {
+        return 1;
+    }
+
+    startlevel = level;
+
+    while (lua_getstack(L1, level++, &ar)) {
+        if ((ntop + startlevel) < level && firstpart) {
+            if (!lua_getstack(L1, level + nbase, &ar)) {
+                level--;
+            } else {
+                lua_pushliteral(L, "...\n");
+                while (lua_getstack(L1, level + nbase, &ar)) {
+                    level++;
+                }
+            }
+
+            firstpart = 0;
+            continue;
+        }
+
+        lua_getinfo(L1, "Snl", &ar);
+        lua_pushfstring(L, "%s:", ar.short_src);
+
+        if (ar.currentline > 0) {
+            lua_pushfstring(L, "%d:", ar.currentline);
+        }
+
+        switch (*ar.namewhat) {
+            case 'g':
+            case 'l':
+            case 'f':
+            case 'm':
+                lua_pushfstring(L, " in function `%s'", ar.name);
+                break;
+            default: {
+                if (*ar.what == 'm') {
+                    lua_pushfstring(L, " in main chunk");
+                } else if (*ar.what == 'C' || *ar.what == 't') {
+                    lua_pushliteral(L, " ?");
+                } else {
+                    lua_pushfstring(L, " in function <%s:%d>", ar.short_src, ar.linedefined);
+                }
+            }
+        }
+
+        lua_pushliteral(L, "\n");
+        lua_concat(L, lua_gettop(L));
+    }
+
+    lua_concat(L, lua_gettop(L));
+    return 1;
+}
+
 /**
  * Debug library registration
  */
@@ -496,7 +587,7 @@ static const luaL_Reg dblib_lua[] = {
 };
 
 static const luaL_Reg dblib_global[] = {
-    { "debugstack", NULL }, /* TODO: Implement me! */
+    { "debugstack", db_stack },
     { "debuglocals", NULL }, /* TODO: Implement me! */
     /* clang-format off */
     { NULL, NULL },
