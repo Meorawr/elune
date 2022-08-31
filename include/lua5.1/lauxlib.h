@@ -177,34 +177,34 @@ LUALIB_API void (luaL_pushresult) (luaL_Buffer *B);
 */
 
 
-LUALIB_API int luaL_issecure (lua_State *L);
-LUALIB_API int luaL_issecurevalue (lua_State *L, int idx);
-LUALIB_API int luaL_issecureobject (lua_State *L, int idx);
+LUALIB_API int (luaL_issecure) (lua_State *L);
+LUALIB_API int (luaL_issecurevalue) (lua_State *L, int idx);
+LUALIB_API int (luaL_issecureobject) (lua_State *L, int idx);
 
-LUALIB_API const char *luaL_gettabletaint (lua_State *L, int idx);
-LUALIB_API const char *luaL_getlocaltaint (lua_State *L, const lua_Debug *ar, int n);
-LUALIB_API const char *luaL_getupvaluetaint (lua_State *L, int funcindex, int n);
+LUALIB_API const char *(luaL_gettabletaint) (lua_State *L, int idx);
+LUALIB_API const char *(luaL_getlocaltaint) (lua_State *L, const lua_Debug *ar, int n);
+LUALIB_API const char *(luaL_getupvaluetaint) (lua_State *L, int funcindex, int n);
 
-LUALIB_API void luaL_settabletaint (lua_State *L, int idx, const char *name);
-LUALIB_API void luaL_setlocaltaint (lua_State *L, const lua_Debug *ar, int n, const char *name);
-LUALIB_API void luaL_setupvaluetaint (lua_State *L, int funcindex, int n, const char *name);
+LUALIB_API void (luaL_settabletaint) (lua_State *L, int idx, const char *name);
+LUALIB_API void (luaL_setlocaltaint) (lua_State *L, const lua_Debug *ar, int n, const char *name);
+LUALIB_API void (luaL_setupvaluetaint) (lua_State *L, int funcindex, int n, const char *name);
 
-LUALIB_API int luaL_securecall (lua_State *L, int nargs, int nresults, int errfunc);
-LUALIB_API int luaL_securepcall (lua_State *L, int nargs, int nresults, int errfunc);
-LUALIB_API int luaL_securecpcall (lua_State *L, lua_CFunction func, void *ud);
-LUALIB_API void luaL_secureforeach (lua_State *L, int idx, int errfunc);
+LUALIB_API int (luaL_securecall) (lua_State *L, int nargs, int nresults, int errfunc);
+LUALIB_API int (luaL_securepcall) (lua_State *L, int nargs, int nresults, int errfunc);
+LUALIB_API int (luaL_securecpcall) (lua_State *L, lua_CFunction func, void *ud);
+LUALIB_API void (luaL_secureforeach) (lua_State *L, int idx, int errfunc);
 
-LUALIB_API void luaL_createdelegate (lua_State *L);
-LUALIB_API void luaL_createsecuredelegate (lua_State *L);
-LUALIB_API void luaL_createsecurehook (lua_State *L);
-LUALIB_API void luaL_forceinsecure (lua_State *L);
+LUALIB_API void (luaL_createdelegate) (lua_State *L);
+LUALIB_API void (luaL_createsecuredelegate) (lua_State *L);
+LUALIB_API void (luaL_createsecurehook) (lua_State *L);
+LUALIB_API void (luaL_forceinsecure) (lua_State *L);
 
-LUALIB_API int luaL_pcallas (lua_State *L, int nargs, int nresults, int errfunc, lua_TaintState *ts);
-LUALIB_API int luaL_cpcallas (lua_State *L, lua_CFunction func, void *ud, lua_TaintState *ts);
-LUALIB_API int luaL_loadas (lua_State *L, lua_Reader reader, void *dt, const char *chunkname, lua_TaintState *ts);
-LUALIB_API int luaL_loadfileas (lua_State *L, const char *filename, lua_TaintState *ts);
-LUALIB_API int luaL_loadbufferas (lua_State *L, const char *buff, size_t sz, const char *chunkname, lua_TaintState *ts);
-LUALIB_API int luaL_loadstringas (lua_State *L, const char *s, lua_TaintState *ts);
+LUALIB_API int (luaL_pcallas) (lua_State *L, int nargs, int nresults, int errfunc, lua_TaintState *ts);
+LUALIB_API int (luaL_cpcallas) (lua_State *L, lua_CFunction func, void *ud, lua_TaintState *ts);
+LUALIB_API int (luaL_loadas) (lua_State *L, lua_Reader reader, void *dt, const char *chunkname, lua_TaintState *ts);
+LUALIB_API int (luaL_loadfileas) (lua_State *L, const char *filename, lua_TaintState *ts);
+LUALIB_API int (luaL_loadbufferas) (lua_State *L, const char *buff, size_t sz, const char *chunkname, lua_TaintState *ts);
+LUALIB_API int (luaL_loadstringas) (lua_State *L, const char *s, lua_TaintState *ts);
 
 
 /* }====================================================================== */

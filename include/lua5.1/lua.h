@@ -253,7 +253,7 @@ LUA_API int   (lua_next) (lua_State *L, int idx);
 LUA_API void  (lua_concat) (lua_State *L, int n);
 
 LUA_API lua_Alloc (lua_getallocf) (lua_State *L, void **ud);
-LUA_API void lua_setallocf (lua_State *L, lua_Alloc f, void *ud);
+LUA_API void (lua_setallocf) (lua_State *L, lua_Alloc f, void *ud);
 
 /*
 ** ===============================================================
@@ -383,23 +383,23 @@ typedef struct lua_Debug lua_Debug;  /* activation record */
 typedef void (*lua_Hook) (lua_State *L, lua_Debug *ar);
 
 
-LUA_API int lua_getstack (lua_State *L, int level, lua_Debug *ar);
-LUA_API int lua_getinfo (lua_State *L, const char *what, lua_Debug *ar);
-LUA_API const char *lua_getlocal (lua_State *L, const lua_Debug *ar, int n);
-LUA_API const char *lua_setlocal (lua_State *L, const lua_Debug *ar, int n);
-LUA_API const char *lua_getupvalue (lua_State *L, int funcindex, int n);
-LUA_API const char *lua_setupvalue (lua_State *L, int funcindex, int n);
+LUA_API int (lua_getstack) (lua_State *L, int level, lua_Debug *ar);
+LUA_API int (lua_getinfo) (lua_State *L, const char *what, lua_Debug *ar);
+LUA_API const char *(lua_getlocal) (lua_State *L, const lua_Debug *ar, int n);
+LUA_API const char *(lua_setlocal) (lua_State *L, const lua_Debug *ar, int n);
+LUA_API const char *(lua_getupvalue) (lua_State *L, int funcindex, int n);
+LUA_API const char *(lua_setupvalue) (lua_State *L, int funcindex, int n);
 
-LUA_API int lua_sethook (lua_State *L, lua_Hook func, int mask, int count);
-LUA_API lua_Hook lua_gethook (lua_State *L);
-LUA_API int lua_gethookmask (lua_State *L);
-LUA_API int lua_gethookcount (lua_State *L);
+LUA_API int (lua_sethook) (lua_State *L, lua_Hook func, int mask, int count);
+LUA_API lua_Hook (lua_gethook) (lua_State *L);
+LUA_API int (lua_gethookmask) (lua_State *L);
+LUA_API int (lua_gethookcount) (lua_State *L);
 
-LUA_API int lua_getexceptmask (lua_State *L);
-LUA_API void lua_setexceptmask (lua_State *L, int mask);
+LUA_API int (lua_getexceptmask) (lua_State *L);
+LUA_API void (lua_setexceptmask) (lua_State *L, int mask);
 
-LUA_API void lua_getscripttimeout (lua_State *L, lua_ScriptTimeout *timeout);
-LUA_API void lua_setscripttimeout (lua_State *L, const lua_ScriptTimeout *timeout);
+LUA_API void (lua_getscripttimeout) (lua_State *L, lua_ScriptTimeout *timeout);
+LUA_API void (lua_setscripttimeout) (lua_State *L, const lua_ScriptTimeout *timeout);
 
 
 struct lua_Debug {
@@ -443,18 +443,18 @@ typedef struct lua_FunctionStats {
   lua_clock_t subticks;  /* as above but including calls to subroutines */
 } lua_FunctionStats;
 
-LUA_API lua_clock_t lua_gettickcount (lua_State *L);
-LUA_API lua_clock_t lua_gettickfrequency (lua_State *L);
+LUA_API lua_clock_t (lua_gettickcount) (lua_State *L);
+LUA_API lua_clock_t (lua_gettickfrequency) (lua_State *L);
 
-LUA_API int lua_isprofilingenabled (lua_State *L);
-LUA_API void lua_setprofilingenabled (lua_State *L, int enable);
+LUA_API int (lua_isprofilingenabled) (lua_State *L);
+LUA_API void (lua_setprofilingenabled) (lua_State *L, int enable);
 
-LUA_API void lua_collectstats (lua_State *L);
-LUA_API void lua_resetstats (lua_State *L);
+LUA_API void (lua_collectstats) (lua_State *L);
+LUA_API void (lua_resetstats) (lua_State *L);
 
-LUA_API void lua_getglobalstats (lua_State *L, lua_GlobalStats *stats);
-LUA_API void lua_getsourcestats (lua_State *L, const char *source, lua_SourceStats *stats);
-LUA_API void lua_getfunctionstats (lua_State *L, int funcindex, lua_FunctionStats *stats);
+LUA_API void (lua_getglobalstats) (lua_State *L, lua_GlobalStats *stats);
+LUA_API void (lua_getsourcestats) (lua_State *L, const char *source, lua_SourceStats *stats);
+LUA_API void (lua_getfunctionstats) (lua_State *L, int funcindex, lua_FunctionStats *stats);
 
 
 /* }====================================================================== */
@@ -481,36 +481,36 @@ typedef struct lua_TaintState {
   const char *newclosuretaint;
 } lua_TaintState;
 
-LUA_API int  lua_gettaintmode (lua_State *L);
-LUA_API void lua_settaintmode (lua_State *L, int mode);
-LUA_API int  lua_istaintexpected (lua_State *L);
+LUA_API int  (lua_gettaintmode) (lua_State *L);
+LUA_API void (lua_settaintmode) (lua_State *L, int mode);
+LUA_API int  (lua_istaintexpected) (lua_State *L);
 
-LUA_API void lua_taintstack (lua_State *L, const char *name);
-LUA_API void lua_taintvalue (lua_State *L, int idx);
-LUA_API void lua_taintobject (lua_State *L, int idx);
-LUA_API void lua_tainttop (lua_State *L, int n);
+LUA_API void (lua_taintstack) (lua_State *L, const char *name);
+LUA_API void (lua_taintvalue) (lua_State *L, int idx);
+LUA_API void (lua_taintobject) (lua_State *L, int idx);
+LUA_API void (lua_tainttop) (lua_State *L, int n);
 
-LUA_API const char *lua_getstacktaint (lua_State *L);
-LUA_API const char *lua_getvaluetaint (lua_State* L, int idx);
-LUA_API const char *lua_getobjecttaint (lua_State *L, int idx);
-LUA_API const char *lua_getnewobjecttaint (lua_State *L);
-LUA_API const char *lua_getnewclosuretaint (lua_State *L);
-LUA_API const char *lua_getcalltaint (lua_State *L, const lua_Debug *ar);
+LUA_API const char *(lua_getstacktaint) (lua_State *L);
+LUA_API const char *(lua_getvaluetaint) (lua_State* L, int idx);
+LUA_API const char *(lua_getobjecttaint) (lua_State *L, int idx);
+LUA_API const char *(lua_getnewobjecttaint) (lua_State *L);
+LUA_API const char *(lua_getnewclosuretaint) (lua_State *L);
+LUA_API const char *(lua_getcalltaint) (lua_State *L, const lua_Debug *ar);
 
-LUA_API void lua_setstacktaint (lua_State *L, const char *name);
-LUA_API void lua_setvaluetaint (lua_State *L, int idx, const char *name);
-LUA_API void lua_setobjecttaint (lua_State *L, int idx, const char *name);
-LUA_API void lua_settoptaint (lua_State *L, int n, const char *name);
-LUA_API void lua_setnewobjecttaint (lua_State *L, const char *name);
-LUA_API void lua_setnewclosuretaint (lua_State *L, const char *name);
+LUA_API void (lua_setstacktaint) (lua_State *L, const char *name);
+LUA_API void (lua_setvaluetaint) (lua_State *L, int idx, const char *name);
+LUA_API void (lua_setobjecttaint) (lua_State *L, int idx, const char *name);
+LUA_API void (lua_settoptaint) (lua_State *L, int n, const char *name);
+LUA_API void (lua_setnewobjecttaint) (lua_State *L, const char *name);
+LUA_API void (lua_setnewclosuretaint) (lua_State *L, const char *name);
 
-LUA_API void lua_copytaint (lua_State *from, lua_State *to);
-LUA_API void lua_savetaint (lua_State *L, lua_TaintState *ts);
-LUA_API void lua_restoretaint (lua_State *L, const lua_TaintState *ts);
-LUA_API void lua_exchangetaint (lua_State *L, lua_TaintState *ts);
-LUA_API void lua_protecttaint (lua_State *L, lua_PFunction func, void *ud);
-LUA_API void lua_cleartaint (lua_State *L);
-LUA_API void lua_resettaint (lua_State *L);
+LUA_API void (lua_copytaint) (lua_State *from, lua_State *to);
+LUA_API void (lua_savetaint) (lua_State *L, lua_TaintState *ts);
+LUA_API void (lua_restoretaint) (lua_State *L, const lua_TaintState *ts);
+LUA_API void (lua_exchangetaint) (lua_State *L, lua_TaintState *ts);
+LUA_API void (lua_protecttaint) (lua_State *L, lua_PFunction func, void *ud);
+LUA_API void (lua_cleartaint) (lua_State *L);
+LUA_API void (lua_resettaint) (lua_State *L);
 
 
 /* }====================================================================== */
