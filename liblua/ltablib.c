@@ -14,7 +14,7 @@
 #define aux_getn(L, n)                                                         \
   (luaL_checktype(L, n, LUA_TTABLE), ((int) lua_objlen(L, n)))
 
-static int foreachi (lua_State *L)
+static int table_foreachi (lua_State *L)
 {
   int i;
   int n = aux_getn(L, 1);
@@ -31,7 +31,7 @@ static int foreachi (lua_State *L)
   return 0;
 }
 
-static int foreach (lua_State *L)
+static int table_foreach (lua_State *L)
 {
   luaL_checktype(L, 1, LUA_TTABLE);
   luaL_checktype(L, 2, LUA_TFUNCTION);
@@ -48,7 +48,7 @@ static int foreach (lua_State *L)
   return 0;
 }
 
-static int maxn (lua_State *L)
+static int table_maxn (lua_State *L)
 {
   lua_Number max = 0;
   luaL_checktype(L, 1, LUA_TTABLE);
@@ -65,19 +65,19 @@ static int maxn (lua_State *L)
   return 1;
 }
 
-static int getn (lua_State *L)
+static int table_getn (lua_State *L)
 {
   lua_pushinteger(L, aux_getn(L, 1));
   return 1;
 }
 
-static int setn (lua_State *L)
+static int table_setn (lua_State *L)
 {
   luaL_checktype(L, 1, LUA_TTABLE);
   return luaL_error(L, "'setn' is obsolete");
 }
 
-static int tinsert (lua_State *L)
+static int table_insert (lua_State *L)
 {
   int e = aux_getn(L, 1) + 1; /* first empty element */
   int pos;                    /* where to insert new element */
@@ -105,7 +105,7 @@ static int tinsert (lua_State *L)
   return 0;
 }
 
-static int tremove (lua_State *L)
+static int table_remove (lua_State *L)
 {
   int e = aux_getn(L, 1);
   int pos = luaL_optint(L, 2, e);
@@ -131,7 +131,7 @@ static void addfield (lua_State *L, luaL_Buffer *b, int i)
   luaL_addvalue(b);
 }
 
-static int tconcat (lua_State *L)
+static int table_concat (lua_State *L)
 {
   luaL_Buffer b;
   size_t lsep;
@@ -251,7 +251,7 @@ static void auxsort (lua_State *L, int l, int u)
   }                   /* repeat the routine for the larger one */
 }
 
-static int sort (lua_State *L)
+static int table_sort (lua_State *L)
 {
   int n = aux_getn(L, 1);
   luaL_checkstack(L, 40, ""); /* assume array is smaller than 2^40 */
@@ -262,7 +262,7 @@ static int sort (lua_State *L)
   return 0;
 }
 
-static int wipe (lua_State *L)
+static int table_wipe (lua_State *L)
 {
   lua_settop(L, 1);
   luaL_checktype(L, 1, LUA_TTABLE);
@@ -279,7 +279,7 @@ static int wipe (lua_State *L)
   return 1;
 }
 
-static int tremovemulti (lua_State *L)
+static int table_removemulti (lua_State *L)
 {
   luaL_checktype(L, 1, LUA_TTABLE);
 
@@ -299,9 +299,8 @@ static int tremovemulti (lua_State *L)
     const int srci = dsti + count;
 
     if (dsti <= (index + count - 1)) {
-      lua_rawgeti(
-        L, 1,
-        dsti); /* We're removing this, so push onto the stack to return it. */
+      /* We're removing this, so push onto the stack to return it. */
+      lua_rawgeti(L, 1, dsti);
     }
 
     if (srci <= length) {
@@ -316,25 +315,34 @@ static int tremovemulti (lua_State *L)
   return count;
 }
 
-/* }====================================================== */
+/**
+ * Table library registration
+ */
 
-static const luaL_Reg tab_funcs[] = {
-  { .name = "concat", .func = tconcat },
-  { .name = "foreach", .func = foreach },
-  { .name = "foreachi", .func = foreachi },
-  { .name = "getn", .func = getn },
-  { .name = "maxn", .func = maxn },
-  { .name = "insert", .func = tinsert },
-  { .name = "remove", .func = tremove },
-  { .name = "removemulti", .func = tremovemulti },
-  { .name = "setn", .func = setn },
-  { .name = "sort", .func = sort },
-  { .name = "wipe", .func = wipe },
+static const luaL_Reg tablib_shared[] = {
+  { .name = "concat", .func = table_concat },
+  { .name = "foreach", .func = table_foreach },
+  { .name = "foreachi", .func = table_foreachi },
+  { .name = "getn", .func = table_getn },
+  { .name = "maxn", .func = table_maxn },
+  { .name = "insert", .func = table_insert },
+  { .name = "remove", .func = table_remove },
+  { .name = "removemulti", .func = table_removemulti },
+  { .name = "setn", .func = table_setn },
+  { .name = "sort", .func = table_sort },
+  { .name = "wipe", .func = table_wipe },
   { .name = NULL, .func = NULL },
 };
 
 LUALIB_API int luaopen_table (lua_State *L)
 {
-  luaL_register(L, LUA_TABLIBNAME, tab_funcs);
+  luaL_register(L, LUA_TABLIBNAME, tablib_shared);
+  return 1;
+}
+
+LUALIB_API int luaopen_wow_table (lua_State *L)
+{
+  luaL_getsubtable(L, LUA_ENVIRONINDEX, LUA_TABLIBNAME);
+  luaL_setfuncs(L, tablib_shared, 0);
   return 1;
 }

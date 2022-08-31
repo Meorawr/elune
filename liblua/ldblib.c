@@ -453,7 +453,28 @@ static int db_setscripttimeout (lua_State *L)
   return 0;
 }
 
-static const luaL_Reg dblib[] = {
+static int db_debugprofilestart (lua_State *L)
+{
+  lua_Clock *start = lua_touserdata(L, lua_upvalueindex(1));
+  *start = lua_clocktime(L);
+  return 0;
+}
+
+static int db_debugprofilestop (lua_State *L)
+{
+  lua_Clock stop = lua_clocktime(L);
+  lua_Clock start = *((lua_Clock *) lua_touserdata(L, lua_upvalueindex(1)));
+  lua_Clock rate = lua_clockrate(L);
+
+  lua_pushnumber(L, (((lua_Number) stop - start) * 1e3) / rate);
+  return 1;
+}
+
+/**
+ * Debug library registration
+ */
+
+static const luaL_Reg dblib_lua[] = {
   { .name = "debug", .func = db_debug },
   { .name = "geterrorhandler", .func = db_geterrorhandler },
   { .name = "getexceptmask", .func = db_getexceptmask },
@@ -482,8 +503,46 @@ static const luaL_Reg dblib[] = {
   { .name = NULL, .func = NULL },
 };
 
+static const luaL_Reg dblib_global[] = {
+  { .name = "debugstack", .func = NULL },  /* TODO: Implement me! */
+  { .name = "debuglocals", .func = NULL }, /* TODO: Implement me! */
+  { .name = NULL, .func = NULL },
+};
+
+static void dblib_opendebugprofile (lua_State *L)
+{
+  /**
+   * The debugprofilestart and debugprofilestop functions act as paired calls
+   * and need to share a "start" time as state between the two. We store this
+   * in some full-userdata stored as upvalues on each closure.
+   *
+   * On creation the start time is left as zero so that any calls to the
+   * debugprofilestop API will return time-since-state-creation until a
+   * call to debugprofilestart is made.
+   */
+
+  lua_Clock *start = lua_newuserdata(L, sizeof(lua_Clock));
+  *start = 0;
+
+  lua_pushvalue(L, -1);
+  lua_pushcclosure(L, db_debugprofilestart, 1);
+  lua_setfield(L, -3, "debugprofilestart");
+  lua_pushcclosure(L, db_debugprofilestop, 1);
+  lua_setfield(L, -2, "debugprofilestop");
+}
+
 LUALIB_API int luaopen_debug (lua_State *L)
 {
-  luaL_register(L, LUA_DBLIBNAME, dblib);
+  luaL_register(L, "_G", dblib_global);
+  dblib_opendebugprofile(L);
+  luaL_register(L, LUA_DBLIBNAME, dblib_lua);
   return 1;
+}
+
+LUALIB_API int luaopen_wow_debug (lua_State *L)
+{
+  lua_pushvalue(L, LUA_ENVIRONINDEX);
+  luaL_setfuncs(L, dblib_global, 0);
+  dblib_opendebugprofile(L);
+  return 0;
 }

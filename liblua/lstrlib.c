@@ -612,7 +612,7 @@ static int gmatch_aux (lua_State *L)
   return 0; /* not found */
 }
 
-static int gmatch (lua_State *L)
+static int str_gmatch (lua_State *L)
 {
   luaL_checkstring(L, 1);
   luaL_checkstring(L, 2);
@@ -622,7 +622,7 @@ static int gmatch (lua_State *L)
   return 1;
 }
 
-static int gfind_nodef (lua_State *L)
+static int str_gfind (lua_State *L)
 {
   return luaL_error(L, "'string.gfind' was renamed to 'string.gmatch'");
 }
@@ -1017,14 +1017,17 @@ static int strlenutf8 (lua_State *L)
   return 1;
 }
 
-static const luaL_Reg strlib[] = {
+/**
+ * Table library registration
+ */
+
+static const luaL_Reg strlib_shared[] = {
   { .name = "byte", .func = str_byte },
   { .name = "char", .func = str_char },
-  { .name = "dump", .func = str_dump },
   { .name = "find", .func = str_find },
   { .name = "format", .func = str_format },
-  { .name = "gfind", .func = gfind_nodef },
-  { .name = "gmatch", .func = gmatch },
+  { .name = "gfind", .func = str_gfind },
+  { .name = "gmatch", .func = str_gmatch },
   { .name = "gsub", .func = str_gsub },
   { .name = "len", .func = str_len },
   { .name = "lower", .func = str_lower },
@@ -1036,7 +1039,12 @@ static const luaL_Reg strlib[] = {
   { .name = NULL, .func = NULL },
 };
 
-static const luaL_Reg globalstrlib[] = {
+static const luaL_Reg strlib_lua[] = {
+  { .name = "dump", .func = str_dump },
+  { .name = NULL, .func = NULL },
+};
+
+static const luaL_Reg strlib_global[] = {
   { .name = "strcmputf8i", .func = strcmputf8i },
   { .name = "strconcat", .func = str_concat },
   { .name = "strjoin", .func = str_join },
@@ -1058,13 +1066,32 @@ static void createmetatable (lua_State *L)
   lua_pop(L, 1);                  /* pop metatable */
 }
 
-/*
-** Open string library
-*/
 LUALIB_API int luaopen_string (lua_State *L)
 {
-  luaL_register(L, "_G", globalstrlib);
-  luaL_register(L, LUA_STRLIBNAME, strlib);
+  luaL_register(L, "_G", strlib_global);
+  luaL_register(L, LUA_STRLIBNAME, strlib_shared);
+  luaL_setfuncs(L, strlib_lua, 0);
   createmetatable(L);
+  return 1;
+}
+
+LUALIB_API int luaopen_wow_string (lua_State *L)
+{
+  /* open string library */
+  luaL_getsubtable(L, LUA_ENVIRONINDEX, LUA_STRLIBNAME);
+  luaL_setfuncs(L, strlib_shared, 0);
+
+  /* open global functions */
+  lua_pushvalue(L, LUA_ENVIRONINDEX);
+  luaL_setfuncs(L, strlib_global, 0);
+
+  lua_pushvalue(L, LUA_GLOBALSINDEX);
+  if (lua_rawequal(L, -2, -1)) { /* loading into global environment? */
+    lua_pop(L, 2);               /* pop global and environment tables */
+    createmetatable(L);          /* install string metatable */
+  } else {
+    lua_pop(L, 2);
+  }
+
   return 1;
 }

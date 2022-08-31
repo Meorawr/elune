@@ -93,7 +93,11 @@ static int bit_mod (lua_State *L)
   return 1;
 }
 
-static const luaL_Reg bitlib[] = {
+/**
+ * Bit library registration
+ */
+
+static const luaL_Reg bitlib_shared[] = {
   { .name = "band", .func = bit_band },
   { .name = "bor", .func = bit_bor },
   { .name = "bxor", .func = bit_bxor },
@@ -107,6 +111,13 @@ static const luaL_Reg bitlib[] = {
 
 LUALIB_API int luaopen_bit (lua_State *L)
 {
-  luaL_register(L, LUA_BITLIBNAME, bitlib);
+  luaL_register(L, LUA_BITLIBNAME, bitlib_shared);
+  return 1;
+}
+
+LUALIB_API int luaopen_wow_bit (lua_State *L)
+{
+  luaL_getsubtable(L, LUA_ENVIRONINDEX, LUA_BITLIBNAME);
+  luaL_setfuncs(L, bitlib_shared, 0);
   return 1;
 }

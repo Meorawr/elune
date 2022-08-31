@@ -212,7 +212,11 @@ static int os_exit (lua_State *L)
   exit(luaL_optint(L, 1, EXIT_SUCCESS));
 }
 
-static const luaL_Reg syslib[] = {
+/**
+ * OS library registration
+ */
+
+static const luaL_Reg syslib_lua[] = {
   { .name = "clock", .func = os_clock },
   { .name = "date", .func = os_date },
   { .name = "difftime", .func = os_difftime },
@@ -227,18 +231,23 @@ static const luaL_Reg syslib[] = {
   { .name = NULL, .func = NULL },
 };
 
-static const luaL_Reg globalsyslib[] = {
+static const luaL_Reg syslib_global[] = {
   { .name = "date", .func = os_date },
   { .name = "difftime", .func = os_difftime },
   { .name = "time", .func = os_time },
   { .name = NULL, .func = NULL },
 };
 
-/* }====================================================== */
-
 LUALIB_API int luaopen_os (lua_State *L)
 {
-  luaL_register(L, "_G", globalsyslib);
-  luaL_register(L, LUA_OSLIBNAME, syslib);
+  luaL_register(L, "_G", syslib_global);
+  luaL_register(L, LUA_OSLIBNAME, syslib_lua);
   return 1;
+}
+
+LUALIB_API int luaopen_wow_os (lua_State *L)
+{
+  lua_pushvalue(L, LUA_ENVIRONINDEX);
+  luaL_setfuncs(L, syslib_global, 0);
+  return 0;
 }
