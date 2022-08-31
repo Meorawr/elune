@@ -77,7 +77,7 @@ target_sources(
     lgc.c             lgc.h
     llex.c            llex.h
                       llimits.h
-                      lmanip.h
+    lmanip.c          lmanip.h
     lmem.c            lmem.h
     lobject.c         lobject.h
     lopcodes.c        lopcodes.h
