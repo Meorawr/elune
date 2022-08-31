@@ -478,10 +478,10 @@ LUA_API void (lua_getfunctionstats) (lua_State *L, int funcindex, lua_FunctionSt
 
 
 typedef enum lua_TaintMode {
-  LUA_TAINT_DISABLED,  /* disable all propagation of taint */
-  LUA_TAINT_RDONLY,  /* propagate taint to stack on reads only */
-  LUA_TAINT_WRONLY,  /* propagate taint to values on writes only */
-  LUA_TAINT_RDRW,  /* propagate taint on all reads and writes */
+  LUA_TAINTDISABLED,  /* disable all propagation of taint */
+  LUA_TAINTRDONLY,  /* propagate taint to stack on reads only */
+  LUA_TAINTWRONLY,  /* propagate taint to values on writes only */
+  LUA_TAINTRDRW,  /* propagate taint on all reads and writes */
 } lua_TaintMode;
 
 typedef struct lua_TaintState {

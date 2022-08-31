@@ -24,7 +24,7 @@ static int luatest_panichandler (lua_State *L) {
 static lua_State *luatest_newstate (void) {
   lua_State *L = luaL_newstate();
   lua_setprofilingenabled(L, 1);
-  lua_settaintmode(L, LUA_TAINT_RDRW);
+  lua_settaintmode(L, LUA_TAINTRDRW);
   lua_atpanic(L, luatest_panichandler);
   luaL_openlibs(L);
   return L;

@@ -424,7 +424,7 @@ static int pmain (lua_State *L) {
   luaL_openlibs(L);  /* open libraries */
   lua_pushcfunction(L, traceback);  /* push traceback function */
   lua_replace(L, LUA_ERRORHANDLERINDEX);  /* install it as global error handler */
-  lua_settaintmode(L, LUA_TAINT_RDRW);  /* enable taint propagation */
+  lua_settaintmode(L, LUA_TAINTRDRW);  /* enable taint propagation */
   lua_gc(L, LUA_GCRESTART, 0);
   s->status = handle_luainit(L);
   if (s->status != 0) return 0;

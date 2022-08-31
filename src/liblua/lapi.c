@@ -1367,18 +1367,18 @@ static int gettaintmode (const lua_State *L) {
   int mode = 0;
 
   if (L->ts.readmask == LUA_TAINTALLOWED)
-    mode |= LUA_TAINT_RDONLY;
+    mode |= LUA_TAINTRDONLY;
 
   if (L->ts.writemask == LUA_TAINTALLOWED)
-    mode |= LUA_TAINT_WRONLY;
+    mode |= LUA_TAINTWRONLY;
 
   return mode;
 }
 
 
 static void settaintmode (lua_State *L, int mode) {
-  L->ts.readmask = ((mode & LUA_TAINT_RDONLY) ? LUA_TAINTALLOWED : LUA_TAINTBLOCKED);
-  L->ts.writemask = ((mode & LUA_TAINT_WRONLY) ? LUA_TAINTALLOWED : LUA_TAINTBLOCKED);
+  L->ts.readmask = ((mode & LUA_TAINTRDONLY) ? LUA_TAINTALLOWED : LUA_TAINTBLOCKED);
+  L->ts.writemask = ((mode & LUA_TAINTWRONLY) ? LUA_TAINTALLOWED : LUA_TAINTBLOCKED);
 }
 
 
