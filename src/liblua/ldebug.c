@@ -25,7 +25,7 @@
 #include "ltm.h"
 #include "lvm.h"
 
-#include "lsys.h"
+#include "lsyslib.h"
 
 
 static const char *getfuncname (lua_State *L, CallInfo *ci, const char **name);
@@ -669,13 +669,13 @@ void luaG_runerror (lua_State *L, const char *fmt, ...) {
 
 
 void luaG_init (global_State *g) {
-  g->startticks = l_gettickcount();
-  g->tickfreq = l_gettickfrequency();
+  g->startticks = luaI_clocktime(g->mainthread);
+  g->tickfreq = luaI_clockrate(g->mainthread);
 }
 
 
 lua_Clock luaG_clocktime (const global_State *g) {
-  return (l_gettickcount() - g->startticks);
+  return (luaI_clocktime(g->mainthread) - g->startticks);
 }
 
 

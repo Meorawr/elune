@@ -33,7 +33,6 @@ target_compile_definitions(
   PRIVATE
     $<$<IN_LIST:$<CONFIG>,${LUA_ASSERT_CONFIGS}>:LUA_USE_ASSERT>
     $<$<IN_LIST:$<CONFIG>,${LUA_APICHECK_CONFIGS}>:LUA_USE_APICHECK>
-    $<$<PLATFORM_ID:Windows>:WIN32_LEAN_AND_MEAN>
 )
 
 target_include_directories(
@@ -64,7 +63,7 @@ elune_target_headers(
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/lua5.1/lua.hpp>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/lua5.1/lualib.h>
   PRIVATE
-    ${PROJECT_SOURCE_DIR}/include/lua5.1/lsys.h
+    ${PROJECT_SOURCE_DIR}/include/lua5.1/lsyslib.h
 )
 
 target_sources(
@@ -87,6 +86,7 @@ target_sources(
     lparser.c         lparser.h
     lstate.c          lstate.h
     lstring.c         lstring.h
+    lsyslib.c
     ltable.c          ltable.h
     ltm.c             ltm.h
     lundump.c         lundump.h

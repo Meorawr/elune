@@ -11,7 +11,7 @@
 
 #include "lauxlib.h"
 #include "lualib.h"
-#include "lsys.h"
+#include "lsyslib.h"
 
 
 
@@ -294,27 +294,29 @@ static int db_gethook (lua_State *L) {
 
 
 static int db_debug (lua_State *L) {
-  char buffer[LUA_MAXINPUT];
-  l_initreadline(L);
-
   for (;;) {
-    char *b = buffer;
-    size_t l;
-    int readstatus = l_readline(L, b, "lua_debug> ");
-    if (readstatus == 0)
-      return 0;  /* no input */
-    l = strlen(b);
-    if (l > 0 && b[l-1] == '\n')  /* line ends with newline? */
-      b[--l] = '\0';  /* remove it */
-    if (strcmp(b, "cont") == 0)
-      return 0;  /* explicit break */
-    if (luaL_loadbuffer(L, b, strlen(b), "=(debug command)") || lua_pcall(L, 0, 0, 0)) {
-      luaL_writestringerror("%s\n", lua_tostring(L, -1));
+    const char *line;
+    size_t len;
+
+    if (luaI_readline(L, "lua_debug> ") != 0) {
+      return 0;  /* error reading line */
     }
-    lua_settop(L, 0);  /* remove eventual returns */
-    if (b[0] != '\0')  /* non empty? */
-      l_saveline(L, b);  /* keep history */
-    l_freeline(L, b);
+
+    line = lua_tolstring(L, -1, &len);
+
+    if (strcmp(line, "cont") == 0) {
+      return 0;  /* explicit break */
+    }
+
+    if (luaL_loadbuffer(L, line, len, "=(debug command)") || lua_pcall(L, 0, 0, 0)) {
+      luaI_writestringerror("%s\n", lua_tostring(L, -1));
+    }
+
+    if (len > 0) {
+      luaI_saveline(L, line);
+    }
+
+    lua_settop(L, 0);  /* pop line and any errors */
   }
 }
 

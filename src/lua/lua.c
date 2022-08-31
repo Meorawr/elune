@@ -14,12 +14,24 @@
 
 #include "lauxlib.h"
 #include "lualib.h"
-#include "lsys.h"
+#include "lsyslib.h"
 
 
 static lua_State *globalL = NULL;
 
 static const char *progname = LUA_PROGNAME;
+
+
+#if defined(LUA_USE_READLINE)     /* { */
+
+#include <readline/readline.h>
+#define l_initreadline(L) (lua_unused(L), rl_readline_name="lua")
+
+#else                             /* }{ */
+
+#define l_initreadline(L) (lua_unused(L))
+
+#endif                            /* } */
 
 
 #if defined(LUA_USE_SIGACTION)    /* { */
@@ -66,13 +78,13 @@ static void laction (int i) {
 
 
 static void print_usage (const char *badoption) {
-  luaL_writestringerror("%s: ", progname);
+  luaI_writestringerror("%s: ", progname);
   if (badoption[1] == 'e' || badoption[1] == 'l')
-    luaL_writestringerror("'%s' needs argument\n", badoption);
+    luaI_writestringerror("'%s' needs argument\n", badoption);
   else
-    luaL_writestringerror("unrecognized option '%s'\n", badoption);
+    luaI_writestringerror("unrecognized option '%s'\n", badoption);
 
-  luaL_writestringerror(
+  luaI_writestringerror(
   "usage: %s [options] [script [args]]\n"
   "Available options are:\n"
   "  -e stat    execute string " LUA_QL("stat") "\n"
@@ -96,8 +108,8 @@ static void print_usage (const char *badoption) {
 ** (if present)
 */
 static void l_message (const char *pname, const char *msg) {
-  if (pname) luaL_writestringerror("%s: ", pname);
-  luaL_writestringerror("%s\n", msg);
+  if (pname) luaI_writestringerror("%s: ", pname);
+  luaI_writestringerror("%s\n", msg);
 }
 
 
@@ -165,10 +177,10 @@ static void print_version (void) {
   static const char lua_version[] = LUA_RELEASE "  " LUA_COPYRIGHT;
   static const char elune_version[] = ELUNE_RELEASE "    " ELUNE_COPYRIGHT;
 
-  luaL_writestring(lua_version, strlen(lua_version));
-  luaL_writeline();
-  luaL_writestring(elune_version, strlen(elune_version));
-  luaL_writeline();
+  luaI_writestring(lua_version, strlen(lua_version));
+  luaI_writeline();
+  luaI_writestring(elune_version, strlen(elune_version));
+  luaI_writeline();
 }
 
 
@@ -444,22 +456,21 @@ static int incomplete (lua_State *L, int status) {
 ** Prompt the user, read a line, and push it into the Lua stack.
 */
 static int pushline (lua_State *L, int firstline) {
-  char buffer[LUA_MAXINPUT];
-  char *b = buffer;
-  size_t l;
-  const char *prmt = get_prompt(L, firstline);
-  int readstatus = l_readline(L, b, prmt);
-  if (readstatus == 0)
+  const char *prompt = get_prompt(L, firstline);
+  const char *line;
+
+  if (luaI_readline(L, prompt) != 0) {
     return 0;  /* no input (prompt will be popped by caller) */
-  lua_pop(L, 1);  /* remove prompt */
-  l = strlen(b);
-  if (l > 0 && b[l-1] == '\n')  /* line ends with newline? */
-    b[--l] = '\0';  /* remove it */
-  if (firstline && b[0] == '=')  /* for compatibility with 5.2, ... */
-    lua_pushfstring(L, "return %s", b + 1);  /* change '=' to 'return' */
-  else
-    lua_pushlstring(L, b, l);
-  l_freeline(L, b);
+  }
+
+  lua_remove(L, -2);  /* remove prompt */
+
+  line = lua_tostring(L, -1);
+  if (firstline && line[0] == '=') {  /* for compatibility with 5.2, ... */
+    lua_pushfstring(L, "return %s", line + 1);  /* change '=' to 'return' */
+    lua_remove(L, -2);  /* remove original input */
+  }
+
   return 1;
 }
 
@@ -475,7 +486,7 @@ static int addreturn (lua_State *L) {
   if (status == LUA_OK) {
     lua_remove(L, -2);  /* remove modified line */
     if (line[0] != '\0')  /* non empty? */
-      l_saveline(L, line);  /* keep history */
+      luaI_saveline(L, line);  /* keep history */
   }
   else
     lua_pop(L, 2);  /* pop result from 'luaL_loadbuffer' and modified line */
@@ -492,7 +503,7 @@ static int multiline (lua_State *L) {
     const char *line = lua_tolstring(L, 1, &len);  /* get what it has */
     int status = luaL_loadbuffer(L, line, len, "=stdin");  /* try it */
     if (!incomplete(L, status) || !pushline(L, 0)) {
-      l_saveline(L, line);  /* keep history */
+      luaI_saveline(L, line);  /* keep history */
       return status;  /* cannot or should not try to add continuation line */
     }
     lua_pushliteral(L, "\n");  /* add newline... */
@@ -553,7 +564,7 @@ static void doREPL (lua_State *L) {
     else report(L, status);
   }
   lua_settop(L, 0);  /* clear stack */
-  luaL_writeline();
+  luaI_writeline();
   progname = oldprogname;
 }
 
@@ -603,7 +614,7 @@ static int pmain (lua_State *L) {
   if (args & has_i)  /* -i option? */
     doREPL(L);  /* do read-eval-print loop */
   else if (script == argc && !(args & (has_e | has_v))) {  /* no arguments? */
-    if (l_stdin_is_tty()) {  /* running in interactive mode? */
+    if (luaI_stdin_is_tty(L)) {  /* running in interactive mode? */
       print_version();
       doREPL(L);  /* do read-eval-print loop */
     }
