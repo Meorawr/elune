@@ -24,6 +24,7 @@ set_target_properties(
   liblua
   PROPERTIES
     OUTPUT_NAME ${LIBLUA_OUTPUT_NAME}
+    SOVERSION 5.1.5
 )
 
 target_compile_definitions(
