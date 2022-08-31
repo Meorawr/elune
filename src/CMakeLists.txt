@@ -1,12 +1,12 @@
 include(CheckSymbolExists)
 
-check_symbol_exists(clock_gettime "time.h" TL_HAS_CLOCK_GETTIME)
-check_symbol_exists(CLOCK_MONOTONIC "time.h" TL_HAS_CLOCK_MONOTONIC)
-check_symbol_exists(CLOCK_MONOTONIC_RAW "time.h" TL_HAS_CLOCK_MONOTONIC_RAW)
-check_symbol_exists(QueryPerformanceCounter "windows.h" TL_HAS_QUERY_PERFORMANCE_COUNTER)
+check_symbol_exists(clock_gettime "time.h" LUA_USE_CLOCK_GETTIME)
+check_symbol_exists(CLOCK_MONOTONIC "time.h" LUA_USE_CLOCK_MONOTONIC)
+check_symbol_exists(CLOCK_MONOTONIC_RAW "time.h" LUA_USE_CLOCK_MONOTONIC_RAW)
+check_symbol_exists(QueryPerformanceCounter "windows.h" LUA_USE_QUERY_PERFORMANCE_COUNTER)
 
 set(CMAKE_REQUIRED_LIBRARIES "bcrypt")
-check_symbol_exists(BCryptGenRandom "windows.h;bcrypt.h" TL_HAS_BCRYPT_GEN_RANDOM)
+check_symbol_exists(BCryptGenRandom "windows.h;bcrypt.h" LUA_USE_BCRYPT_GEN_RANDOM)
 set(CMAKE_REQUIRED_LIBRARIES)
 
 # -----------------------------------------------------------------------------
@@ -35,11 +35,11 @@ target_compile_definitions(
   PRIVATE
     $<$<CONFIG:Debug>:LUA_USE_ASSERT>     # Enable internal assertions on debug builds.
     $<$<CONFIG:Debug>:LUA_USE_APICHECK>   # Enable public API assertions on debug builds.
-    $<$<BOOL:${TL_HAS_CLOCK_GETTIME}>:LUA_HAS_CLOCK_GETTIME>
-    $<$<BOOL:${TL_HAS_CLOCK_MONOTONIC_RAW}>:LUA_HAS_CLOCK_MONOTONIC_RAW>
-    $<$<BOOL:${TL_HAS_CLOCK_MONOTONIC}>:LUA_HAS_CLOCK_MONOTONIC>
-    $<$<BOOL:${TL_HAS_BCRYPT_GEN_RANDOM}>:LUA_HAS_BCRYPT_GEN_RANDOM>
-    $<$<BOOL:${TL_HAS_QUERY_PERFORMANCE_COUNTER}>:LUA_HAS_QUERY_PERFORMANCE_COUNTER>
+    $<$<BOOL:${LUA_USE_CLOCK_GETTIME}>:LUA_USE_CLOCK_GETTIME>
+    $<$<BOOL:${LUA_USE_CLOCK_MONOTONIC_RAW}>:LUA_USE_CLOCK_MONOTONIC_RAW>
+    $<$<BOOL:${LUA_USE_CLOCK_MONOTONIC}>:LUA_USE_CLOCK_MONOTONIC>
+    $<$<BOOL:${LUA_USE_BCRYPT_GEN_RANDOM}>:LUA_USE_BCRYPT_GEN_RANDOM>
+    $<$<BOOL:${LUA_USE_QUERY_PERFORMANCE_COUNTER}>:LUA_USE_QUERY_PERFORMANCE_COUNTER>
 )
 
 target_include_directories(
@@ -53,7 +53,7 @@ target_link_libraries(
   PRIVATE
     $<$<PLATFORM_ID:Darwin,Linux>:dl>
     $<$<PLATFORM_ID:Darwin,Linux>:m>
-    $<$<BOOL:${TL_HAS_BCRYPT_GEN_RANDOM}>:bcrypt>
+    $<$<BOOL:${LUA_USE_BCRYPT_GEN_RANDOM}>:bcrypt>
     sheredom::utf8h
 )
 

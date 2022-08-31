@@ -30,7 +30,7 @@
 #include "lvm.h"
 
 
-#if defined(LUA_HAS_QUERY_PERFORMANCE_COUNTER)
+#if defined(LUA_USE_QUERY_PERFORMANCE_COUNTER)
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #else
@@ -786,19 +786,19 @@ void luaG_profileresume (lua_State *L) {
 }
 
 
-#if defined(LUA_HAS_CLOCK_MONOTONIC_RAW)
+#if defined(LUA_USE_CLOCK_MONOTONIC_RAW)
 #define LUA_CLOCK_GETTIME_ID CLOCK_MONOTONIC_RAW
-#elif defined(LUA_HAS_CLOCK_MONOTONIC)
+#elif defined(LUA_USE_CLOCK_MONOTONIC)
 #define LUA_CLOCK_GETTIME_ID CLOCK_MONOTONIC
 #endif
 
 
 static lu_int64 os_gettickcount (void) {
-#if defined(LUA_HAS_QUERY_PERFORMANCE_COUNTER)
+#if defined(LUA_USE_QUERY_PERFORMANCE_COUNTER)
   LARGE_INTEGER counter;
   QueryPerformanceCounter(&counter);
   return counter.QuadPart;
-#elif defined(LUA_HAS_CLOCK_GETTIME) && defined(LUA_CLOCK_GETTIME_ID)
+#elif defined(LUA_USE_CLOCK_GETTIME) && defined(LUA_CLOCK_GETTIME_ID)
   struct timespec ts;
   uint64_t ticks;
   clock_gettime(LUA_CLOCK_GETTIME_ID, &ts);
@@ -811,11 +811,11 @@ static lu_int64 os_gettickcount (void) {
 
 
 static lu_int64 os_gettickfrequency (void) {
-#if defined(LUA_HAS_QUERY_PERFORMANCE_COUNTER)
+#if defined(LUA_USE_QUERY_PERFORMANCE_COUNTER)
   LARGE_INTEGER frequency;
   QueryPerformanceFrequency(&frequency);
   return frequency.QuadPart;
-#elif defined(LUA_HAS_CLOCK_GETTIME) && defined(LUA_CLOCK_GETTIME_ID)
+#elif defined(LUA_USE_CLOCK_GETTIME) && defined(LUA_CLOCK_GETTIME_ID)
   return 1e9;
 #else
   return 0;
