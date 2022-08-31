@@ -28,6 +28,7 @@ static lua_State *luatest_newstate (void)
   lua_settaintmode(L, LUA_TAINTRDRW);
   lua_atpanic(L, luatest_panichandler);
   luaL_openlibs(L);
+  luaL_openwowlibs(L);
   return L;
 }
 
