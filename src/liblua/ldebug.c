@@ -805,7 +805,7 @@ static uint_least64_t os_gettickcount (void) {
   ticks = (ts.tv_sec * 1e9) + ts.tv_nsec;
   return ticks;
 #else
-  return 0;
+  return clock();
 #endif
 }
 
@@ -818,7 +818,7 @@ static uint_least64_t os_gettickfrequency (void) {
 #elif defined(LUA_USE_CLOCK_GETTIME) && defined(LUA_CLOCK_GETTIME_ID)
   return 1e9;
 #else
-  return 0;
+  return CLOCKS_PER_SEC;
 #endif
 }
 
