@@ -12,7 +12,7 @@
 #include "lualib.h"
 
 
-#define aux_getn(L,n)	(luaL_checktype(L, n, LUA_TTABLE), luaL_getn(L, n))
+#define aux_getn(L,n)	(luaL_checktype(L, n, LUA_TTABLE), ((int) lua_objlen(L, n)))
 
 
 static int foreachi (lua_State *L) {
@@ -73,13 +73,7 @@ static int getn (lua_State *L) {
 
 static int setn (lua_State *L) {
   luaL_checktype(L, 1, LUA_TTABLE);
-#ifndef luaL_setn
-  luaL_setn(L, 1, luaL_checkint(L, 2));
-#else
-  luaL_error(L, LUA_QL("setn") " is obsolete");
-#endif
-  lua_pushvalue(L, 1);
-  return 1;
+  return luaL_error(L, LUA_QL("setn") " is obsolete");
 }
 
 
@@ -105,7 +99,6 @@ static int tinsert (lua_State *L) {
       return luaL_error(L, "wrong number of arguments to " LUA_QL("insert"));
     }
   }
-  luaL_setn(L, 1, e);  /* new size */
   lua_rawseti(L, 1, pos);  /* t[pos] = v */
   return 0;
 }
@@ -116,7 +109,6 @@ static int tremove (lua_State *L) {
   int pos = luaL_optint(L, 2, e);
   if (!(1 <= pos && pos <= e))  /* position is outside bounds? */
    return 0;  /* nothing to remove */
-  luaL_setn(L, 1, e - 1);  /* t.n = n-1 */
   lua_rawgeti(L, 1, pos);  /* result = t[pos] */
   for ( ;pos<e; pos++) {
     lua_rawgeti(L, 1, pos+1);
@@ -145,7 +137,7 @@ static int tconcat (lua_State *L) {
   const char *sep = luaL_optlstring(L, 2, "", &lsep);
   luaL_checktype(L, 1, LUA_TTABLE);
   i = luaL_optint(L, 3, 1);
-  last = luaL_opt(L, luaL_checkint, 4, luaL_getn(L, 1));
+  last = luaL_opt(L, luaL_checkint, 4, (int) lua_objlen(L, i));
   luaL_buffinit(L, &b);
   for (; i < last; i++) {
     addfield(L, &b, i);

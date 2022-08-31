@@ -548,10 +548,6 @@ LUALIB_API int luaopen_package (lua_State *L) {
   lua_setfield(L, -2, "__gc");
   /* create `package' table */
   luaL_register(L, LUA_LOADLIBNAME, pk_funcs);
-#if defined(LUA_COMPAT_LOADLIB)
-  lua_getfield(L, -1, "loadlib");
-  lua_setfield(L, LUA_GLOBALSINDEX, "loadlib");
-#endif
   lua_pushvalue(L, -1);
   lua_replace(L, LUA_ENVIRONINDEX);
   /* create `loaders' table */

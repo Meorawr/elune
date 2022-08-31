@@ -92,16 +92,8 @@
 
 /* Backwards compatibility options */
 
-/* Controls compatibility with the old 'table.getn' function. */
-/* LUA_COMPAT_GETN is not defined */
-/* Controls compatibility with the old 'loadlib' global. */
-/* LUA_COMPAT_LOADLIB is not defined */
-/* Controls compatibility with the old vararg feature. */
-/* LUA_COMPAT_VARARG is not defined */
 /* Controls compatibility with the old long-string nesting facility. */
 #define LUA_COMPAT_LSTR 1
-/* Controls compatibility with the old 'string.gfind' function. */
-/* LUA_COMPAT_GFIND is not defined */
 /* Controls compatibility with the old 'luaL_openlib' behavior. */
 #define LUA_COMPAT_OPENLIB
 
