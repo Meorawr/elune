@@ -959,6 +959,20 @@ static int str_split (lua_State *L) {
     return count;
 }
 
+static int str_splittable (lua_State *L) {
+    int nres = str_split(L);
+    int tidx = lua_absindex(L, -(nres + 1));
+
+    lua_createtable(L, nres, 0);
+    lua_replace(L, tidx);
+
+    for (; nres > 0; --nres) {
+        lua_rawseti(L, tidx, nres);
+    }
+
+    return 1;
+}
+
 static int str_join (lua_State *L) {
     size_t seplen;
     const char *separator = luaL_checklstring(L, 1, &seplen);
@@ -1044,6 +1058,7 @@ static const luaL_Reg strlib_global[] = {
     { "strjoin", str_join },
     { "strlenutf8", strlenutf8 },
     { "strsplit", str_split },
+    { "strsplittable", str_splittable },
     { "strtrim", str_trim },
     /* clang-format off */
     { NULL, NULL },

@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+### Added
+- Added `strsplittable(delim, str[, limit])` string API.
 ### Changed
 - Fixed an issue where `strsplit()` would ignore the value supplied to the `limit` parameter.
 

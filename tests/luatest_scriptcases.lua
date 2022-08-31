@@ -11,6 +11,7 @@
 -- luacheck: globals forceinsecure hooksecurefunc issecure issecurevariable
 -- luacheck: globals loadstring_untainted securecall securecallfunction
 -- luacheck: globals geterrorhandler seterrorhandler
+-- luacheck: globals strsplit strsplittable
 
 local case = _G.case or function(name, func)
     local olderrhandler = geterrorhandler()
@@ -1314,6 +1315,16 @@ case("strsplit: splits strings", function()
     assert(d == "d")
     assert(e == "e")
     assert(f == nil)
+end)
+
+case("strsplittable: splits strings", function()
+    local tbl = strsplittable(" ", "a b c d e")
+    assert(tbl[1] == "a")
+    assert(tbl[2] == "b")
+    assert(tbl[3] == "c")
+    assert(tbl[4] == "d")
+    assert(tbl[5] == "e")
+    assert(tbl[6] == nil)
 end)
 
 case("strsplit: splits strings with multiple delimiters", function()
