@@ -334,7 +334,8 @@ void luaH_resizearray (lua_State *L, Table *t, int nasize)
 
 static void rehash (lua_State *L, Table *t, const TValue *ek)
 {
-  int nasize, na;
+  int nasize;
+  int na;
   int nums[MAXBITS + 1]; /* nums[i] = number of keys between 2^(i-1) and 2^i */
   int i;
   int totaluse;

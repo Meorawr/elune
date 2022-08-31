@@ -353,7 +353,9 @@ static int luaB_assert (lua_State *L)
 
 static int luaB_unpack (lua_State *L)
 {
-  int i, e, n;
+  int i;
+  int e;
+  int n;
   luaL_checktype(L, 1, LUA_TTABLE);
   i = luaL_optint(L, 2, 1);
   e = luaL_opt(L, luaL_checkint, 3, (int) lua_objlen(L, i));

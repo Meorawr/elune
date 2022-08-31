@@ -292,7 +292,8 @@ LUA_API int lua_rawequal (lua_State *L, int index1, int index2)
 
 LUA_API int lua_equal (lua_State *L, int index1, int index2)
 {
-  StkId o1, o2;
+  StkId o1;
+  StkId o2;
   int i;
   lua_lock(L); /* may call tag method */
   o1 = index2adr(L, index1);
@@ -304,7 +305,8 @@ LUA_API int lua_equal (lua_State *L, int index1, int index2)
 
 LUA_API int lua_lessthan (lua_State *L, int index1, int index2)
 {
-  StkId o1, o2;
+  StkId o1;
+  StkId o2;
   int i;
   lua_lock(L); /* may call tag method */
   o1 = index2adr(L, index1);

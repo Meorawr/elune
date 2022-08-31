@@ -117,7 +117,8 @@ static int str_byte (lua_State *L)
   const char *s = luaL_checklstring(L, 1, &l);
   ptrdiff_t posi = posrelat(luaL_optinteger(L, 2, 1), l);
   ptrdiff_t pose = posrelat(luaL_optinteger(L, 3, posi), l);
-  int n, i;
+  int n;
+  int i;
   if (posi <= 0) {
     posi = 1;
   }
@@ -581,7 +582,8 @@ static int push_captures (MatchState *ms, const char *s, const char *e)
 
 static int str_find_aux (lua_State *L, int find)
 {
-  size_t l1, l2;
+  size_t l1;
+  size_t l2;
   const char *s = luaL_checklstring(L, 1, &l1);
   const char *p = luaL_checklstring(L, 2, &l2);
   ptrdiff_t init = posrelat(luaL_optinteger(L, 3, 1), l1) - 1;
@@ -678,7 +680,8 @@ static int str_gfind (lua_State *L)
 
 static void add_s (MatchState *ms, luaL_Buffer *b, const char *s, const char *e)
 {
-  size_t l, i;
+  size_t l;
+  size_t i;
   const char *news = lua_tolstring(ms->L, 3, &l);
   for (i = 0; i < l; i++) {
     if (news[i] != L_ESC) {

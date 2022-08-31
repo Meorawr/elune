@@ -492,7 +492,8 @@ static int errfile (lua_State *L, const char *what, int fnameindex)
 LUALIB_API int luaL_loadfile (lua_State *L, const char *filename)
 {
   LoadF lf;
-  int status, readstatus;
+  int status;
+  int readstatus;
   int c;
   int fnameindex = lua_gettop(L) + 1; /* index of filename on the stack */
   lf.extraline = 0;
@@ -698,7 +699,8 @@ static void pushfuncname (lua_State *L, const lua_Debug *ar)
 static int countlevels (lua_State *L)
 {
   lua_Debug ar;
-  int li = 1, le = 1;
+  int li = 1;
+  int le = 1;
   /* find an upper bound */
   while (lua_getstack(L, le, &ar)) {
     li = le;

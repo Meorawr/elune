@@ -364,11 +364,14 @@ static void checkdivoperands (lua_State *L, lua_Number nb, lua_Number nc)
 static void Arith (lua_State *L, StkId ra, const TValue *rb, const TValue *rc,
                    TMS op)
 {
-  TValue tempb, tempc;
-  const TValue *b, *c;
+  TValue tempb;
+  TValue tempc;
+  const TValue *b;
+  const TValue *c;
   if ((b = luaV_tonumber(L, rb, &tempb)) != NULL &&
       (c = luaV_tonumber(L, rc, &tempc)) != NULL) {
-    lua_Number nb = nvalue(b), nc = nvalue(c);
+    lua_Number nb = nvalue(b);
+    lua_Number nc = nvalue(c);
     switch (op) {
     case TM_ADD:
       setnvalue(L, ra, luai_numadd(nb, nc));
@@ -854,7 +857,8 @@ reentry: /* entry point */
     case OP_CLOSURE: {
       Proto *p;
       Closure *ncl;
-      int nup, j;
+      int nup;
+      int j;
       p = cl->p->p[GETARG_Bx(i)];
       nup = p->nups;
       ncl = luaF_newLclosure(L, nup, cl->env);

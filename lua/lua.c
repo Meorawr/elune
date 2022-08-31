@@ -193,7 +193,8 @@ static void print_version (void)
 */
 static void createargtable (lua_State *L, char **argv, int argc, int script)
 {
-  int i, narg;
+  int i;
+  int narg;
   if (script == argc) {
     script = 0; /* no script name? */
   }
@@ -251,7 +252,8 @@ static int dolibrary (lua_State *L, char *globname)
 */
 static int pushargs (lua_State *L)
 {
-  int i, n;
+  int i;
+  int n;
   lua_getglobal(L, "arg");
   if (lua_type(L, -1) != LUA_TTABLE) {
     luaL_error(L, "'arg' is not a table");
@@ -667,7 +669,8 @@ static int pmain (lua_State *L)
 
 int main (int argc, char **argv)
 {
-  int status, result;
+  int status;
+  int result;
   lua_State *L = luaL_newstate(); /* create state */
   if (L == NULL) {
     l_message(argv[0], "cannot create state: not enough memory");

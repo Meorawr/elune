@@ -463,7 +463,8 @@ static void recfield (LexState *ls, struct ConsControl *cc)
   /* recfield -> (NAME | `['exp1`]') = exp1 */
   FuncState *fs = ls->fs;
   int reg = ls->fs->freereg;
-  expdesc key, val;
+  expdesc key;
+  expdesc val;
   int rkkey;
   if (ls->t.token == TK_NAME) {
     luaY_checklimit(fs, cc->nh, LUA_INT_MAX, "items in a constructor");
@@ -630,7 +631,8 @@ static void funcargs (LexState *ls, expdesc *f)
 {
   FuncState *fs = ls->fs;
   expdesc args;
-  int base, nparams;
+  int base;
+  int nparams;
   int line = ls->linenumber;
   switch (ls->t.token) {
   case '(': { /* funcargs -> `(' [ explist1 ] `)' */
@@ -1060,7 +1062,8 @@ static void repeatstat (LexState *ls, int line)
   int condexit;
   FuncState *fs = ls->fs;
   int repeat_init = luaK_getlabel(fs);
-  BlockCnt bl1, bl2;
+  BlockCnt bl1;
+  BlockCnt bl2;
   enterblock(fs, &bl1, 1); /* loop block */
   enterblock(fs, &bl2, 0); /* scope block */
   luaX_next(ls);           /* skip REPEAT */
@@ -1094,7 +1097,8 @@ static void forbody (LexState *ls, int base, int line, int nvars, int isnum)
   /* forbody -> DO block */
   BlockCnt bl;
   FuncState *fs = ls->fs;
-  int prep, endfor;
+  int prep;
+  int endfor;
   adjustlocalvars(ls, 3); /* control variables */
   checknext(ls, TK_DO);
   prep = isnum ? luaK_codeAsBx(fs, OP_FORPREP, base, NO_JUMP) : luaK_jump(fs);
@@ -1217,7 +1221,8 @@ static void ifstat (LexState *ls, int line)
 
 static void localfunc (LexState *ls)
 {
-  expdesc v, b;
+  expdesc v;
+  expdesc b;
   FuncState *fs = ls->fs;
   new_localvar(ls, str_checkname(ls), 0);
   init_exp(&v, VLOCAL, fs->freereg);
@@ -1267,7 +1272,8 @@ static void funcstat (LexState *ls, int line)
 {
   /* funcstat -> FUNCTION funcname body */
   int needself;
-  expdesc v, b;
+  expdesc v;
+  expdesc b;
   luaX_next(ls); /* skip FUNCTION */
   needself = funcname(ls, &v);
   body(ls, &b, needself, line);
@@ -1294,7 +1300,8 @@ static void retstat (LexState *ls)
   /* stat -> RETURN explist */
   FuncState *fs = ls->fs;
   expdesc e;
-  int first, nret; /* registers with returned values */
+  int first;
+  int nret; /* registers with returned values */
   luaX_next(ls);   /* skip RETURN */
   if (block_follow(ls->t.token) || ls->t.token == ';') {
     first = nret = 0; /* return no values */

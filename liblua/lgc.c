@@ -305,7 +305,8 @@ static void checkstacksizes (lua_State *L, StkId max)
 
 static void traversestack (global_State *g, lua_State *l)
 {
-  StkId o, lim;
+  StkId o;
+  StkId lim;
   CallInfo *ci;
   markvalue(g, gt(l));
   lim = l->top;

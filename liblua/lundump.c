@@ -98,7 +98,8 @@ static Proto *LoadFunction (LoadState *S, TString *p);
 
 static void LoadConstants (LoadState *S, Proto *f)
 {
-  int i, n;
+  int i;
+  int n;
   n = LoadInt(S);
   f->k = luaM_newvector(S->L, n, TValue);
   f->sizek = n;
@@ -139,7 +140,8 @@ static void LoadConstants (LoadState *S, Proto *f)
 
 static void LoadDebug (LoadState *S, Proto *f)
 {
-  int i, n;
+  int i;
+  int n;
   n = LoadInt(S);
   f->lineinfo = luaM_newvector(S->L, n, int);
   f->sizelineinfo = n;

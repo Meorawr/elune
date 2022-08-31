@@ -72,7 +72,8 @@ static void DumpFunction (const Proto *f, const TString *p, DumpState *D);
 
 static void DumpConstants (const Proto *f, DumpState *D)
 {
-  int i, n = f->sizek;
+  int i;
+  int n = f->sizek;
   DumpInt(n, D);
   for (i = 0; i < n; i++) {
     const TValue *o = &f->k[i];
@@ -103,7 +104,8 @@ static void DumpConstants (const Proto *f, DumpState *D)
 
 static void DumpDebug (const Proto *f, DumpState *D)
 {
-  int i, n;
+  int i;
+  int n;
   n = (D->strip) ? 0 : f->sizelineinfo;
   DumpVector(f->lineinfo, n, sizeof(int), D);
   n = (D->strip) ? 0 : f->sizelocvars;

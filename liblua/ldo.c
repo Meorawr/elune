@@ -280,7 +280,8 @@ static StkId adjust_varargs (lua_State *L, Proto *p, int actual)
   int i;
   int nfixargs = p->numparams;
   Table *htab = NULL;
-  StkId base, fixed;
+  StkId base;
+  StkId fixed;
   for (; actual < nfixargs; ++actual) {
     setnilvalue(L, L->top++);
   }
@@ -336,7 +337,8 @@ int luaD_precall (lua_State *L, StkId func, int nresults)
   L->ts.vmexecmask = LUA_TAINTALLOWED;
   if (!cl->isC) { /* Lua function? prepare its call */
     CallInfo *ci;
-    StkId st, base;
+    StkId st;
+    StkId base;
     Proto *p = cl->p;
     luaD_checkstack(L, p->maxstacksize);
     func = restorestack(L, funcr);
@@ -416,7 +418,8 @@ static StkId callrethooks (lua_State *L, StkId firstResult)
 int luaD_poscall (lua_State *L, StkId firstResult)
 {
   StkId res;
-  int wanted, i;
+  int wanted;
+  int i;
   if (L->hookmask & LUA_MASKRET) {
     firstResult = callrethooks(L, firstResult);
   }

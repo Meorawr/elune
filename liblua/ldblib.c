@@ -274,7 +274,9 @@ static void gethooktable (lua_State *L)
 
 static int db_sethook (lua_State *L)
 {
-  int arg, mask, count;
+  int arg;
+  int mask;
+  int count;
   lua_Hook func;
   lua_State *L1 = getthread(L, &arg);
   if (lua_isnoneornil(L, arg + 1)) {

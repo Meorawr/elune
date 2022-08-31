@@ -140,7 +140,8 @@ static int table_concat (lua_State *L)
 {
   luaL_Buffer b;
   size_t lsep;
-  int i, last;
+  int i;
+  int last;
   const char *sep = luaL_optlstring(L, 2, "", &lsep);
   luaL_checktype(L, 1, LUA_TTABLE);
   i = luaL_optint(L, 3, 1);
@@ -189,7 +190,8 @@ static int sort_comp (lua_State *L, int a, int b)
 static void auxsort (lua_State *L, int l, int u)
 {
   while (l < u) { /* for tail recursion */
-    int i, j;
+    int i;
+    int j;
     /* sort elements a[l], a[(l+u)/2] and a[u] */
     lua_rawgeti(L, 1, l);
     lua_rawgeti(L, 1, u);

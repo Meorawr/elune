@@ -282,7 +282,8 @@ static int boolK (FuncState *fs, int b)
 
 static int nilK (FuncState *fs)
 {
-  TValue k, v;
+  TValue k;
+  TValue v;
   setnilvalue(fs->L, &v);
   /* cannot use nil as key; instead use table itself to represent nil */
   sethvalue(fs->L, &k, fs->h);
@@ -657,7 +658,9 @@ void luaK_indexed (FuncState *fs, expdesc *t, expdesc *k)
 
 static int constfolding (OpCode op, expdesc *e1, expdesc *e2)
 {
-  lua_Number v1, v2, r;
+  lua_Number v1;
+  lua_Number v2;
+  lua_Number r;
   if (!isnumeral(e1) || !isnumeral(e2)) {
     return 0;
   }

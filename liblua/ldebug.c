@@ -482,7 +482,8 @@ static Instruction symbexec (const Proto *pt, int lastpc, int reg)
       break;
     }
     case OP_CLOSURE: {
-      int nup, j;
+      int nup;
+      int j;
       check(b < pt->sizep);
       nup = pt->p[b]->nups;
       check(pc + nup < pt->sizecode);
