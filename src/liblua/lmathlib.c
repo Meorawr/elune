@@ -1,27 +1,33 @@
 /* Licensed under the terms of the MIT License; see full copyright information
  * in the "LICENSE" file or at <http://www.lua.org/license.html> */
 
-#include <stdint.h>
-#include <stdlib.h>
-#include <math.h>
-
 #define lmathlib_c
 #define LUA_LIB
 
 #include "lua.h"
-
 #include "lauxlib.h"
 #include "lualib.h"
 
-#if defined(LUA_USE_BCRYPTGENRANDOM)
+#include <stdint.h>
+#include <stdlib.h>
+#include <math.h>
+
+#if defined(LUA_USE_GETRANDOM)
+#include <errno.h>
+#include <string.h>
+#include <sys/random.h>
+#elif defined(LUA_USE_ARC4RANDOM)
+#include <stdlib.h>
+#elif defined(LUA_USE_BCRYPTGENRANDOM)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <bcrypt.h>
 #endif
 
+
 #undef PI
 #define PI (3.14159265358979323846)
-#define RADIANS_PER_DEGREE (PI/180.0)
+#define RADIANS_PER_DEGREE (PI / 180.0)
 
 
 static int math_abs (lua_State *L) {
@@ -29,70 +35,84 @@ static int math_abs (lua_State *L) {
   return 1;
 }
 
+
 static int math_sin (lua_State *L) {
   lua_pushnumber(L, sin(luaL_checknumber(L, 1)));
   return 1;
 }
+
 
 static int math_sinh (lua_State *L) {
   lua_pushnumber(L, sinh(luaL_checknumber(L, 1)));
   return 1;
 }
 
+
 static int math_cos (lua_State *L) {
   lua_pushnumber(L, cos(luaL_checknumber(L, 1)));
   return 1;
 }
+
 
 static int math_cosh (lua_State *L) {
   lua_pushnumber(L, cosh(luaL_checknumber(L, 1)));
   return 1;
 }
 
+
 static int math_tan (lua_State *L) {
   lua_pushnumber(L, tan(luaL_checknumber(L, 1)));
   return 1;
 }
+
 
 static int math_tanh (lua_State *L) {
   lua_pushnumber(L, tanh(luaL_checknumber(L, 1)));
   return 1;
 }
 
+
 static int math_asin (lua_State *L) {
   lua_pushnumber(L, asin(luaL_checknumber(L, 1)));
   return 1;
 }
+
 
 static int math_acos (lua_State *L) {
   lua_pushnumber(L, acos(luaL_checknumber(L, 1)));
   return 1;
 }
 
+
 static int math_atan (lua_State *L) {
   lua_pushnumber(L, atan(luaL_checknumber(L, 1)));
   return 1;
 }
+
 
 static int math_atan2 (lua_State *L) {
   lua_pushnumber(L, atan2(luaL_checknumber(L, 1), luaL_checknumber(L, 2)));
   return 1;
 }
 
+
 static int math_ceil (lua_State *L) {
   lua_pushnumber(L, ceil(luaL_checknumber(L, 1)));
   return 1;
 }
+
 
 static int math_floor (lua_State *L) {
   lua_pushnumber(L, floor(luaL_checknumber(L, 1)));
   return 1;
 }
 
+
 static int math_fmod (lua_State *L) {
   lua_pushnumber(L, fmod(luaL_checknumber(L, 1), luaL_checknumber(L, 2)));
   return 1;
 }
+
 
 static int math_modf (lua_State *L) {
   double ip;
@@ -102,40 +122,48 @@ static int math_modf (lua_State *L) {
   return 2;
 }
 
+
 static int math_sqrt (lua_State *L) {
   lua_pushnumber(L, sqrt(luaL_checknumber(L, 1)));
   return 1;
 }
+
 
 static int math_pow (lua_State *L) {
   lua_pushnumber(L, pow(luaL_checknumber(L, 1), luaL_checknumber(L, 2)));
   return 1;
 }
 
+
 static int math_log (lua_State *L) {
   lua_pushnumber(L, log(luaL_checknumber(L, 1)));
   return 1;
 }
+
 
 static int math_log10 (lua_State *L) {
   lua_pushnumber(L, log10(luaL_checknumber(L, 1)));
   return 1;
 }
 
+
 static int math_exp (lua_State *L) {
   lua_pushnumber(L, exp(luaL_checknumber(L, 1)));
   return 1;
 }
+
 
 static int math_deg (lua_State *L) {
   lua_pushnumber(L, luaL_checknumber(L, 1)/RADIANS_PER_DEGREE);
   return 1;
 }
 
+
 static int math_rad (lua_State *L) {
   lua_pushnumber(L, luaL_checknumber(L, 1)*RADIANS_PER_DEGREE);
   return 1;
 }
+
 
 static int math_frexp (lua_State *L) {
   int e;
@@ -205,7 +233,7 @@ static int randomrange (lua_State *L, lua_Number r) {
 }
 
 
-static int math_random (lua_State *L) {
+static int math_fastrandom (lua_State *L) {
   /* the `%' avoids the (rare) case of r==1, and is needed also because on
      some systems (SunOS!) `rand()' may return a value larger than RAND_MAX */
   lua_Number r = ((lua_Number) (rand() % RAND_MAX)) / ((lua_Number) RAND_MAX);
@@ -214,20 +242,31 @@ static int math_random (lua_State *L) {
 
 
 static int math_securerandom (lua_State *L) {
-  uint64_t n;
-  lua_Number r;
+  uint32_t i;
 
-#if defined(LUA_USE_BCRYPTGENRANDOM)
-  /* Windows platform implementation */
-  HRESULT hr = BCryptGenRandom(NULL, (PUCHAR) &n, sizeof(n), BCRYPT_USE_SYSTEM_PREFERRED_RNG);
-  if (FAILED(hr)) n = rand();
+#if defined(LUA_USE_GETRANDOM)
+  ssize_t read = 0;
+
+  do {
+    ssize_t result = getrandom((&i) + read, sizeof(i) - read, 0);
+
+    if (result < 0) {
+      lua_pushfstring(L, "%s", strerror(errno));
+      return lua_error(L);
+    } else {
+      read += result;
+    }
+  } while (read != sizeof(i));
+
+#elif defined(LUA_USE_ARC4RANDOM)
+  i = arc4random();
+#elif defined(LUA_USE_BCRYPTGENRANDOM)
+  BCryptGenRandom(NULL, (PUCHAR) &i, sizeof(i), BCRYPT_USE_SYSTEM_PREFERRED_RNG);
 #else
-  /* Default implementation */
-  n = rand();
+  luaL_error(L, "secure random generator not available on this platform");
 #endif
 
-  r = ((lua_Number) (n % UINT64_MAX)) / ((lua_Number) UINT64_MAX);
-  return randomrange(L, r);
+  return randomrange(L, ((lua_Number) i / UINT32_MAX));
 }
 
 
@@ -238,59 +277,148 @@ static int math_randomseed (lua_State *L) {
 }
 
 
-static const luaL_Reg mathlib[] = {
-  {"abs",   math_abs},
-  {"acos",  math_acos},
-  {"asin",  math_asin},
-  {"atan2", math_atan2},
-  {"atan",  math_atan},
-  {"ceil",  math_ceil},
-  {"cosh",   math_cosh},
-  {"cos",   math_cos},
-  {"deg",   math_deg},
-  {"exp",   math_exp},
-  {"floor", math_floor},
-  {"fmod",   math_fmod},
-  {"frexp", math_frexp},
-  {"ldexp", math_ldexp},
-  {"log10", math_log10},
-  {"log",   math_log},
-  {"max",   math_max},
-  {"min",   math_min},
-  {"modf",   math_modf},
-  {"pow",   math_pow},
-  {"rad",   math_rad},
-  {"random",     math_random},
-  {"randomseed", math_randomseed},
-  {"sinh",   math_sinh},
-  {"sin",   math_sin},
-  {"sqrt",  math_sqrt},
-  {"tanh",   math_tanh},
-  {"tan",   math_tan},
-  {NULL, NULL}
-};
+/*
+** Open math library
+*/
 
-
-static const luaL_Reg globalmathlib[] = {
-  { .name = "fastrandom", .func = math_random },
+static const luaL_Reg mathlib_global[] = {
+  { .name = "fastrandom", .func = math_fastrandom },
   { .name = NULL, .func = NULL },
 };
 
 
-/*
-** Open math library
-*/
-LUALIB_API int luaopen_math (lua_State *L) {
-  luaL_register(L, "_G", globalmathlib);
-  luaL_register(L, LUA_MATHLIBNAME, mathlib);
+static const luaL_Reg mathlib_shared[] = {
+  { .name = "abs", .func = math_abs },
+  { .name = "acos", .func = math_acos },
+  { .name = "asin", .func = math_asin },
+  { .name = "atan2", .func = math_atan2 },
+  { .name = "atan", .func = math_atan },
+  { .name = "ceil", .func = math_ceil },
+  { .name = "cosh", .func = math_cosh },
+  { .name = "cos", .func = math_cos },
+  { .name = "deg", .func = math_deg },
+  { .name = "exp", .func = math_exp },
+  { .name = "floor", .func = math_floor },
+  { .name = "fmod", .func = math_fmod },
+  { .name = "frexp", .func = math_frexp },
+  { .name = "ldexp", .func = math_ldexp },
+  { .name = "log10", .func = math_log10 },
+  { .name = "log", .func = math_log },
+  { .name = "max", .func = math_max },
+  { .name = "min", .func = math_min },
+  { .name = "modf", .func = math_modf },
+  { .name = "pow", .func = math_pow },
+  { .name = "rad", .func = math_rad },
+  { .name = "sinh", .func = math_sinh },
+  { .name = "sin", .func = math_sin },
+  { .name = "sqrt", .func = math_sqrt },
+  { .name = "tanh", .func = math_tanh },
+  { .name = "tan", .func = math_tan },
+  { .name = NULL, .func = NULL },
+};
+
+
+static const luaL_Reg mathlib_lua[] = {
+  { .name = "random", .func = math_fastrandom },
+  { .name = "randomseed", .func = math_randomseed },
+  { .name = "securerandom", .func = math_securerandom },
+  { .name = NULL, .func = NULL },
+};
+
+
+static const luaL_Reg mathlib_wow[] = {
+  { .name = "random", .func = math_securerandom },
+  { .name = NULL, .func = NULL },
+};
+
+
+static void mathlib_openshared (lua_State *L) {
+  luaL_setfuncs(L, mathlib_shared, 0);
   lua_pushnumber(L, PI);
   lua_setfield(L, -2, "pi");
   lua_pushnumber(L, HUGE_VAL);
   lua_setfield(L, -2, "huge");
-#if defined(LUA_COMPAT_MOD)
-  lua_getfield(L, -1, "fmod");
+}
+
+
+static void mathlib_openglobal (lua_State *L, int idx) {
+  luaL_setfuncs(L, mathlib_global, 0);
+
+  lua_getfield(L, idx, "abs");
+  lua_setfield(L, -2, "abs");
+  lua_getfield(L, idx, "ceil");
+  lua_setfield(L, -2, "ceil");
+  lua_getfield(L, idx, "deg");
+  lua_setfield(L, -2, "deg");
+  lua_getfield(L, idx, "exp");
+  lua_setfield(L, -2, "exp");
+  lua_getfield(L, idx, "floor");
+  lua_setfield(L, -2, "floor");
+  lua_getfield(L, idx, "frexp");
+  lua_setfield(L, -2, "frexp");
+  lua_getfield(L, idx, "ldexp");
+  lua_setfield(L, -2, "ldexp");
+  lua_getfield(L, idx, "log");
+  lua_setfield(L, -2, "log");
+  lua_getfield(L, idx, "log10");
+  lua_setfield(L, -2, "log10");
+  lua_getfield(L, idx, "max");
+  lua_setfield(L, -2, "max");
+  lua_getfield(L, idx, "min");
+  lua_setfield(L, -2, "min");
+  lua_getfield(L, idx, "fmod");
   lua_setfield(L, -2, "mod");
-#endif
+  lua_getfield(L, idx, "pi");
+  lua_setfield(L, -2, "PI");
+  lua_getfield(L, idx, "rad");
+  lua_setfield(L, -2, "rad");
+  lua_getfield(L, idx, "random");
+  lua_setfield(L, -2, "random");
+  lua_getfield(L, idx, "sqrt");
+  lua_setfield(L, -2, "sqrt");
+
+  (void) luaL_dostring(L, "local math = math;\nreturn function(x) return math.deg(math.acos(x)); end;\n");
+  lua_setfield(L, -2, "acos");
+  (void) luaL_dostring(L, "local math = math;\nreturn function(x) return math.deg(math.asin(x)); end;\n");
+  lua_setfield(L, -2, "asin");
+  (void) luaL_dostring(L, "local math = math;\nreturn function(x) return math.deg(math.atan(x)); end;\n");
+  lua_setfield(L, -2, "atan");
+  (void) luaL_dostring(L, "local math = math;\nreturn function(x, y) return math.deg(math.atan2(x, y)); end;\n");
+  lua_setfield(L, -2, "atan2");
+  (void) luaL_dostring(L, "local math = math;\nreturn function(x) return math.cos(math.rad(x)); end;\n");
+  lua_setfield(L, -2, "cos");
+  (void) luaL_dostring(L, "local math = math;\nreturn function(x) return math.sin(math.rad(x)); end;\n");
+  lua_setfield(L, -2, "sin");
+  (void) luaL_dostring(L, "local math = math;\nreturn function(x) return math.tan(math.rad(x)); end;\n");
+  lua_setfield(L, -2, "tan");
+}
+
+
+LUALIB_API int luaopen_math (lua_State *L) {
+  /* open math library */
+  luaL_register(L, LUA_MATHLIBNAME, mathlib_lua);
+  mathlib_openshared(L);
+
+  /* open global functions and aliases */
+  lua_pushvalue(L, LUA_GLOBALSINDEX);
+  luaL_setfuncs(L, mathlib_global, 0);
+  mathlib_openglobal(L, -2);
+  lua_pop(L, 1);
+
   return 1;
 }
 
+
+LUALIB_API int luaopen_wow_math (lua_State *L) {
+  /* open math library */
+  luaL_getsubtable(L, LUA_ENVIRONINDEX, LUA_MATHLIBNAME);
+  luaL_setfuncs(L, mathlib_wow, 0);
+  mathlib_openshared(L);
+
+  /* open global functions and aliases */
+  lua_pushvalue(L, LUA_ENVIRONINDEX);
+  mathlib_openglobal(L, -2);
+  lua_pop(L, 1);
+
+  return 1;
+}
