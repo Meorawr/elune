@@ -78,7 +78,7 @@ LUA_API int lua_getstack (lua_State *L, int level, lua_Debug *ar) {
     lua_lock(L);
     for (ci = L->ci; level > 0 && ci > L->base_ci; ci--) {
         level--;
-        if (f_isLua(ci)) {          /* Lua function? */
+        if (f_isLua(ci)) { /* Lua function? */
             level -= ci->tailcalls; /* skip lost tail calls */
         }
     }
@@ -231,7 +231,7 @@ LUA_API int lua_getinfo (lua_State *L, const char *what, lua_Debug *ar) {
         luai_apicheck(L, ttisfunction(func));
         what++; /* skip the '>' */
         f = clvalue(func);
-        L->top--;               /* pop function */
+        L->top--; /* pop function */
     } else if (ar->i_ci != 0) { /* no tail call? */
         ci = L->base_ci + ar->i_ci;
         lua_assert(ttisfunction(ci->func));
@@ -378,7 +378,7 @@ static Instruction symbexec (const Proto *pt, int lastpc, int reg) {
         }
         switch (op) {
             case OP_LOADBOOL: {
-                if (c == 1) {                     /* does it jump? */
+                if (c == 1) { /* does it jump? */
                     check(pc + 2 < pt->sizecode); /* check its jump */
                     check(GET_OPCODE(pt->code[pc + 1]) != OP_SETLIST ||
                           GETARG_C(pt->code[pc + 1]) != 0);
@@ -427,8 +427,7 @@ static Instruction symbexec (const Proto *pt, int lastpc, int reg) {
                 LUA_FALLTHROUGH;
             case OP_JMP: {
                 int dest = pc + 1 + b;
-                /* not full check and jump is forward and do not skip `lastpc'?
-                 */
+                /* not full check and jump is forward and do not skip lastpc? */
                 if (reg != NO_REG && pc < dest && dest <= lastpc) {
                     pc += b; /* do the jump */
                 }
@@ -634,7 +633,7 @@ void luaG_overflowerror (lua_State *L, lua_Number n) {
 
 static void addinfo (lua_State *L, const char *msg) {
     CallInfo *ci = L->ci;
-    if (isLua(ci)) {           /* is Lua code? */
+    if (isLua(ci)) { /* is Lua code? */
         char buff[LUA_IDSIZE]; /* add file:line information */
         int line = currentline(L, ci);
         luaO_chunkid(buff, getstr(getluaproto(ci)->source), LUA_IDSIZE);
@@ -659,13 +658,13 @@ void luaG_errormsg (lua_State *L) {
         StkId errfunc;
 
         setobjs2s(L, L->top, L->top - 1); /* move argument */
-        luaG_pusherrorhandler(L);         /* push function */
+        luaG_pusherrorhandler(L); /* push function */
         errfunc = L->top - 2;
 
         if (!ttisfunction(errfunc)) {
             setobjs2s(L, errfunc,
                       L->top - 1); /* replace function with argument */
-            L->top--;              /* pop argument */
+            L->top--; /* pop argument */
             luaD_throw(L, LUA_ERRERR);
         } else {
             luaD_call(L, errfunc, 1); /* call it */
@@ -731,8 +730,7 @@ void luaG_profileleave (lua_State *L) {
         cs->ownticks += (now - ci->startticks);
         ci->startticks = now;
 
-        /* Commit sub=execution time if this is the top call for this closure.
-         */
+        /* Commit subexecution time if this is the top call for this closure. */
         if (cl->c.nopencalls == 1) {
             cs->subticks += (now - ci->entryticks);
             ci->entryticks = now;

@@ -124,8 +124,7 @@ CallInfo *luaD_unwindci (lua_State *L, CallInfo *newci, CallInfo *oldci) {
         return newci;
     }
 
-    /* Assumes both ci pointers are within inclusive range [L->base_ci, L->ci].
-     */
+    /* Assumes ci pointers are within inclusive range [L->base_ci, L->ci]. */
     lua_assert(oldci != L->base_ci);
     lua_assert((newci < oldci) || tailcall);
 
@@ -278,7 +277,7 @@ static StkId adjust_varargs (lua_State *L, Proto *p, int actual) {
     }
     /* move fixed parameters to final position */
     fixed = L->top - actual; /* first fixed argument */
-    base = L->top;           /* final position of first argument */
+    base = L->top; /* final position of first argument */
     for (i = 0; i < nfixargs; i++) {
         setobjs2s(L, L->top++, fixed + i);
         setnilvalue(L, fixed + i);
@@ -316,7 +315,7 @@ static StkId tryfuncTM (lua_State *L, StkId func) {
 int luaD_precall (lua_State *L, StkId func, int nresults) {
     LClosure *cl;
     ptrdiff_t funcr;
-    if (!ttisfunction(func)) {     /* `func' is not a function? */
+    if (!ttisfunction(func)) { /* `func' is not a function? */
         func = tryfuncTM(L, func); /* check the `function' tag method */
     }
     funcr = savestack(L, func);
@@ -367,7 +366,7 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
         CallInfo *ci;
         int n;
         luaD_checkstack(L, LUA_MINSTACK); /* ensure minimum stack size */
-        ci = inc_ci(L);                   /* now `enter' new function */
+        ci = inc_ci(L); /* now `enter' new function */
         ci->func = restorestack(L, funcr);
         L->base = ci->base = ci->func + 1;
         ci->top = L->top + LUA_MINSTACK;
@@ -415,7 +414,7 @@ int luaD_poscall (lua_State *L, StkId firstResult) {
     res = L->ci->func; /* res == final position of 1st result */
     wanted = L->ci->nresults;
     L->ci = luaD_unwindci(L, L->ci - 1, L->ci);
-    L->base = L->ci->base;       /* restore base */
+    L->base = L->ci->base; /* restore base */
     L->savedpc = L->ci->savedpc; /* restore savedpc */
     /* move results to correct place */
     for (i = wanted; i != 0 && firstResult < L->top; i--) {
@@ -443,7 +442,7 @@ void luaD_call (lua_State *L, StkId func, int nResults) {
         }
     }
     if (luaD_precall(L, func, nResults) == PCRLUA) { /* is a Lua function? */
-        luaV_execute(L, 1);                          /* call it */
+        luaV_execute(L, 1); /* call it */
     }
     L->nCcalls--;
     luaC_checkGC(L);
@@ -550,7 +549,7 @@ int luaD_pcall (lua_State *L, Pfunc func, void *u, ptrdiff_t old_top,
         L->nCcalls = oldnCcalls;
         L->ci = luaD_unwindci(L, restoreci(L, old_ci),
                               L->ci); /* close open calls */
-        luaF_close(L, oldtop);        /* close eventual pending closures */
+        luaF_close(L, oldtop); /* close eventual pending closures */
         luaD_seterrorobj(L, status, oldtop); /* move error to stack top */
         L->base = L->ci->base;
         L->savedpc = L->ci->savedpc;

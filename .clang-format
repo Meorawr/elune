@@ -7,6 +7,7 @@ ContinuationIndentWidth: 4
 IndentWidth: 4
 UseTab: Never
 
+AlignTrailingComments: false
 AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: Never
 AlwaysBreakBeforeMultilineStrings: true

@@ -33,7 +33,7 @@ static int auxstatus (lua_State *L, lua_State *co) {
         case 0: {
             lua_Debug ar;
             if (lua_getstack(co, 0, &ar) > 0) { /* does it have frames? */
-                return CO_NOR;                  /* it is running */
+                return CO_NOR; /* it is running */
             } else if (lua_gettop(co) == 0) {
                 return CO_DEAD;
             } else {
@@ -72,7 +72,7 @@ static int auxresume (lua_State *L, lua_State *co, int narg) {
         return nres;
     } else {
         lua_xmove(co, L, 1); /* move error message */
-        return -1;           /* error flag */
+        return -1; /* error flag */
     }
 }
 
@@ -106,7 +106,7 @@ static int auxwrap (lua_State *L) {
     int r = auxresume(L, co, lua_gettop(L));
     if (r < 0) {
         if (lua_isstring(L, -1)) { /* error object is a string? */
-            luaL_where(L, 1);      /* add extra info */
+            luaL_where(L, 1); /* add extra info */
             lua_insert(L, -2);
             lua_concat(L, 2);
         }

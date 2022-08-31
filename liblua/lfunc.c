@@ -63,7 +63,7 @@ UpVal *luaF_findupval (lua_State *L, StkId level) {
     UpVal *uv;
     while (*pp != NULL && (p = ngcotouv(*pp))->v >= level) {
         lua_assert(p->v != &p->u.value);
-        if (p->v == level) {             /* found a corresponding upvalue? */
+        if (p->v == level) { /* found a corresponding upvalue? */
             if (isdead(g, obj2gco(p))) { /* is it dead? */
                 changewhite(obj2gco(p)); /* ressurect it */
             }
@@ -75,7 +75,7 @@ UpVal *luaF_findupval (lua_State *L, StkId level) {
     uv->tt = LUA_TUPVAL;
     uv->taint = luaE_maskalloctaint(L, uv->tt);
     uv->marked = luaC_white(g);
-    uv->v = level;  /* current value lives in the stack */
+    uv->v = level; /* current value lives in the stack */
     uv->next = *pp; /* chain it in the proper position */
     *pp = obj2gco(uv);
     uv->u.l.prev = &g->uvhead; /* double link it in `uvhead' list */
@@ -94,7 +94,7 @@ static void unlinkupval (UpVal *uv) {
 
 void luaF_freeupval (lua_State *L, UpVal *uv) {
     if (uv->v != &uv->u.value) { /* is it open? */
-        unlinkupval(uv);         /* remove from open list */
+        unlinkupval(uv); /* remove from open list */
     }
     luaM_free(L, uv); /* free upvalue */
 }
@@ -111,7 +111,7 @@ void luaF_close (lua_State *L, StkId level) {
         } else {
             unlinkupval(uv);
             setobj(L, &uv->u.value, uv->v);
-            uv->v = &uv->u.value;  /* now current value lives here */
+            uv->v = &uv->u.value; /* now current value lives here */
             luaC_linkupval(L, uv); /* link upvalue into `gcroot' list */
         }
     }

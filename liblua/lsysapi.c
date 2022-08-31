@@ -241,7 +241,7 @@ LUALIB_API int luaL_readline (lua_State *L, const char *prompt) {
         len = strlen(buf);
 
         if (len > 0 && buf[len - 1] == '\n') { /* line ends with newline? */
-            buf[--len] = '\0';                 /* remove it */
+            buf[--len] = '\0'; /* remove it */
         }
 
         lua_pushlstring(L, buf, len);

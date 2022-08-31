@@ -77,7 +77,7 @@ static void setfield (lua_State *L, const char *key, int value) {
 
 static void setboolfield (lua_State *L, const char *key, int value) {
     if (value < 0) { /* undefined? */
-        return;      /* does not set field */
+        return; /* does not set field */
     }
     lua_pushboolean(L, value);
     lua_setfield(L, -2, key);
@@ -155,7 +155,7 @@ static int os_date (lua_State *L) {
 static int os_time (lua_State *L) {
     time_t t;
     if (lua_isnoneornil(L, 1)) { /* called without args? */
-        t = time(NULL);          /* get current time */
+        t = time(NULL); /* get current time */
     } else {
         struct tm ts;
         luaL_checktype(L, 1, LUA_TTABLE);

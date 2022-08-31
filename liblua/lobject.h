@@ -143,10 +143,10 @@ typedef struct Proto {
     CommonHeader;
     TValue *k; /* constants used by the function */
     Instruction *code;
-    struct Proto **p;       /* functions defined inside the function */
-    int *lineinfo;          /* map from opcodes to source lines */
+    struct Proto **p; /* functions defined inside the function */
+    int *lineinfo; /* map from opcodes to source lines */
     struct LocVar *locvars; /* information about local variables */
-    TString **upvalues;     /* upvalue names */
+    TString **upvalues; /* upvalue names */
     TString *source;
     int sizeupvalues;
     int sizek; /* size of `k' */
@@ -171,7 +171,7 @@ typedef struct Proto {
 typedef struct LocVar {
     TString *varname;
     int startpc; /* first point where variable is active */
-    int endpc;   /* first point where variable is dead */
+    int endpc; /* first point where variable is dead */
 } LocVar;
 
 /*
@@ -183,7 +183,7 @@ typedef struct UpVal {
     TValue *v; /* points to stack or to its own value */
     union {
         TValue value; /* the value (when closed) */
-        struct {      /* double linked list (when open) */
+        struct { /* double linked list (when open) */
             struct UpVal *prev;
             struct UpVal *next;
         } l;
@@ -205,8 +205,8 @@ typedef struct UpVal {
 
 typedef struct ClosureStats {
     uint_least32_t calls; /* number of calls */
-    lua_Clock ownticks;   /* ticks spent executing this closure */
-    lua_Clock subticks;   /* as above but including calls to subroutines */
+    lua_Clock ownticks; /* ticks spent executing this closure */
+    lua_Clock subticks; /* as above but including calls to subroutines */
 } ClosureStats;
 
 typedef struct CClosure {
@@ -248,7 +248,7 @@ typedef struct Node {
 
 typedef struct Table {
     CommonHeader;
-    lu_byte flags;     /* 1<<p means tagmethod(p) is not present */
+    lu_byte flags; /* 1<<p means tagmethod(p) is not present */
     lu_byte lsizenode; /* log2 of size of `node' array */
     struct Table *metatable;
     TValue *array; /* array part */

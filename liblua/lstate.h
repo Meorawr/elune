@@ -37,14 +37,14 @@ typedef struct stringtable {
 typedef struct CallInfo {
     StkId base; /* base for this function */
     StkId func; /* function index in the stack */
-    StkId top;  /* top for this function */
+    StkId top; /* top for this function */
     const Instruction *savedpc;
-    TString *savedtaint;  /* saved taint for this call; informational only */
+    TString *savedtaint; /* saved taint for this call; informational only */
     lua_Clock entryticks; /* tick count on first initial entry or resumption of
                              this call */
     lua_Clock startticks; /* tick count on last reentry of this function */
-    int nresults;         /* expected number of results from this function */
-    int tailcalls;        /* number of tail calls lost under this entry */
+    int nresults; /* expected number of results from this function */
+    int tailcalls; /* number of tail calls lost under this entry */
 } CallInfo;
 
 #define curr_func(L) (clvalue(L->ci->func))
@@ -58,7 +58,7 @@ typedef struct CallInfo {
 typedef struct SourceStats {
     TString *owner;
     lua_Clock execticks; /* ticks spent executing owned functions */
-    size_t bytesowned;   /* total size of owned allocations */
+    size_t bytesowned; /* total size of owned allocations */
     struct SourceStats *next;
 } SourceStats;
 
@@ -66,50 +66,50 @@ typedef struct SourceStats {
 ** `global state', shared by all threads of this state
 */
 typedef struct global_State {
-    stringtable strt;   /* hash table for strings */
+    stringtable strt; /* hash table for strings */
     lua_Alloc frealloc; /* function to reallocate memory */
-    void *ud;           /* auxiliary data to `frealloc' */
+    void *ud; /* auxiliary data to `frealloc' */
     lu_byte enablestats;
     lu_byte currentwhite;
-    lu_byte gcstate;     /* state of garbage collector */
-    int sweepstrgc;      /* position of sweep in `strt' */
-    GCObject *rootgc;    /* list of all collectable objects */
-    GCObject **sweepgc;  /* position of sweep in `rootgc' */
-    GCObject *gray;      /* list of gray objects */
+    lu_byte gcstate; /* state of garbage collector */
+    int sweepstrgc; /* position of sweep in `strt' */
+    GCObject *rootgc; /* list of all collectable objects */
+    GCObject **sweepgc; /* position of sweep in `rootgc' */
+    GCObject *gray; /* list of gray objects */
     GCObject *grayagain; /* list of objects to be traversed atomically */
-    GCObject *weak;      /* list of weak tables (to be cleared) */
-    GCObject *tmudata;   /* last element of list of userdata to be GC */
-    Mbuffer buff;        /* temporary buffer for string concatentation */
+    GCObject *weak; /* list of weak tables (to be cleared) */
+    GCObject *tmudata; /* last element of list of userdata to be GC */
+    Mbuffer buff; /* temporary buffer for string concatentation */
     size_t GCthreshold;
-    size_t totalbytes;     /* number of bytes currently allocated */
-    size_t estimate;       /* an estimate of number of bytes actually in use */
-    size_t gcdept;         /* how much GC is `behind schedule' */
-    int gcpause;           /* size of pause between successive GCs */
-    int gcstepmul;         /* GC `granularity' */
-    lua_Clock startticks;  /* tick count at startup */
-    lua_Clock tickfreq;    /* tick frequency; cached on startup */
+    size_t totalbytes; /* number of bytes currently allocated */
+    size_t estimate; /* an estimate of number of bytes actually in use */
+    size_t gcdept; /* how much GC is `behind schedule' */
+    int gcpause; /* size of pause between successive GCs */
+    int gcstepmul; /* GC `granularity' */
+    lua_Clock startticks; /* tick count at startup */
+    lua_Clock tickfreq; /* tick frequency; cached on startup */
     size_t bytesallocated; /* total number of bytes allocated */
     SourceStats *sourcestats; /* list of source-specific statistics */
-    lua_CFunction panic;      /* to be called in unprotected errors */
+    lua_CFunction panic; /* to be called in unprotected errors */
     TValue l_registry;
     TValue l_errfunc; /* global error handler */
     struct lua_State *mainthread;
     UpVal uvhead; /* head of double-linked list of all open upvalues */
     struct Table *mt[NUM_TAGS]; /* metatables for basic types */
-    TString *tmname[TM_N];      /* array with tag-method names */
+    TString *tmname[TM_N]; /* array with tag-method names */
 } global_State;
 
 /*
 ** per-thread taint state
 */
 typedef struct TaintState {
-    uintptr_t readmask;   /* user-controlled mask applied to taint on reads */
+    uintptr_t readmask; /* user-controlled mask applied to taint on reads */
     uintptr_t vmexecmask; /* read-mask enabled only when executing an insecure
                              Lua closure */
-    uintptr_t writemask;  /* user-controlled mask applied to taint on writes */
-    TString *stacktaint;  /* current stack taint */
-    TString *newgctaint;  /* taint applied to newly allocated objects */
-    TString *newcltaint;  /* taint applied to newly allocated closures */
+    uintptr_t writemask; /* user-controlled mask applied to taint on writes */
+    TString *stacktaint; /* current stack taint */
+    TString *newgctaint; /* taint applied to newly allocated objects */
+    TString *newcltaint; /* taint applied to newly allocated closures */
 } TaintState;
 
 static const uintptr_t LUA_TAINTALLOWED = UINTPTR_MAX;
@@ -122,18 +122,18 @@ struct lua_State {
     CommonHeader;
     lu_byte status;
     TaintState ts;
-    StkId top;  /* first free slot in the stack */
+    StkId top; /* first free slot in the stack */
     StkId base; /* base of current function */
     global_State *l_G;
-    CallInfo *ci;               /* call info for current function */
+    CallInfo *ci; /* call info for current function */
     const Instruction *savedpc; /* `savedpc' of current function */
-    StkId stack_last;           /* last free slot in the stack */
-    StkId stack;                /* stack base */
-    CallInfo *end_ci;           /* points after end of ci array*/
-    CallInfo *base_ci;          /* array of CallInfo's */
+    StkId stack_last; /* last free slot in the stack */
+    StkId stack; /* stack base */
+    CallInfo *end_ci; /* points after end of ci array*/
+    CallInfo *base_ci; /* array of CallInfo's */
     int stacksize;
-    int size_ci;               /* size of array `base_ci' */
-    unsigned short nCcalls;    /* number of nested C calls */
+    int size_ci; /* size of array `base_ci' */
+    unsigned short nCcalls; /* number of nested C calls */
     unsigned short baseCcalls; /* nested C calls when resuming coroutine */
     lu_byte exceptmask;
     lu_byte hookmask;
@@ -144,8 +144,8 @@ struct lua_State {
     int baseexeccount;
     int execcount;
     lua_Hook hook;
-    TValue l_gt;         /* table of globals */
-    TValue env;          /* temporary place for environments */
+    TValue l_gt; /* table of globals */
+    TValue env; /* temporary place for environments */
     GCObject *openupval; /* list of open upvalues in this stack */
     GCObject *gclist;
     struct lua_longjmp *errorJmp; /* current error recover point */

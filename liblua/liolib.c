@@ -254,7 +254,7 @@ static int read_number (lua_State *L, FILE *f) {
         return 1;
     } else {
         lua_pushnil(L); /* "result" to be removed */
-        return 0;       /* read fails */
+        return 0; /* read fails */
     }
 }
 
@@ -272,7 +272,7 @@ static int read_line (lua_State *L, FILE *f) {
         size_t l;
         char *p = luaL_prepbuffer(&b);
         if (fgets(p, LUAL_BUFFERSIZE, f) == NULL) { /* eof? */
-            luaL_pushresult(&b);                    /* close buffer */
+            luaL_pushresult(&b); /* close buffer */
             return (lua_objlen(L, -1) > 0); /* check whether read something */
         }
         l = strlen(p);
@@ -280,15 +280,15 @@ static int read_line (lua_State *L, FILE *f) {
             luaL_addsize(&b, l);
         } else {
             luaL_addsize(&b, l - 1); /* do not include `eol' */
-            luaL_pushresult(&b);     /* close buffer */
-            return 1;                /* read at least an `eol' */
+            luaL_pushresult(&b); /* close buffer */
+            return 1; /* read at least an `eol' */
         }
     }
 }
 
 static int read_chars (lua_State *L, FILE *f, size_t n) {
     size_t rlen; /* how much to read */
-    size_t nr;   /* number of chars actually read */
+    size_t nr; /* number of chars actually read */
     luaL_Buffer b;
     luaL_buffinit(L, &b);
     rlen = LUAL_BUFFERSIZE; /* try to read that much each time */
@@ -299,9 +299,9 @@ static int read_chars (lua_State *L, FILE *f, size_t n) {
         }
         nr = fread(p, sizeof(char), rlen, f);
         luaL_addsize(&b, nr);
-        n -= nr;                   /* still have to read `n' chars */
+        n -= nr; /* still have to read `n' chars */
     } while (n > 0 && nr == rlen); /* until end of count or eof */
-    luaL_pushresult(&b);           /* close buffer */
+    luaL_pushresult(&b); /* close buffer */
     return (n == 0 || lua_objlen(L, -1) > 0);
 }
 
@@ -333,7 +333,7 @@ static int g_read (lua_State *L, FILE *f, int first) {
                     case 'a': /* file */
                         read_chars(L, f,
                                    ~((size_t) 0)); /* read MAX_SIZE_T chars */
-                        success = 1;               /* always success */
+                        success = 1; /* always success */
                         break;
                     default:
                         return luaL_argerror(L, n, "invalid format");
@@ -345,7 +345,7 @@ static int g_read (lua_State *L, FILE *f, int first) {
         return pushresult(L, 0, NULL);
     }
     if (!success) {
-        lua_pop(L, 1);  /* remove last result */
+        lua_pop(L, 1); /* remove last result */
         lua_pushnil(L); /* push nil instead */
     }
     return n - first;
@@ -475,11 +475,10 @@ static const luaL_Reg flib[] = {
 };
 
 static void createmeta (lua_State *L) {
-    luaL_newmetatable(L,
-                      LUA_FILEHANDLE); /* create metatable for file handles */
-    lua_pushvalue(L, -1);              /* push metatable */
-    lua_setfield(L, -2, "__index");    /* metatable.__index = metatable */
-    luaL_register(L, NULL, flib);      /* file methods */
+    luaL_newmetatable(L, LUA_FILEHANDLE); /* create metatable for files */
+    lua_pushvalue(L, -1); /* push metatable */
+    lua_setfield(L, -2, "__index"); /* metatable.__index = metatable */
+    luaL_register(L, NULL, flib); /* file methods */
 }
 
 static void createstdfile (lua_State *L, FILE *f, int k, const char *fname) {
@@ -489,7 +488,7 @@ static void createstdfile (lua_State *L, FILE *f, int k, const char *fname) {
         lua_rawseti(L, LUA_ENVIRONINDEX, k);
     }
     lua_pushvalue(L, -2); /* copy environment */
-    lua_setfenv(L, -2);   /* set it */
+    lua_setfenv(L, -2); /* set it */
     lua_setfield(L, -3, fname);
 }
 
@@ -501,8 +500,7 @@ static void newfenv (lua_State *L, lua_CFunction cls) {
 
 LUALIB_API int luaopen_io (lua_State *L) {
     createmeta(L);
-    /* create (private) environment (with fields IO_INPUT, IO_OUTPUT, __close)
-     */
+    /* create private environment (with fields IO_INPUT, IO_OUTPUT, __close) */
     newfenv(L, io_fclose);
     lua_replace(L, LUA_ENVIRONINDEX);
     /* open library */
@@ -515,7 +513,7 @@ LUALIB_API int luaopen_io (lua_State *L) {
     lua_pop(L, 1); /* pop environment for default files */
     lua_getfield(L, -1, "popen");
     newfenv(L, io_pclose); /* create environment for 'popen' */
-    lua_setfenv(L, -2);    /* set fenv for 'popen' */
-    lua_pop(L, 1);         /* pop 'popen' */
+    lua_setfenv(L, -2); /* set fenv for 'popen' */
+    lua_pop(L, 1); /* pop 'popen' */
     return 1;
 }

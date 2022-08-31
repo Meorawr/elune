@@ -71,7 +71,7 @@ static void init_registry (lua_State *L, global_State *g) {
 static void f_luaopen (lua_State *L, void *ud) {
     global_State *g = G(L);
     lua_unused(ud);
-    stack_init(L, L);                       /* init stack */
+    stack_init(L, L); /* init stack */
     sethvalue(L, gt(L), luaH_new(L, 0, 2)); /* table of globals */
     init_registry(L, g);
     luaS_resize(L, LUAI_MINSTRTABSIZE); /* initial size of string table */
@@ -125,7 +125,7 @@ static void freesourcestats (global_State *g) {
 static void close_state (lua_State *L) {
     global_State *g = G(L);
     luaF_close(L, L->stack); /* close all upvalues for this thread */
-    luaC_freeall(L);         /* collect all objects */
+    luaC_freeall(L); /* collect all objects */
     lua_assert(g->rootgc == obj2gco(L));
     lua_assert(g->strt.nuse == 0);
     freesourcestats(g);
@@ -141,7 +141,7 @@ lua_State *luaE_newthread (lua_State *L) {
     lua_State *L1 = tostate(luaM_malloc(L, state_size(lua_State)));
     luaC_link(L, obj2gco(L1), LUA_TTHREAD);
     preinit_state(L1, G(L));
-    stack_init(L1, L);          /* init stack */
+    stack_init(L1, L); /* init stack */
     setobj2n(L, gt(L1), gt(L)); /* share table of globals */
     L1->exceptmask = L->exceptmask;
     L1->hookmask = L->hookmask;
@@ -230,10 +230,10 @@ static void callallgcTM (lua_State *L, void *ud) {
 LUA_API void lua_close (lua_State *L) {
     L = G(L)->mainthread; /* only the main thread can be closed */
     lua_lock(L);
-    luaF_close(L, L->stack);  /* close all upvalues for this thread */
+    luaF_close(L, L->stack); /* close all upvalues for this thread */
     luaC_separateudata(L, 1); /* separate udata that have GC metamethods */
-    L->errfunc = 0;           /* no error function during GC metamethods */
-    do {                      /* repeat until no more errors */
+    L->errfunc = 0; /* no error function during GC metamethods */
+    do { /* repeat until no more errors */
         L->ci = luaD_unwindci(L, L->base_ci, L->ci);
         L->base = L->top = L->ci->base;
         L->nCcalls = L->baseCcalls = 0;

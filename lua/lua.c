@@ -40,7 +40,7 @@ static void setsignal (int sig, void (*handler)(int)) {
 ** Hook set by signal function to stop the interpreter.
 */
 static void lstop (lua_State *L, lua_Debug *ar) {
-    (void) ar;                  /* unused arg. */
+    (void) ar; /* unused arg. */
     lua_sethook(L, NULL, 0, 0); /* reset hook */
     luaL_error(L, "interrupted!");
 }
@@ -115,15 +115,15 @@ static int msghandler (lua_State *L) {
     const char *msg = lua_tostring(L, 1);
     if (msg == NULL) { /* is error object not a string? */
         if (luaL_callmeta(L, 1, "__tostring") && /* does it have a metamethod */
-            lua_type(L, -1) == LUA_TSTRING) {    /* that produces a string? */
-            return 1;                            /* that is the message */
+            lua_type(L, -1) == LUA_TSTRING) { /* that produces a string? */
+            return 1; /* that is the message */
         } else {
             msg = lua_pushfstring(L, "(error object is a %s value)",
                                   luaL_typename(L, 1));
         }
     }
     luaL_traceback(L, L, msg, 1); /* append a standard traceback */
-    return 1;                     /* return the traceback */
+    return 1; /* return the traceback */
 }
 
 /*
@@ -141,14 +141,14 @@ static int errhandler (lua_State *L) {
 */
 static int docall (lua_State *L, int narg, int nres) {
     int status;
-    int base = lua_gettop(L) - narg;  /* function index */
+    int base = lua_gettop(L) - narg; /* function index */
     lua_pushcfunction(L, msghandler); /* push message handler */
-    lua_insert(L, base);              /* put it under function and args */
-    globalL = L;                      /* to be available to 'laction' */
-    setsignal(SIGINT, laction);       /* set C-signal handler */
+    lua_insert(L, base); /* put it under function and args */
+    globalL = L; /* to be available to 'laction' */
+    setsignal(SIGINT, laction); /* set C-signal handler */
     status = lua_pcall(L, narg, nres, base);
     setsignal(SIGINT, SIG_DFL); /* reset C-signal handler */
-    lua_remove(L, base);        /* remove message handler from the stack */
+    lua_remove(L, base); /* remove message handler from the stack */
     return status;
 }
 
@@ -206,11 +206,11 @@ static int dostring (lua_State *L, const char *s, const char *name) {
 static int dolibrary (lua_State *L, char *globname) {
     int status;
     char *modname = strchr(globname, '=');
-    if (modname == NULL) {  /* no explicit name? */
+    if (modname == NULL) { /* no explicit name? */
         modname = globname; /* module name is equal to global name */
     } else {
         *modname = '\0'; /* global name ends here */
-        modname++;       /* module name starts after the '=' */
+        modname++; /* module name starts after the '=' */
     }
     lua_getglobal(L, "require");
     lua_pushstring(L, modname);
@@ -257,14 +257,14 @@ static int handle_script (lua_State *L, char **argv) {
 /* bits of various argument indicators in 'args' */
 enum {
     has_error = 1, /* bad option */
-    has_i = 2,     /* -i */
-    has_v = 4,     /* -v */
-    has_e = 8,     /* -e */
-    has_E = 16,    /* -E */
-    has_p = 32,    /* -p */
-    has_w = 64,    /* -w */
-    has_L = 128,   /* -L */
-    has_T = 256,   /* -T */
+    has_i = 2, /* -i */
+    has_v = 4, /* -v */
+    has_e = 8, /* -e */
+    has_E = 16, /* -E */
+    has_p = 32, /* -p */
+    has_w = 64, /* -w */
+    has_L = 128, /* -L */
+    has_T = 256, /* -T */
 };
 
 /*
@@ -279,49 +279,49 @@ static int collectargs (char **argv, int *first) {
     for (i = 1; argv[i] != NULL; i++) {
         *first = i;
         if (argv[i][0] != '-') { /* not an option? */
-            return args;         /* stop handling options */
+            return args; /* stop handling options */
         }
-        switch (argv[i][1]) {             /* else check option */
-            case '-':                     /* '--' */
+        switch (argv[i][1]) { /* else check option */
+            case '-': /* '--' */
                 if (argv[i][2] != '\0') { /* extra characters after '--'? */
-                    return has_error;     /* invalid option */
+                    return has_error; /* invalid option */
                 }
                 *first = i + 1;
                 return args;
-            case '\0':       /* '-' */
+            case '\0': /* '-' */
                 return args; /* script "name" is '-' */
             case 'E':
                 if (argv[i][2] != '\0') { /* extra characters? */
-                    return has_error;     /* invalid option */
+                    return has_error; /* invalid option */
                 }
                 args |= has_E;
                 break;
             case 'p':
                 if (argv[i][2] != '\0') { /* extra characters? */
-                    return has_error;     /* invalid option */
+                    return has_error; /* invalid option */
                 }
                 args |= has_p;
                 break;
             case 't':
                 if (argv[i][2] != '\0') { /* extra characters? */
-                    return has_error;     /* invalid option */
+                    return has_error; /* invalid option */
                 }
                 break;
             case 'w':
                 if (argv[i][2] != '\0') { /* extra characters? */
-                    return has_error;     /* invalid option */
+                    return has_error; /* invalid option */
                 }
                 args |= has_w;
                 break;
             case 'L':
                 if (argv[i][2] != '\0') { /* extra characters? */
-                    return has_error;     /* invalid option */
+                    return has_error; /* invalid option */
                 }
                 args |= has_L;
                 break;
             case 'T':
                 if (argv[i][2] != '\0') { /* extra characters? */
-                    return has_error;     /* invalid option */
+                    return has_error; /* invalid option */
                 }
                 args |= has_T;
                 break;
@@ -330,16 +330,16 @@ static int collectargs (char **argv, int *first) {
                 LUA_FALLTHROUGH;
             case 'v':
                 if (argv[i][2] != '\0') { /* extra characters? */
-                    return has_error;     /* invalid option */
+                    return has_error; /* invalid option */
                 }
                 args |= has_v;
                 break;
             case 'e':
                 args |= has_e;
                 LUA_FALLTHROUGH;
-            case 'l':                     /* both options need an argument */
+            case 'l': /* both options need an argument */
                 if (argv[i][2] == '\0') { /* no concatenated argument? */
-                    i++;                  /* try next 'argv' */
+                    i++; /* try next 'argv' */
                     if (argv[i] == NULL || argv[i][0] == '-') {
                         return has_error; /* no next argument or it is another
                                              option */
@@ -459,7 +459,7 @@ static int pushline (lua_State *L, int firstline) {
     line = lua_tostring(L, -1);
     if (firstline && line[0] == '=') { /* for compatibility with 5.2, ... */
         lua_pushfstring(L, "return %s", line + 1); /* change '=' to 'return' */
-        lua_remove(L, -2);                         /* remove original input */
+        lua_remove(L, -2); /* remove original input */
     }
 
     return 1;
@@ -474,8 +474,8 @@ static int addreturn (lua_State *L) {
     const char *retline = lua_pushfstring(L, "return %s;", line);
     int status = luaL_loadbuffer(L, retline, strlen(retline), "=stdin");
     if (status == LUA_OK) {
-        lua_remove(L, -2);          /* remove modified line */
-        if (line[0] != '\0') {      /* non empty? */
+        lua_remove(L, -2); /* remove modified line */
+        if (line[0] != '\0') { /* non empty? */
             luaL_saveline(L, line); /* keep history */
         }
     } else {
@@ -494,12 +494,11 @@ static int multiline (lua_State *L) {
         int status = luaL_loadbuffer(L, line, len, "=stdin"); /* try it */
         if (!incomplete(L, status) || !pushline(L, 0)) {
             luaL_saveline(L, line); /* keep history */
-            return status; /* cannot or should not try to add continuation line
-                            */
+            return status; /* cannot or should not try to add cont. line */
         }
         lua_pushliteral(L, "\n"); /* add newline... */
-        lua_insert(L, -2);        /* ...between the two lines */
-        lua_concat(L, 3);         /* join them */
+        lua_insert(L, -2); /* ...between the two lines */
+        lua_concat(L, 3); /* join them */
     }
 }
 
@@ -578,7 +577,7 @@ static int pmain (lua_State *L) {
     if (argv[0] && argv[0][0]) {
         progname = argv[0];
     }
-    if (args == has_error) {       /* bad arg? */
+    if (args == has_error) { /* bad arg? */
         print_usage(argv[script]); /* 'script' has index of bad arg. */
         return 0;
     }
@@ -591,36 +590,36 @@ static int pmain (lua_State *L) {
     if (args & has_p) { /* option '-p'? */
         lua_setprofilingenabled(L, 1);
     }
-    if (args & has_E) {        /* option '-E'? */
+    if (args & has_E) { /* option '-E'? */
         lua_pushboolean(L, 1); /* signal for libraries to ignore env. vars. */
         lua_setfield(L, LUA_REGISTRYINDEX, "LUA_NOENV");
     }
     if (!(args & has_L)) { /* option '-L' not specified? */
-        luaL_openlibs(L);  /* open lua standard libraries */
+        luaL_openlibs(L); /* open lua standard libraries */
     }
-    if (args & has_w) {      /* option '-w'? */
+    if (args & has_w) { /* option '-w'? */
         luaL_openwowlibs(L); /* open WoW standard libraries */
     }
     createargtable(L, argv, argc, script); /* create table 'arg' */
     lua_pushcclosure(L, errhandler, 0);
     lua_replace(L, LUA_ERRORHANDLERINDEX); /* install error handler */
-    if (!(args & has_E)) {                 /* no option '-E'? */
+    if (!(args & has_E)) { /* no option '-E'? */
         if (handle_luainit(L) != LUA_OK) { /* run LUA_INIT */
-            return 0;                      /* error running LUA_INIT */
+            return 0; /* error running LUA_INIT */
         }
     }
     if (!runargs(L, argv, script)) { /* execute arguments -e and -l */
-        return 0;                    /* something failed */
+        return 0; /* something failed */
     }
     if (script < argc && /* execute main script (if there is one) */
         handle_script(L, argv + script) != LUA_OK) {
         return 0;
     }
     if (args & has_i) { /* -i option? */
-        doREPL(L);      /* do read-eval-print loop */
+        doREPL(L); /* do read-eval-print loop */
     } else if (script == argc &&
                !(args & (has_e | has_v))) { /* no arguments? */
-        if (luaL_stdinistty(L)) {           /* running in interactive mode? */
+        if (luaL_stdinistty(L)) { /* running in interactive mode? */
             print_version();
             doREPL(L); /* do read-eval-print loop */
         } else {
@@ -639,11 +638,11 @@ int main (int argc, char **argv) {
         l_message(argv[0], "cannot create state: not enough memory");
         return EXIT_FAILURE;
     }
-    lua_pushcfunction(L, &pmain);   /* to call 'pmain' in protected mode */
-    lua_pushinteger(L, argc);       /* 1st argument */
+    lua_pushcfunction(L, &pmain); /* to call 'pmain' in protected mode */
+    lua_pushinteger(L, argc); /* 1st argument */
     lua_pushlightuserdata(L, argv); /* 2nd argument */
     status = lua_pcall(L, 2, 1, 0); /* do the call */
-    result = lua_toboolean(L, -1);  /* get result */
+    result = lua_toboolean(L, -1); /* get result */
     report(L, status);
     lua_close(L);
     return (result && status == LUA_OK) ? EXIT_SUCCESS : EXIT_FAILURE;

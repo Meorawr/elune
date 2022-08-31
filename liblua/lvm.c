@@ -75,7 +75,7 @@ static void traceexec (lua_State *L, const Instruction *pc) {
 static void callTMres (lua_State *L, StkId res, const TValue *f,
                        const TValue *p1, const TValue *p2) {
     ptrdiff_t result = savestack(L, res);
-    setobj2s(L, L->top, f);      /* push function */
+    setobj2s(L, L->top, f); /* push function */
     setobj2s(L, L->top + 1, p1); /* 1st argument */
     setobj2s(L, L->top + 2, p2); /* 2nd argument */
     luaD_checkstack(L, 3);
@@ -88,7 +88,7 @@ static void callTMres (lua_State *L, StkId res, const TValue *f,
 
 static void callTM (lua_State *L, const TValue *f, const TValue *p1,
                     const TValue *p2, const TValue *p3) {
-    setobj2s(L, L->top, f);      /* push function */
+    setobj2s(L, L->top, f); /* push function */
     setobj2s(L, L->top + 1, p1); /* 1st argument */
     setobj2s(L, L->top + 2, p2); /* 2nd argument */
     setobj2s(L, L->top + 3, p3); /* 3th argument */
@@ -104,7 +104,7 @@ void luaV_gettable (lua_State *L, const TValue *t, TValue *key, StkId val) {
         if (ttistable(t)) { /* `t' is a table? */
             Table *h = hvalue(t);
             const TValue *res = luaH_get(h, key); /* do a primitive get */
-            if (!ttisnil(res) ||                  /* result is no nil? */
+            if (!ttisnil(res) || /* result is no nil? */
                 (tm = fasttm(L, h->metatable, TM_INDEX)) ==
                     NULL) { /* or no TM? */
                 setobj2s(L, val, res);
@@ -131,7 +131,7 @@ void luaV_settable (lua_State *L, const TValue *t, TValue *key, StkId val) {
         if (ttistable(t)) { /* `t' is a table? */
             Table *h = hvalue(t);
             TValue *oldval = luaH_set(L, h, key); /* do a primitive set */
-            if (!ttisnil(oldval) ||               /* result is no nil? */
+            if (!ttisnil(oldval) || /* result is no nil? */
                 (tm = fasttm(L, h->metatable, TM_NEWINDEX)) ==
                     NULL) { /* or no TM? */
                 setobj2t(L, oldval, val);
@@ -212,15 +212,14 @@ static int l_strcmp (const TString *ls, const TString *rs) {
         int temp = strcoll(l, r);
         if (temp != 0) {
             return temp;
-        } else {                    /* strings are equal up to a `\0' */
+        } else { /* strings are equal up to a `\0' */
             size_t len = strlen(l); /* index of first `\0' in both strings */
-            if (len == lr) {        /* r is finished? */
+            if (len == lr) { /* r is finished? */
                 return (len == ll) ? 0 : 1;
             } else if (len == ll) { /* l is finished? */
                 return -1; /* l is smaller than r (because r is not finished) */
             }
-            /* both strings longer than `len'; go on comparing (after the `\0')
-             */
+            /* both strings longer than `len'; go on comparing (after '\0') */
             len++;
             l += len;
             ll -= len;
@@ -741,7 +740,7 @@ reentry: /* entry point */
                         ci->entryticks = (ci + 1)->entryticks;
                         ci->savedpc = L->savedpc;
                         ci->tailcalls++; /* one more call lost */
-                        L->ci--;         /* remove new frame */
+                        L->ci--; /* remove new frame */
                         goto reentry;
                     }
                     case PCRC: { /* it was a C function (`precall' called it) */
@@ -766,9 +765,9 @@ reentry: /* entry point */
                 L->savedpc = pc;
                 b = luaD_poscall(L, ra);
                 if (--nexeccalls ==
-                    0) {    /* was previous function running `here'? */
+                    0) { /* was previous function running `here'? */
                     return; /* no: return */
-                } else {    /* yes: continue its execution */
+                } else { /* yes: continue its execution */
                     if (b) {
                         L->top = L->ci->top;
                     }
@@ -785,8 +784,8 @@ reentry: /* entry point */
                 if (luai_numlt(0, step) ? luai_numle(idx, limit)
                                         : luai_numle(limit, idx)) {
                     dojump(L, pc, GETARG_sBx(i)); /* jump back */
-                    setnvalue(L, ra, idx);        /* update internal index... */
-                    setnvalue(L, ra + 3, idx);    /* ...and external index */
+                    setnvalue(L, ra, idx); /* update internal index... */
+                    setnvalue(L, ra + 3, idx); /* ...and external index */
                 }
                 continue;
             }
@@ -814,9 +813,9 @@ reentry: /* entry point */
                 L->top = cb + 3; /* func. + 2 args (state and index) */
                 Protect(luaD_call(L, cb, GETARG_C(i)));
                 L->top = L->ci->top;
-                cb = RA(i) + 3;     /* previous call may change the stack */
+                cb = RA(i) + 3; /* previous call may change the stack */
                 if (!ttisnil(cb)) { /* continue loop? */
-                    setobjs2s(L, cb - 1, cb);       /* save control variable */
+                    setobjs2s(L, cb - 1, cb); /* save control variable */
                     dojump(L, pc, GETARG_sBx(*pc)); /* jump back */
                 }
                 pc++;
@@ -837,7 +836,7 @@ reentry: /* entry point */
                 runtime_check(L, ttistable(ra));
                 h = hvalue(ra);
                 last = ((c - 1) * LFIELDS_PER_FLUSH) + n;
-                if (last > h->sizearray) {        /* needs more space? */
+                if (last > h->sizearray) { /* needs more space? */
                     luaH_resizearray(L, h, last); /* pre-alloc it at once */
                 }
                 for (; n > 0; n--) {

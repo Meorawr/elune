@@ -21,7 +21,7 @@ static int luaB_print (lua_State *L) {
         const char *s;
         size_t l;
         lua_pushvalue(L, -1); /* function to be called */
-        lua_pushvalue(L, i);  /* value to print */
+        lua_pushvalue(L, i); /* value to print */
         lua_call(L, 1, 1);
         s = lua_tolstring(L, -1, &l); /* get result */
         if (s == NULL) {
@@ -227,8 +227,8 @@ static int luaB_next (lua_State *L) {
 static int luaB_pairs (lua_State *L) {
     luaL_checktype(L, 1, LUA_TTABLE);
     lua_pushvalue(L, lua_upvalueindex(1)); /* return generator, */
-    lua_pushvalue(L, 1);                   /* state, */
-    lua_pushnil(L);                        /* and initial value */
+    lua_pushvalue(L, 1); /* state, */
+    lua_pushnil(L); /* and initial value */
     return 3;
 }
 
@@ -244,8 +244,8 @@ static int ipairsaux (lua_State *L) {
 static int luaB_ipairs (lua_State *L) {
     luaL_checktype(L, 1, LUA_TTABLE);
     lua_pushvalue(L, lua_upvalueindex(1)); /* return generator, */
-    lua_pushvalue(L, 1);                   /* state, */
-    lua_pushinteger(L, 0);                 /* and initial value */
+    lua_pushvalue(L, 1); /* state, */
+    lua_pushinteger(L, 0); /* and initial value */
     return 3;
 }
 
@@ -255,7 +255,7 @@ static int load_aux (lua_State *L, int status) {
     } else {
         lua_pushnil(L);
         lua_insert(L, -2); /* put before error message */
-        return 2;          /* return nil plus error message */
+        return 2; /* return nil plus error message */
     }
 }
 
@@ -289,7 +289,7 @@ static const char *generic_reader (lua_State *L, void *ud, size_t *size) {
     (void) ud; /* to avoid warnings */
     luaL_checkstack(L, 2, "too many nested functions");
     lua_pushvalue(L, 1); /* get function */
-    lua_call(L, 0, 1);   /* call it */
+    lua_call(L, 0, 1); /* call it */
     if (lua_isnil(L, -1)) {
         *size = 0;
         return NULL;
@@ -339,12 +339,12 @@ static int luaB_unpack (lua_State *L) {
     if (i > e) {
         return 0; /* empty range */
     }
-    n = e - i + 1;                         /* number of elements */
+    n = e - i + 1; /* number of elements */
     if (n <= 0 || !lua_checkstack(L, n)) { /* n <= 0 means arith. overflow */
         return luaL_error(L, "too many results to unpack");
     }
     lua_rawgeti(L, 1, i); /* push arg[i] (avoiding overflow problems) */
-    while (i++ < e) {     /* push arg[i + 1...e] */
+    while (i++ < e) { /* push arg[i + 1...e] */
         lua_rawgeti(L, 1, i);
     }
     return n;
@@ -381,7 +381,7 @@ static int luaB_xpcall (lua_State *L) {
     int n = lua_gettop(L);
     luaL_checkany(L, 2);
     lua_pushvalue(L, 1); /* exchange function... */
-    lua_copy(L, 2, 1);   /* ...and error handler */
+    lua_copy(L, 2, 1); /* ...and error handler */
     lua_replace(L, 2);
     status = lua_pcall(L, n - 2, LUA_MULTRET, 1);
     lua_pushboolean(L, (status == 0));
@@ -392,7 +392,7 @@ static int luaB_xpcall (lua_State *L) {
 static int luaB_tostring (lua_State *L) {
     luaL_checkany(L, 1);
     if (luaL_callmeta(L, 1, "__tostring")) { /* is there a metafield? */
-        return 1;                            /* use its value */
+        return 1; /* use its value */
     }
     switch (lua_type(L, 1)) {
         case LUA_TNUMBER:
@@ -421,7 +421,7 @@ static int luaB_newproxy (lua_State *L) {
     if (lua_toboolean(L, 1) == 0) {
         return 1; /* no metatable */
     } else if (lua_isboolean(L, 1)) {
-        lua_newtable(L);      /* create a new metatable `m' ... */
+        lua_newtable(L); /* create a new metatable `m' ... */
         lua_pushvalue(L, -1); /* ... and mark `m' as a valid metatable */
         lua_pushboolean(L, 1);
         lua_rawset(L, lua_upvalueindex(1)); /* weaktable[m] = true */
@@ -577,7 +577,7 @@ static int luaB_hooksecurefunc (lua_State *L) {
 
     lua_settop(L, 3);
     lua_savetaint(L, &savedts);
-    lua_pushvalue(L, 2);                                  /* [4] = "function" */
+    lua_pushvalue(L, 2); /* [4] = "function" */
     lua_protecttaint(L, aux_getorigfunc_untainted, NULL); /* [4] = origfunc */
     lua_exchangetaint(L, &savedts);
 
@@ -589,7 +589,7 @@ static int luaB_hooksecurefunc (lua_State *L) {
     lua_insert(L, 3); /* [3] = origfunc, [4] = hookfunc */
     lua_setvaluetaint(L, 3,
                       savedts.stacktaint); /* lua_insert may taint origfunc */
-    luaL_createsecurehook(L);              /* [3] = securehook */
+    luaL_createsecurehook(L); /* [3] = securehook */
     lua_setvaluetaint(L, 3, NULL);
     lua_rawset(L, 1); /* table["function"] = securehook */
 
@@ -726,7 +726,7 @@ static void baselib_openshared (lua_State *L) {
 
     /* `newproxy' needs a weaktable as upvalue */
     lua_createtable(L, 0, 1); /* new table `w' */
-    lua_pushvalue(L, -1);     /* `w' will be its own metatable */
+    lua_pushvalue(L, -1); /* `w' will be its own metatable */
     lua_setmetatable(L, -2);
     lua_pushliteral(L, "kv");
     lua_setfield(L, -2, "__mode"); /* metatable(w).__mode = "kv" */

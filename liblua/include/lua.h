@@ -318,14 +318,14 @@ LUA_API int lua_gethookcount (lua_State *L);
 
 struct lua_Debug {
     int event;
-    const char *name;           /* (n) */
-    const char *namewhat;       /* (n) `global', `local', `field', `method' */
-    const char *what;           /* (S) `Lua', `C', `main', `tail' */
-    const char *source;         /* (S) */
-    int currentline;            /* (l) */
-    int nups;                   /* (u) number of upvalues */
-    int linedefined;            /* (S) */
-    int lastlinedefined;        /* (S) */
+    const char *name; /* (n) */
+    const char *namewhat; /* (n) `global', `local', `field', `method' */
+    const char *what; /* (S) `Lua', `C', `main', `tail' */
+    const char *source; /* (S) */
+    int currentline; /* (l) */
+    int nups; /* (u) number of upvalues */
+    int linedefined; /* (S) */
+    int lastlinedefined; /* (S) */
     char short_src[LUA_IDSIZE]; /* (S) */
     /* private part */
     int i_ci; /* active function */
@@ -356,9 +356,9 @@ typedef void (*lua_PFunction)(lua_State *L, void *ud);
 
 enum lua_TaintMode {
     LUA_TAINTDISABLED, /* Disable all propagation of taint. */
-    LUA_TAINTRDONLY,   /* Propagate taint to stack on reads only. */
-    LUA_TAINTWRONLY,   /* Propagate taint to values on writes only. */
-    LUA_TAINTRDRW,     /* Propagate taint on all reads and writes. */
+    LUA_TAINTRDONLY, /* Propagate taint to stack on reads only. */
+    LUA_TAINTWRONLY, /* Propagate taint to values on writes only. */
+    LUA_TAINTRDRW, /* Propagate taint on all reads and writes. */
 };
 
 typedef struct lua_TaintState {
@@ -406,17 +406,17 @@ LUA_API void lua_resettaint (lua_State *L);
 typedef lua_Integer lua_Clock;
 
 typedef struct lua_GlobalStats {
-    size_t bytesused;      /* total number of bytes in use */
+    size_t bytesused; /* total number of bytes in use */
     size_t bytesallocated; /* total number of bytes allocated */
 } lua_GlobalStats;
 
 typedef struct lua_SourceStats {
     lua_Clock execticks; /* ticks spent executing owned functions */
-    size_t bytesowned;   /* total byte size owned objects */
+    size_t bytesowned; /* total byte size owned objects */
 } lua_SourceStats;
 
 typedef struct lua_FunctionStats {
-    int calls;          /* number of calls */
+    int calls; /* number of calls */
     lua_Clock ownticks; /* ticks spent executing this function */
     lua_Clock subticks; /* as above but including calls to subroutines */
 } lua_FunctionStats;
@@ -447,7 +447,7 @@ enum lua_ExceptMask {
 };
 
 typedef struct lua_ScriptTimeout {
-    lua_Clock ticks;  /* how long to allow execution before timing out? */
+    lua_Clock ticks; /* how long to allow execution before timing out? */
     int instructions; /* how many instructions between each check? */
 } lua_ScriptTimeout;
 

@@ -129,7 +129,7 @@ void luaX_setinput (lua_State *L, LexState *ls, ZIO *z, TString *source) {
     ls->lastline = 1;
     ls->source = source;
     luaZ_resizebuffer(ls->L, ls->buff, LUAI_MINBUFFER); /* initialize buffer */
-    next(ls);                                           /* read first char */
+    next(ls); /* read first char */
 }
 
 /*
@@ -177,7 +177,7 @@ static void read_numeral (LexState *ls, SemInfo *seminfo) {
         save_and_next(ls);
     } while (isdigit(ls->current) || ls->current == '.');
     if (check_next(ls, "Ee")) { /* `E'? */
-        check_next(ls, "+-");   /* optional exponent sign */
+        check_next(ls, "+-"); /* optional exponent sign */
     }
     while (isalnum(ls->current) || ls->current == '_') {
         save_and_next(ls);
@@ -203,10 +203,10 @@ static int skip_sep (LexState *ls) {
 
 static void read_long_string (LexState *ls, SemInfo *seminfo, int sep) {
     int cont = 0;
-    (void) (cont);           /* avoid warnings when `cont' is not used */
-    save_and_next(ls);       /* skip 2nd `[' */
+    (void) (cont); /* avoid warnings when `cont' is not used */
+    save_and_next(ls); /* skip 2nd `[' */
     if (currIsNewline(ls)) { /* string starts with a newline? */
-        inclinenumber(ls);   /* skip it */
+        inclinenumber(ls); /* skip it */
     }
     for (;;) {
         switch (ls->current) {
@@ -314,7 +314,7 @@ static void read_string (LexState *ls, int del, SemInfo *seminfo) {
                     default: {
                         if (!isdigit(ls->current)) {
                             save_and_next(ls); /* handles \\, \", \', and \? */
-                        } else {               /* \xxx */
+                        } else { /* \xxx */
                             int i = 0;
                             c = 0;
                             do {
@@ -481,8 +481,8 @@ static int llex (LexState *ls, SemInfo *seminfo) {
 void luaX_next (LexState *ls) {
     ls->lastline = ls->linenumber;
     if (ls->lookahead.token != TK_EOS) { /* is there a look-ahead token? */
-        ls->t = ls->lookahead;           /* use this one */
-        ls->lookahead.token = TK_EOS;    /* and discharge it */
+        ls->t = ls->lookahead; /* use this one */
+        ls->lookahead.token = TK_EOS; /* and discharge it */
     } else {
         ls->t.token = llex(ls, &ls->t.seminfo); /* read next token */
     }

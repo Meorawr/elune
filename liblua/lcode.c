@@ -30,7 +30,7 @@ static int isnumeral (expdesc *e) {
 void luaK_nil (FuncState *fs, int from, int n) {
     Instruction *previous;
     if (fs->pc > fs->lasttarget) { /* no jumps to current position? */
-        if (fs->pc == 0) {         /* function start? */
+        if (fs->pc == 0) { /* function start? */
             if (from >= fs->nactvar) {
                 return; /* positions are already clean */
             }
@@ -92,7 +92,7 @@ int luaK_getlabel (FuncState *fs) {
 static int getjump (FuncState *fs, int pc) {
     int offset = GETARG_sBx(fs->f->code[pc]);
     if (offset == NO_JUMP) { /* point to itself represents end of list */
-        return NO_JUMP;      /* end of list */
+        return NO_JUMP; /* end of list */
     } else {
         return (pc + 1) + offset; /* turn offset into absolute position */
     }
@@ -376,7 +376,7 @@ static void exp2reg (FuncState *fs, expdesc *e, int reg) {
         luaK_concat(fs, &e->t, e->u.s.info); /* put this jump in `t' list */
     }
     if (hasjumps(e)) {
-        int final;         /* position after whole expression */
+        int final; /* position after whole expression */
         int p_f = NO_JUMP; /* position of an eventual LOAD false */
         int p_t = NO_JUMP; /* position of an eventual LOAD true */
         if (need_value(fs, e->t) || need_value(fs, e->f)) {
@@ -408,7 +408,7 @@ int luaK_exp2anyreg (FuncState *fs, expdesc *e) {
             return e->u.s.info; /* exp is already in a register */
         }
         if (e->u.s.info >= fs->nactvar) { /* reg. is not a local? */
-            exp2reg(fs, e, e->u.s.info);  /* put value on it */
+            exp2reg(fs, e, e->u.s.info); /* put value on it */
             return e->u.s.info;
         }
     }

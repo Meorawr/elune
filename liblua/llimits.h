@@ -28,8 +28,7 @@ typedef LUAI_UACNUMBER l_uacNumber;
  * see details in lopcodes.h. */
 typedef uint_least32_t Instruction;
 
-/* Integer maximums; these are subtracted for safety per the original defines.
- */
+/* Integer maximums; these are subtracted for safety per original defines. */
 
 #define LUA_SIZE_MAX ((size_t) (SIZE_MAX - 2))
 #define LUA_PTRDIFF_MAX ((size_t) (PTRDIFF_MAX - 2))

@@ -24,14 +24,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define PROGNAME "luac"        /* default program name */
+#define PROGNAME "luac" /* default program name */
 #define OUTPUT PROGNAME ".out" /* default output file */
 
-static int listing = 0;                 /* list bytecodes? */
-static int dumping = 1;                 /* dump bytecodes? */
-static int stripping = 0;               /* strip debug information? */
-static char Output[] = { OUTPUT };      /* default output file name */
-static const char *output = Output;     /* actual output file name */
+static int listing = 0; /* list bytecodes? */
+static int dumping = 1; /* dump bytecodes? */
+static int stripping = 0; /* strip debug information? */
+static char Output[] = { OUTPUT }; /* default output file name */
+static const char *output = Output; /* actual output file name */
 static const char *progname = PROGNAME; /* actual program name */
 
 static void printfunction (const Proto *f, int full);
@@ -472,13 +472,13 @@ static void printheader (const Proto *f) {
     printf("%d%s param%s, %d slot%s, %d upvalue%s, ", f->numparams,
            f->is_vararg ? "+" : "", SS(f->numparams),
            S(f->maxstacksize), /* expands to two args */
-           S(f->nups)          /* expands to two args */
+           S(f->nups) /* expands to two args */
     );
 
     printf("%d local%s, %d constant%s, %d function%s\n",
            S(f->sizelocvars), /* expands to two args */
-           S(f->sizek),       /* expands to two args */
-           S(f->sizep)        /* expands to two args */
+           S(f->sizek), /* expands to two args */
+           S(f->sizep) /* expands to two args */
     );
 }
 

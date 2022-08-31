@@ -28,7 +28,7 @@ void luaS_resize (lua_State *L, int newsize) {
     /* rehash */
     for (i = 0; i < tb->size; i++) {
         GCObject *p = tb->hash[i];
-        while (p) {                       /* for each node in the list */
+        while (p) { /* for each node in the list */
             GCObject *next = p->gch.next; /* save next */
             unsigned int h = gco2ts(p)->hash;
             int h1 = lmod(h, newsize); /* new position */

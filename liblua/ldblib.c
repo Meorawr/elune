@@ -274,8 +274,8 @@ static int db_sethook (lua_State *L) {
     gethooktable(L);
     lua_pushlightuserdata(L, L1);
     lua_pushvalue(L, arg + 1);
-    lua_rawset(L, -3);                  /* set new hook */
-    lua_pop(L, 1);                      /* remove hook table */
+    lua_rawset(L, -3); /* set new hook */
+    lua_pop(L, 1); /* remove hook table */
     lua_sethook(L1, func, mask, count); /* set hooks */
     return 0;
 }
@@ -332,7 +332,7 @@ static int db_traceback (lua_State *L) {
     lua_State *L1 = getthread(L, &arg);
     const char *msg = lua_tostring(L, arg + 1);
     if (msg == NULL && !lua_isnoneornil(L, arg + 1)) { /* non-string 'msg'? */
-        lua_pushvalue(L, arg + 1);                     /* return it untouched */
+        lua_pushvalue(L, arg + 1); /* return it untouched */
     } else {
         int level = luaL_optint(L, arg + 2, (L == L1) ? 1 : 0);
         luaL_traceback(L, L1, msg, level);
@@ -498,7 +498,7 @@ static const luaL_Reg dblib_lua[] = {
 };
 
 static const luaL_Reg dblib_global[] = {
-    { "debugstack", NULL },  /* TODO: Implement me! */
+    { "debugstack", NULL }, /* TODO: Implement me! */
     { "debuglocals", NULL }, /* TODO: Implement me! */
     /* clang-format off */
     { NULL, NULL },

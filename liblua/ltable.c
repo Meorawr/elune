@@ -63,7 +63,7 @@
 #define dummynode (&dummynode_)
 
 static const Node dummynode_ = {
-    { { NULL }, NULL, LUA_TNIL },          /* value */
+    { { NULL }, NULL, LUA_TNIL }, /* value */
     { { { NULL }, NULL, LUA_TNIL, NULL } } /* key */
 };
 
@@ -150,16 +150,16 @@ static int findindex (lua_State *L, Table *t, StkId key) {
 }
 
 int luaH_next (lua_State *L, Table *t, StkId key) {
-    int i = findindex(L, t, key);      /* find original element */
+    int i = findindex(L, t, key); /* find original element */
     for (i++; i < t->sizearray; i++) { /* try first array part */
-        if (!ttisnil(&t->array[i])) {  /* a non-nil value? */
+        if (!ttisnil(&t->array[i])) { /* a non-nil value? */
             setnvalue(L, key, cast_num(i + 1));
             setobj2s(L, key + 1, &t->array[i]);
             return 1;
         }
     }
     for (i -= t->sizearray; i < sizenode(t); i++) { /* then hash part */
-        if (!ttisnil(gval(gnode(t, i)))) {          /* a non-nil value? */
+        if (!ttisnil(gval(gnode(t, i)))) { /* a non-nil value? */
             setobj2s(L, key, key2tval(gnode(t, i)));
             setobj2s(L, key + 1, gval(gnode(t, i)));
             return 1;
@@ -177,14 +177,14 @@ int luaH_next (lua_State *L, Table *t, StkId key) {
 static int computesizes (int nums[], int *narray) {
     int i;
     int twotoi; /* 2^i */
-    int a = 0;  /* number of elements smaller than 2^i */
+    int a = 0; /* number of elements smaller than 2^i */
     int na = 0; /* number of elements to go to array part */
-    int n = 0;  /* optimal size for array part */
+    int n = 0; /* optimal size for array part */
     for (i = 0, twotoi = 1; twotoi / 2 < *narray; i++, twotoi *= 2) {
         if (nums[i] > 0) {
             a += nums[i];
             if (a > twotoi / 2) { /* more than half elements present? */
-                n = twotoi;       /* optimal size (till now) */
+                n = twotoi; /* optimal size (till now) */
                 na = a; /* all elements smaller than n will go to array part */
             }
         }
@@ -200,7 +200,7 @@ static int computesizes (int nums[], int *narray) {
 static int countint (const TValue *key, int *nums) {
     int k = arrayindex(key);
     if (0 < k && k <= MAXASIZE) { /* is `key' an appropriate array index? */
-        nums[ceillog2(k)]++;      /* count as such */
+        nums[ceillog2(k)]++; /* count as such */
         return 1;
     } else {
         return 0;
@@ -209,12 +209,12 @@ static int countint (const TValue *key, int *nums) {
 
 static int numusearray (const Table *t, int *nums) {
     int lg;
-    int ttlg;     /* 2^lg */
+    int ttlg; /* 2^lg */
     int ause = 0; /* summation of `nums' */
-    int i = 1;    /* count to traverse all array keys */
+    int i = 1; /* count to traverse all array keys */
     for (lg = 0, ttlg = 1; lg <= MAXBITS;
          lg++, ttlg *= 2) { /* for each slice */
-        int lc = 0;         /* counter */
+        int lc = 0; /* counter */
         int lim = ttlg;
         if (lim > t->sizearray) {
             lim = t->sizearray; /* adjust upper limit */
@@ -236,7 +236,7 @@ static int numusearray (const Table *t, int *nums) {
 
 static int numusehash (const Table *t, int *nums, int *pnasize) {
     int totaluse = 0; /* total number of elements */
-    int ause = 0;     /* summation of `nums' */
+    int ause = 0; /* summation of `nums' */
     int i = sizenode(t);
     while (i--) {
         Node *n = &t->node[i];
@@ -260,7 +260,7 @@ static void setarrayvector (lua_State *L, Table *t, int size) {
 
 static void setnodevector (lua_State *L, Table *t, int size) {
     int lsize;
-    if (size == 0) {                       /* no elements to hash part? */
+    if (size == 0) { /* no elements to hash part? */
         t->node = cast(Node *, dummynode); /* use common `dummynode' */
         lsize = 0;
     } else {
@@ -286,7 +286,7 @@ static void resize (lua_State *L, Table *t, int nasize, int nhsize) {
     int i;
     int oldasize = t->sizearray;
     int oldhsize = t->lsizenode;
-    Node *nold = t->node;    /* save old hash ... */
+    Node *nold = t->node; /* save old hash ... */
     if (nasize > oldasize) { /* array part must grow? */
         setarrayvector(L, t, nasize);
     }
@@ -331,7 +331,7 @@ static void rehash (lua_State *L, Table *t, const TValue *ek) {
         nums[i] = 0; /* reset counts */
     }
     nasize = numusearray(t, nums); /* count keys in array part */
-    totaluse = nasize;             /* all those keys are integer keys */
+    totaluse = nasize; /* all those keys are integer keys */
     totaluse += numusehash(t, nums, &nasize); /* count keys in hash part */
     /* count extra key */
     nasize += countint(ek, nums);
@@ -389,9 +389,9 @@ static TValue *newkey (lua_State *L, Table *t, const TValue *key) {
     Node *mp = mainposition(t, key);
     if (!ttisnil(gval(mp)) || mp == dummynode) {
         Node *othern;
-        Node *n = getfreepos(t);        /* get a free place */
-        if (n == NULL) {                /* cannot find a free place? */
-            rehash(L, t, key);          /* grow table */
+        Node *n = getfreepos(t); /* get a free place */
+        if (n == NULL) { /* cannot find a free place? */
+            rehash(L, t, key); /* grow table */
             return luaH_set(L, t, key); /* re-insert key into grown table */
         }
         lua_assert(n != dummynode);
@@ -402,8 +402,7 @@ static TValue *newkey (lua_State *L, Table *t, const TValue *key) {
                 othern = gnext(othern); /* find previous */
             }
             gnext(othern) = n; /* redo the chain with `n' in place of `mp' */
-            *n = *mp; /* copy colliding node into free pos. (mp->next also goes)
-                       */
+            *n = *mp; /* copy colliding node into freepos */
             gnext(mp) = NULL; /* now `mp' is free */
             setnilvalue2t(gval(mp));
         } else { /* colliding node is in its own main position */
@@ -574,7 +573,7 @@ int luaH_getn (Table *t) {
     }
     /* else must find a boundary in hash part */
     else if (t->node == dummynode) { /* hash part is empty? */
-        return j;                    /* that is easy... */
+        return j; /* that is easy... */
     } else {
         return unbound_search(t, j);
     }

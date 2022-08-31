@@ -19,9 +19,9 @@ static int table_foreachi (lua_State *L) {
     int n = aux_getn(L, 1);
     luaL_checktype(L, 2, LUA_TFUNCTION);
     for (i = 1; i <= n; i++) {
-        lua_pushvalue(L, 2);   /* function */
+        lua_pushvalue(L, 2); /* function */
         lua_pushinteger(L, i); /* 1st argument */
-        lua_rawgeti(L, 1, i);  /* 2nd argument */
+        lua_rawgeti(L, 1, i); /* 2nd argument */
         lua_call(L, 2, 1);
         if (!lua_isnil(L, -1)) {
             return 1;
@@ -36,7 +36,7 @@ static int table_foreach (lua_State *L) {
     luaL_checktype(L, 2, LUA_TFUNCTION);
     lua_pushnil(L); /* first key */
     while (lua_next(L, 1)) {
-        lua_pushvalue(L, 2);  /* function */
+        lua_pushvalue(L, 2); /* function */
         lua_pushvalue(L, -3); /* key */
         lua_pushvalue(L, -3); /* value */
         lua_call(L, 2, 1);
@@ -77,9 +77,9 @@ static int table_setn (lua_State *L) {
 
 static int table_insert (lua_State *L) {
     int e = aux_getn(L, 1) + 1; /* first empty element */
-    int pos;                    /* where to insert new element */
+    int pos; /* where to insert new element */
     switch (lua_gettop(L)) {
-        case 2: {    /* called with only 2 arguments */
+        case 2: { /* called with only 2 arguments */
             pos = e; /* insert new element at the end */
             break;
         }
@@ -107,7 +107,7 @@ static int table_remove (lua_State *L) {
     int e = aux_getn(L, 1);
     int pos = luaL_optint(L, 2, e);
     if (!(1 <= pos && pos <= e)) { /* position is outside bounds? */
-        return 0;                  /* nothing to remove */
+        return 0; /* nothing to remove */
     }
     lua_rawgeti(L, 1, pos); /* result = t[pos] */
     for (; pos < e; pos++) {
@@ -184,7 +184,7 @@ static void auxsort (lua_State *L, int l, int u) {
         lua_rawgeti(L, 1, l);
         lua_rawgeti(L, 1, u);
         if (sort_comp(L, -1, -2)) { /* a[u] < a[l]? */
-            set2(L, l, u);          /* swap a[l] - a[u] */
+            set2(L, l, u); /* swap a[l] - a[u] */
         } else {
             lua_pop(L, 2);
         }
@@ -251,12 +251,12 @@ static void auxsort (lua_State *L, int l, int u) {
             u = j - 2;
         }
         auxsort(L, j, i); /* call recursively the smaller one */
-    }                     /* repeat the routine for the larger one */
+    } /* repeat the routine for the larger one */
 }
 
 static int table_sort (lua_State *L) {
     int n = aux_getn(L, 1);
-    luaL_checkstack(L, 40, "");   /* assume array is smaller than 2^40 */
+    luaL_checkstack(L, 40, ""); /* assume array is smaller than 2^40 */
     if (!lua_isnoneornil(L, 2)) { /* is there a 2nd argument? */
         luaL_checktype(L, 2, LUA_TFUNCTION);
     }

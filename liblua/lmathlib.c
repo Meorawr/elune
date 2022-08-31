@@ -171,8 +171,8 @@ static int math_max (lua_State *L) {
 }
 
 static int randomrange (lua_State *L, lua_Number r) {
-    switch (lua_gettop(L)) {      /* check number of arguments */
-        case 0: {                 /* no arguments */
+    switch (lua_gettop(L)) { /* check number of arguments */
+        case 0: { /* no arguments */
             lua_pushnumber(L, r); /* Number between 0 and 1 */
             break;
         }

@@ -29,8 +29,8 @@
 #define restoreci(L, n) ((CallInfo *) ((char *) L->base_ci + (n)))
 
 /* results from luaD_precall */
-#define PCRLUA 0   /* initiated a call to a Lua function */
-#define PCRC 1     /* did a call to a C function */
+#define PCRLUA 0 /* initiated a call to a Lua function */
+#define PCRC 1 /* did a call to a C function */
 #define PCRYIELD 2 /* C funtion yielded */
 
 /* type of protected functions, to be ran by `runprotected' */

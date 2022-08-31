@@ -74,7 +74,7 @@ static TValue *index2adr (lua_State *L, int idx) {
 
 static Table *getcurrenv (lua_State *L) {
     if (L->ci == L->base_ci) { /* no enclosing function? */
-        return hvalue(gt(L));  /* use global table as environment */
+        return hvalue(gt(L)); /* use global table as environment */
     } else {
         Closure *func = curr_func(L);
         return func->c.env;
@@ -891,7 +891,7 @@ LUA_API int lua_gc (lua_State *L, int what, int data) {
             while (g->GCthreshold <= g->totalbytes) {
                 luaC_step(L);
                 if (g->gcstate == GCSpause) { /* end of cycle? */
-                    res = 1;                  /* signal it */
+                    res = 1; /* signal it */
                     break;
                 }
             }
@@ -934,7 +934,7 @@ LUA_API int lua_next (lua_State *L, int idx) {
     more = luaH_next(L, hvalue(t), L->top - 1);
     if (more) {
         api_incr_top(L);
-    } else {         /* no more elements */
+    } else { /* no more elements */
         L->top -= 1; /* remove key */
     }
     lua_unlock(L);
