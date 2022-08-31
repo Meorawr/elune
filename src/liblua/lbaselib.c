@@ -626,10 +626,81 @@ static int luaB_scrub (lua_State *L) {
 }
 
 
-static const luaL_Reg base_funcs[] = {
+static const char lua_getprinthandler[] =
+  "local LOCAL_printhandler;\n"
+  "\n"
+  "return function()\n"
+  "  return LOCAL_printhandler;\n"
+  "end\n";
+
+
+static const char lua_setprinthandler[] =
+  "local LOCAL_printhandler;\n"
+  "local error = error;\n"
+  "local type = type;\n"
+  "\n"
+  "return function(func)\n"
+  "  if type(func) ~= 'function' then\n"
+  "    error('Invalid print handler');\n"
+  "  else\n"
+  "    LOCAL_printhandler = func;\n"
+  "  end\n"
+  "end\n";
+
+
+static const char lua_print[] =
+  "local LOCAL_PrintHandler;\n"
+  "local forceinsecure = forceinsecure;\n"
+  "local geterrorhandler = geterrorhandler;\n"
+  "local pcall = pcall;\n"
+  "local securecall = securecall;\n"
+  "\n"
+  "local function print_inner(...)\n"
+  "  forceinsecure();\n"
+  "  local ok, err = pcall(LOCAL_PrintHandler, ...);\n"
+  "  if not ok then\n"
+  "    local func = geterrorhandler()\n"
+  "    func(err);\n"
+  "  end\n"
+  "end\n"
+  "\n"
+  "return function(...)\n"
+  "  securecall(pcall, print_inner, ...);\n"
+  "end\n";
+
+
+static const char lua_tostringall[] =
+  "local select = select;\n"
+  "local tostring = tostring;\n"
+  "local unpack = unpack;\n"
+  "\n"
+  "return function(...)\n"
+  "  local n = select('#', ...);\n"
+  "  if n == 1 then\n"
+  "    return tostring(...);\n"
+  "  elseif n == 2 then\n"
+  "    return tostring(a), tostring(b);\n"
+  "  elseif n == 3 then\n"
+  "    return tostring(a), tostring(b), tostring(c);\n"
+  "  elseif n == 0 then\n"
+  "    return;\n"
+  "  else\n"
+  "    local temp = { ... };\n"
+  "    for i = 1, n do\n"
+  "      temp[i] = tostring(temp[i]);\n"
+  "    end\n"
+  "    return unpack(temp);\n"
+  "  end\n"
+  "end\n";
+
+
+/**
+ * Base library registration
+ */
+
+static const luaL_Reg baselib_shared[] = {
   { .name = "assert", .func = luaB_assert },
   { .name = "collectgarbage", .func = luaB_collectgarbage },
-  { .name = "dofile", .func = luaB_dofile },
   { .name = "error", .func = luaB_error },
   { .name = "forceinsecure", .func = luaB_forceinsecure },
   { .name = "gcinfo", .func = luaB_gcinfo },
@@ -639,13 +710,8 @@ static const luaL_Reg base_funcs[] = {
   { .name = "hooksecurefunc", .func = luaB_hooksecurefunc },
   { .name = "issecure", .func = luaB_issecure },
   { .name = "issecurevariable", .func = luaB_issecurevariable },
-  { .name = "load", .func = luaB_load },
-  { .name = "loadfile", .func = luaB_loadfile },
-  { .name = "loadstring", .func = luaB_loadstring },
-  { .name = "loadstring_untainted", .func = luaB_loadstringuntainted },
   { .name = "next", .func = luaB_next },
   { .name = "pcall", .func = luaB_pcall },
-  { .name = "print", .func = luaB_print },
   { .name = "rawequal", .func = luaB_rawequal },
   { .name = "rawget", .func = luaB_rawget },
   { .name = "rawset", .func = luaB_rawset },
@@ -666,27 +732,41 @@ static const luaL_Reg base_funcs[] = {
 };
 
 
-/* }====================================================== */
+
+static const luaL_Reg baselib_lua[] = {
+  { .name = "dofile", .func = luaB_dofile },
+  { .name = "load", .func = luaB_load },
+  { .name = "loadfile", .func = luaB_loadfile },
+  { .name = "loadstring_untainted", .func = luaB_loadstringuntainted },
+  { .name = "loadstring", .func = luaB_loadstringuntainted },
+  { .name = "print", .func = luaB_print },
+  { .name = NULL, .func = NULL },
+};
 
 
-static void auxopen (lua_State *L, const char *name, lua_CFunction f, lua_CFunction u) {
-  lua_pushcfunction(L, u);
-  lua_pushcclosure(L, f, 1);
-  lua_setfield(L, -2, name);
-}
+static const luaL_Reg baselib_wow[] = {
+  { .name = "loadstring", .func = luaB_loadstring },
+  { .name = NULL, .func = NULL },
+};
 
 
-static void base_open (lua_State *L) {
-  /* set global _G */
-  lua_pushvalue(L, LUA_GLOBALSINDEX);
-  lua_setglobal(L, "_G");
-  /* open lib into global table */
-  luaL_register(L, "_G", base_funcs);
+static void baselib_openshared (lua_State *L) {
+  /* register shared functions */
+  luaL_setfuncs(L, baselib_shared, 0);
+
+  /* register `_VERSION' field */
   lua_pushliteral(L, LUA_VERSION);
-  lua_setglobal(L, "_VERSION");  /* set global _VERSION */
+  lua_setglobal(L, "_VERSION");
+
   /* `ipairs' and `pairs' need auxiliary functions as upvalues */
-  auxopen(L, "ipairs", luaB_ipairs, ipairsaux);
-  auxopen(L, "pairs", luaB_pairs, luaB_next);
+  lua_pushcclosure(L, ipairsaux, 0);
+  lua_pushcclosure(L, luaB_ipairs, 1);
+  lua_setfield(L, -2, "ipairs");
+
+  lua_pushcclosure(L, luaB_next, 0);
+  lua_pushcclosure(L, luaB_pairs, 1);
+  lua_setfield(L, -2, "pairs");
+
   /* `newproxy' needs a weaktable as upvalue */
   lua_createtable(L, 0, 1);  /* new table `w' */
   lua_pushvalue(L, -1);  /* `w' will be its own metatable */
@@ -695,12 +775,55 @@ static void base_open (lua_State *L) {
   lua_setfield(L, -2, "__mode");  /* metatable(w).__mode = "kv" */
   lua_pushcclosure(L, luaB_newproxy, 1);
   lua_setglobal(L, "newproxy");  /* set global `newproxy' */
+
+  /* register Lua functions */
+  luaL_dobuffer(L, lua_tostringall, "print.lua");
+  lua_setfield(L, -2, "tostringall");
 }
 
 
 LUALIB_API int luaopen_base (lua_State *L) {
-  base_open(L);
-  luaopen_coroutine(L);  /* backwards compatibility */
+  /* set global '_G' */
+  lua_pushvalue(L, LUA_GLOBALSINDEX);
+  lua_setfield(L, LUA_GLOBALSINDEX, LUA_BASELIBNAME);
+
+  /* register '_G' base library */
+  luaL_register(L, LUA_BASELIBNAME, baselib_lua);
+  baselib_openshared(L);
+
+  /* open coroutine library for backwards compatibility */
+  luaopen_coroutine(L);
+
   return 2;
 }
 
+
+LUALIB_API int luaopen_wow_base (lua_State *L) {
+  /* set field '_G' */
+  lua_pushvalue(L, LUA_ENVIRONINDEX);
+  lua_pushvalue(L, -1);
+  lua_setfield(L, -2, LUA_BASELIBNAME);
+
+  /* register '_G' base library */
+  luaL_setfuncs(L, baselib_wow, 0);
+  baselib_openshared(L);
+
+  /* register print infrastructure */
+  luaL_dobuffer(L, lua_getprinthandler, "print.lua");
+  lua_pushcclosure(L, luaB_print, 0);
+  lua_setupvalue(L, -2, 1);  /* set default print handler */
+  luaL_dobuffer(L, lua_setprinthandler, "print.lua");
+  luaL_dobuffer(L, lua_print, "print.lua");
+
+  /* join upvalues of 'LOCAL_PrintHandler' between loaded functions */
+  lua_getupvalue(L, -1, 3);  /* push 'print_inner' upvalue from 'print' */
+  lua_upvaluejoin(L, -1, 3, -4, 1);  /* join 'print_inner' to 'getprinthandler' */
+  lua_upvaluejoin(L, -3, 3, -4, 1);  /* join 'setprinthandler' to 'getprinthandler'  */
+  lua_pop(L, 1); /* pop 'print_inner' */
+
+  lua_setfield(L, -4, "print");
+  lua_setfield(L, -3, "setprinthandler");
+  lua_setfield(L, -2, "getprinthandler");
+
+  return 1;
+}
