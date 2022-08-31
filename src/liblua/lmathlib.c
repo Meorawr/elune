@@ -277,9 +277,9 @@ static int math_randomseed (lua_State *L) {
 }
 
 
-/*
-** Open math library
-*/
+/**
+ * Math library registration
+ */
 
 static const luaL_Reg mathlib_global[] = {
   { .name = "fastrandom", .func = math_fastrandom },

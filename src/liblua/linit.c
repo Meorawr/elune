@@ -28,7 +28,7 @@ static const luaL_Reg wowlibs[] = {
   /* { .name = LUA_BASELIBNAME, .func = luaopen_wow_base }, */
   /* { .name = LUA_BITLIBNAME, .func = luaopen_wow_bit }, */
   /* { .name = LUA_DBLIBNAME, .func = luaopen_wow_debug }, */
-  /* { .name = LUA_COLIBNAME, .func = luaopen_wow_coroutine }, */
+  { .name = LUA_COLIBNAME, .func = luaopen_wow_coroutine },
   { .name = LUA_MATHLIBNAME, .func = luaopen_wow_math },
   /* { .name = LUA_OSLIBNAME, .func = luaopen_wow_os }, */
   /* { .name = LUA_STRLIBNAME, .func = luaopen_wow_string }, */

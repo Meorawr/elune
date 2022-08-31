@@ -94,6 +94,7 @@ target_sources(
     lbaselib.c
     lbitlib.c
     lcompatlib.c
+    lcorolib.c
     ldblib.c
     liolib.c
     lmathlib.c
