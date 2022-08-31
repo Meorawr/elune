@@ -587,6 +587,20 @@ LUALIB_API int luaL_optint (lua_State *L, int narg, int def) {
     return luaL_opt(L, luaL_checkint, narg, def);
 }
 
+LUALIB_API long luaL_checklong (lua_State *L, int narg) {
+    long i = lua_tolong(L, narg);
+
+    if (i == 0 && !lua_isnumber(L, narg)) {
+        luaL_typerror(L, narg, lua_typename(L, LUA_TNUMBER));
+    }
+
+    return i;
+}
+
+LUALIB_API long luaL_optlong (lua_State *L, int narg, long def) {
+    return luaL_opt(L, luaL_checklong, narg, def);
+}
+
 LUALIB_API lua_State *luaL_checkthread (lua_State *L, int narg) {
     lua_State *L1 = lua_tothread(L, narg);
 

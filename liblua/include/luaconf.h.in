@@ -142,14 +142,6 @@
 #define LUA_NUMBER_FMT "%.14g"
 #define LUAI_MAXNUMBER2STR 32
 
-#if defined(LUA_USE_LONGLONG)
-#define LUA_INTFRMLEN "ll"
-#define LUA_INTFRM_T long long
-#else
-#define LUA_INTFRMLEN "l"
-#define LUA_INTFRM_T long
-#endif
-
 /* Number and string conversions */
 
 #define lua_number2int(i, d) ((i) = (int) (d))
@@ -256,6 +248,9 @@
 #define LUAI_MAXINT32 INT_LEAST32_MAX
 #define LUAI_UMEM size_t
 #define LUAI_MEM ptrdiff_t
+
+#define LUA_INTFRMLEN "l"
+#define LUA_INTFRM_T long
 
 #define LUA_QL(x) "'" x "'"
 #define LUA_QS LUA_QL("%s")

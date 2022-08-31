@@ -803,7 +803,7 @@ static const char *scanarg (const char *strfrmt, int *arg) {
 
 static const char *scanformat (lua_State *L, const char *strfrmt,
                                const char *strfrmt_end, char *form) {
-    const int MAX_MATCH_LEN = MAX_FORMAT - sizeof(LUA_INTFRMLEN) - 2;
+    const int MAX_MATCH_LEN = MAX_FORMAT - 4;
     const char *initf = strfrmt;
 
     struct MatchState ms;
@@ -829,9 +829,9 @@ static const char *scanformat (lua_State *L, const char *strfrmt,
 static void addintlen (char *form) {
     size_t l = strlen(form);
     char spec = form[l - 1];
-    strcpy(form + l - 1, LUA_INTFRMLEN);
-    form[l + sizeof(LUA_INTFRMLEN) - 2] = spec;
-    form[l + sizeof(LUA_INTFRMLEN) - 1] = '\0';
+    strcpy(form + l - 1, "l");
+    form[l] = spec;
+    form[l + 1] = '\0';
 }
 
 static int str_format (lua_State *L) {
@@ -859,9 +859,9 @@ static int str_format (lua_State *L) {
                 }
                 case 'd':
                 case 'i': {
-                    int num = lua_toint(L, arg);
+                    long num = lua_tolong(L, arg);
                     addintlen(form);
-                    sprintf(buff, form, (LUA_INTFRM_T) num);
+                    sprintf(buff, form, num);
                     break;
                 }
                 case 'o':
@@ -870,7 +870,7 @@ static int str_format (lua_State *L) {
                 case 'X': {
                     lua_Number num = luaL_checknumber(L, arg);
                     addintlen(form);
-                    sprintf(buff, form, (unsigned LUA_INTFRM_T) num);
+                    sprintf(buff, form, (unsigned long) num);
                     break;
                 }
                 case 'e':

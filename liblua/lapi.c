@@ -1086,6 +1086,23 @@ LUA_API int lua_toint (lua_State *L, int idx) {
     return i;
 }
 
+LUA_API long lua_tolong (lua_State *L, int idx) {
+    lua_Number d = lua_tonumber(L, idx);
+
+    /**
+     * Checking against INT_MIN/INT_MAX is accurate to reference; 64-bit LP64
+     * platforms still undergo 32-bit integer range checks ingame.
+     */
+
+    if ((L->exceptmask & LUA_EXCEPTOVERFLOW) && (d < INT_MIN || d > INT_MAX)) {
+        lua_lock(L);
+        luaG_overflowerror(L, d);
+        lua_unlock(L);
+    }
+
+    return (long) d;
+}
+
 static UpVal **getupvalref (lua_State *L, int fidx, int n, LClosure **pf) {
     LClosure *f;
     StkId fi = index2adr(L, fidx);

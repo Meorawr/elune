@@ -344,6 +344,7 @@ LUA_API void lua_copy (lua_State *L, int fromidx, int toidx);
 LUA_API size_t lua_objsize (lua_State *L, int idx);
 LUA_API int lua_resumefrom (lua_State *L, lua_State *from, int nargs);
 LUA_API int lua_toint (lua_State *L, int idx);
+LUA_API long lua_tolong (lua_State *L, int idx);
 LUA_API void *lua_upvalueid (lua_State *L, int fidx, int n);
 LUA_API void lua_upvaluejoin (lua_State *L, int fidx1, int n1, int fidx2,
                               int n2);
