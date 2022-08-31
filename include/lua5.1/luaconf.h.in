@@ -89,12 +89,6 @@
 
 /* Name of the Lua interpreter executable. */
 #define LUA_PROGNAME "@LUA_OUTPUT_NAME@"
-/* Prompt used by the interpreter for line inputs. */
-#define LUA_PROMPT "> "
-/* Prompt used by the interpreter for continuation line inputs. */
-#define LUA_PROMPT2 ">> "
-/* Maximum input line length accepted by the interpreter. */
-#define LUA_MAXINPUT 512
 
 /* Backwards compatibility options */
 
