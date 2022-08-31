@@ -41,7 +41,6 @@ set(LUA_APICHECK_CONFIGS "Debug" CACHE STRING "List of build configurations wher
 option(LUA_USE_LONGLONG "Allow the formatting of numeric values as 'long long' (typically 64-bit) values?" OFF)
 cmake_dependent_option(LUA_USE_CXX_LINKAGE "Build the Lua interface with C++ linkage?" ON "BUILD_CXX" OFF)
 cmake_dependent_option(LUA_USE_CXX_EXCEPTIONS "Allow the use of C++ exceptions for error handling?" ON "BUILD_CXX" OFF)
-cmake_dependent_option(LUA_USE_DLOPEN "Allow the use of 'dlopen' for loading dynamic modules?" ON "CMAKE_DL_LIBS" OFF)
 cmake_dependent_option(LUA_USE_READLINE "Allow linking to 'libreadline' for the interpreter and debug library?" ON "TARGET readline::readline" OFF)
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")

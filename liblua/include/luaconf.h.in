@@ -40,7 +40,6 @@
 #cmakedefine LUA_USE_CXX_LINKAGE
 #cmakedefine LUA_USE_LONGLONG
 #cmakedefine LUA_USE_SHARED
-#cmakedefine LUA_USE_DLOPEN
 #cmakedefine LUA_USE_READLINE
 
 /* Type configuration */
@@ -261,10 +260,6 @@
 #define LUA_QL(x) "'" x "'"
 #define LUA_QS LUA_QL("%s")
 
-#if defined(LUA_USE_DLOPEN)
-#define LUA_DL_DLOPEN
-#endif
-
 #if defined(LUA_USE_LONGLONG)
 #define LUA_USELONGLONG
 #endif
@@ -274,6 +269,7 @@
 #endif
 
 #if defined(LUA_USE_POSIX)
+#define LUA_DL_DLOPEN
 #define LUA_USE_MKSTEMP
 #define LUA_USE_ISATTY
 #define LUA_USE_POPEN

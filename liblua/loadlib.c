@@ -33,7 +33,7 @@ static void ll_unloadlib (void *lib);
 static void *ll_load (lua_State *L, const char *path);
 static lua_CFunction ll_sym (lua_State *L, void *lib, const char *sym);
 
-#if defined(LUA_USE_DLOPEN)
+#if defined(LUA_USE_POSIX)
 /*
 ** {========================================================================
 ** This is an implementation of loadlib based on the dlfcn interface.

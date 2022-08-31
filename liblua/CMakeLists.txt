@@ -51,7 +51,7 @@ target_link_libraries(
     sheredom::utf8h
     $<$<PLATFORM_ID:Darwin,Linux>:m>
     $<$<PLATFORM_ID:Windows>:bcrypt>
-    $<$<BOOL:${LUA_USE_DLOPEN}>:${CMAKE_DL_LIBS}>
+    $<$<BOOL:${LUA_USE_POSIX}>:${CMAKE_DL_LIBS}>
     $<$<BOOL:${LUA_USE_READLINE}>:readline::readline>
 )
 
