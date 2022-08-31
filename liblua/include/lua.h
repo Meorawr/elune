@@ -447,9 +447,8 @@ enum lua_ExceptMask {
 };
 
 typedef struct lua_ScriptTimeout {
-    lua_Clock ticks; /* how long to allow script execution before timing out? */
-    int instructions; /* how many instructions should pass between each check?
-                       */
+    lua_Clock ticks;  /* how long to allow execution before timing out? */
+    int instructions; /* how many instructions between each check? */
 } lua_ScriptTimeout;
 
 LUA_API int lua_getexceptmask (lua_State *L);
