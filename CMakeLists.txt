@@ -154,6 +154,7 @@ check_symbol_exists(CLOCK_MONOTONIC_RAW "time.h" LUA_HAVE_CLOCK_MONOTONIC_RAW)
 check_symbol_exists(mkstemp "stdlib.h" LUA_HAVE_MKSTEMP)
 check_symbol_exists(isatty "unistd.h" LUA_HAVE_POSIX_ISATTY)
 check_symbol_exists(popen "stdio.h" LUA_HAVE_POSIX_POPEN)
+check_symbol_exists(sigaction "signal.h" LUA_HAVE_SIGACTION)
 check_symbol_exists(_longjmp "setjmp.h" LUA_HAVE_ULONGJMP)
 list(POP_BACK CMAKE_REQUIRED_DEFINITIONS)
 
@@ -171,6 +172,7 @@ cmake_dependent_option(LUA_USE_CLOCK_GETTIME "Use POSIX 'clock_gettime' API for 
 cmake_dependent_option(LUA_USE_MKSTEMP "Use POSIX 'mkstemp' API for 'os.tempname' library function?" ON "LUA_HAVE_MKSTEMP" OFF)
 cmake_dependent_option(LUA_USE_POSIX_ISATTY "Use POSIX 'isatty' API for interpreter TTY detection?" ON "LUA_HAVE_POSIX_ISATTY" OFF)
 cmake_dependent_option(LUA_USE_POSIX_POPEN "Use POSIX 'popen' API for 'io.popen' library function?" ON "LUA_HAVE_POSIX_POPEN" OFF)
+cmake_dependent_option(LUA_USE_SIGACTION "Use POSIX 'sigaction' API for signal handling?" ON "LUA_HAVE_SIGACTION" OFF)
 cmake_dependent_option(LUA_USE_ULONGJMP "Use POSIX '_longjmp' and '_setjmp' APIs for error handling?" ON "LUA_HAVE_ULONGJMP" OFF)
 
 # Optional Windows APIs

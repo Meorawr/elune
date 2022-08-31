@@ -31,7 +31,7 @@ static lua_State *globalL = NULL;
 static const char *progname = LUA_PROGNAME;
 
 
-#if defined(LUA_USE_POSIX)   /* { */
+#if defined(LUA_USE_SIGACTION)    /* { */
 
 /*
 ** Use 'sigaction' when available.
@@ -44,11 +44,11 @@ static void setsignal (int sig, void (*handler)(int)) {
   sigaction(sig, &sa, NULL);
 }
 
-#else           /* }{ */
+#else                             /* }{ */
 
-#define setsignal            signal
+#define setsignal signal
 
-#endif                               /* } */
+#endif                            /* } */
 
 
 /*
