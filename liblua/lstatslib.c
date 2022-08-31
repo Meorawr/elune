@@ -117,7 +117,7 @@ const luaL_Reg statslib_funcs[] = {
     { "gettime", statslib_gettime },
     { "isprofilingenabled", statslib_isprofilingenabled },
     { "resetstats", statslib_resetstats },
-    { "setprofilingenabled", .func = statslib_setprofilingenabled },
+    { "setprofilingenabled", statslib_setprofilingenabled },
     /* clang-format off */
     { NULL, NULL },
     /* clang-format on */
