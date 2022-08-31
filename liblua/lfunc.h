@@ -7,10 +7,10 @@
 #include "lobject.h"
 
 #define sizeCclosure(n)                                                        \
-  (cast(int, sizeof(CClosure)) + cast(int, sizeof(TValue) * ((n) -1)))
+    (cast(int, sizeof(CClosure)) + cast(int, sizeof(TValue) * ((n) -1)))
 
 #define sizeLclosure(n)                                                        \
-  (cast(int, sizeof(LClosure)) + cast(int, sizeof(TValue *) * ((n) -1)))
+    (cast(int, sizeof(LClosure)) + cast(int, sizeof(TValue *) * ((n) -1)))
 
 LUAI_FUNC Proto *luaF_newproto (lua_State *L);
 LUAI_FUNC ClosureStats *luaF_newclosurestats (lua_State *L);

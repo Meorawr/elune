@@ -24,8 +24,8 @@
 #define LUA_ERRFILE (LUA_ERRERR + 1)
 
 typedef struct luaL_Reg {
-  const char *name;
-  lua_CFunction func;
+    const char *name;
+    lua_CFunction func;
 } luaL_Reg;
 
 LUALIB_API void luaI_openlib (lua_State *L, const char *libname,
@@ -82,7 +82,7 @@ LUALIB_API const char *luaL_findtable (lua_State *L, int idx, const char *fname,
 */
 
 #define luaL_argcheck(L, cond, numarg, extramsg)                               \
-  ((void) ((cond) || luaL_argerror(L, (numarg), (extramsg))))
+    ((void) ((cond) || luaL_argerror(L, (numarg), (extramsg))))
 #define luaL_checkstring(L, n) (luaL_checklstring(L, (n), NULL))
 #define luaL_optstring(L, n, d) (luaL_optlstring(L, (n), (d), NULL))
 #define luaL_checklong(L, n) ((long) luaL_checkinteger(L, (n)))
@@ -91,10 +91,10 @@ LUALIB_API const char *luaL_findtable (lua_State *L, int idx, const char *fname,
 #define luaL_typename(L, i) lua_typename(L, lua_type(L, (i)))
 
 #define luaL_dofile(L, fn)                                                     \
-  (luaL_loadfile(L, fn) || lua_pcall(L, 0, LUA_MULTRET, 0))
+    (luaL_loadfile(L, fn) || lua_pcall(L, 0, LUA_MULTRET, 0))
 
 #define luaL_dostring(L, s)                                                    \
-  (luaL_loadstring(L, s) || lua_pcall(L, 0, LUA_MULTRET, 0))
+    (luaL_loadstring(L, s) || lua_pcall(L, 0, LUA_MULTRET, 0))
 
 #define luaL_getmetatable(L, n) (lua_getfield(L, LUA_REGISTRYINDEX, (n)))
 
@@ -107,15 +107,15 @@ LUALIB_API const char *luaL_findtable (lua_State *L, int idx, const char *fname,
 */
 
 typedef struct luaL_Buffer {
-  char *p; /* current position in buffer */
-  int lvl; /* number of strings in the stack (level) */
-  lua_State *L;
-  char buffer[LUAL_BUFFERSIZE];
+    char *p; /* current position in buffer */
+    int lvl; /* number of strings in the stack (level) */
+    lua_State *L;
+    char buffer[LUAL_BUFFERSIZE];
 } luaL_Buffer;
 
 #define luaL_addchar(B, c)                                                     \
-  ((void) ((B)->p < ((B)->buffer + LUAL_BUFFERSIZE) || luaL_prepbuffer(B)),    \
-   (*(B)->p++ = (char) (c)))
+    ((void) ((B)->p < ((B)->buffer + LUAL_BUFFERSIZE) || luaL_prepbuffer(B)),  \
+     (*(B)->p++ = (char) (c)))
 
 /* compatibility only */
 #define luaL_putchar(B, c) luaL_addchar(B, c)
@@ -143,9 +143,9 @@ LUALIB_API lua_State *luaL_checkthread (lua_State *L, int narg);
 LUALIB_API lua_State *luaL_optthread (lua_State *L, int narg, lua_State *def);
 
 #define luaL_newlib(L, l)                                                      \
-  (luaL_newlibtable(L, funcs), luaL_setfuncs(L, funcs, 0))
+    (luaL_newlibtable(L, funcs), luaL_setfuncs(L, funcs, 0))
 #define luaL_newlibtable(L, l)                                                 \
-  lua_createtable((L), 0, (sizeof((funcs)) / sizeof((funcs)[0])) - 1)
+    lua_createtable((L), 0, (sizeof((funcs)) / sizeof((funcs)[0])) - 1)
 
 LUALIB_API int luaL_getsubtable (lua_State *L, int idx, const char *fname);
 LUALIB_API void luaL_setfuncs (lua_State *L, const luaL_Reg *l, int nup);

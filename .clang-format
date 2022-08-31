@@ -3,8 +3,8 @@ BasedOnStyle: LLVM
 ColumnLimit: 80
 Language: Cpp
 Standard: Cpp03
-ContinuationIndentWidth: 2
-TabWidth: 2
+ContinuationIndentWidth: 4
+IndentWidth: 4
 UseTab: Never
 
 AllowShortFunctionsOnASingleLine: None

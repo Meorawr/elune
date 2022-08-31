@@ -21,22 +21,22 @@
 
 /* Pseudo-indices accepted by most C APIs. */
 enum lua_PseudoIndex {
-  LUA_ERRORHANDLERINDEX = -9999,
-  LUA_REGISTRYINDEX = -10000,
-  LUA_ENVIRONINDEX = -10001,
-  LUA_GLOBALSINDEX = -10002,
+    LUA_ERRORHANDLERINDEX = -9999,
+    LUA_REGISTRYINDEX = -10000,
+    LUA_ENVIRONINDEX = -10001,
+    LUA_GLOBALSINDEX = -10002,
 };
 
 #define lua_upvalueindex(i) (LUA_GLOBALSINDEX - (i))
 
 /* Thread status values; 0 is OK. */
 enum lua_Status {
-  LUA_OK = 0,
-  LUA_YIELD = 1,
-  LUA_ERRRUN = 2,
-  LUA_ERRSYNTAX = 3,
-  LUA_ERRMEM = 4,
-  LUA_ERRERR = 5,
+    LUA_OK = 0,
+    LUA_YIELD = 1,
+    LUA_ERRRUN = 2,
+    LUA_ERRSYNTAX = 3,
+    LUA_ERRMEM = 4,
+    LUA_ERRERR = 5,
 };
 
 typedef struct lua_State lua_State;
@@ -57,24 +57,24 @@ typedef void *(*lua_Alloc)(void *ud, void *ptr, size_t osize, size_t nsize);
 
 /* Basic Lua types */
 enum lua_Type {
-  LUA_TNONE = -1,
-  LUA_TNIL = 0,
-  LUA_TBOOLEAN = 1,
-  LUA_TLIGHTUSERDATA = 2,
-  LUA_TNUMBER = 3,
-  LUA_TSTRING = 4,
-  LUA_TTABLE = 5,
-  LUA_TFUNCTION = 6,
-  LUA_TUSERDATA = 7,
-  LUA_TTHREAD = 8,
+    LUA_TNONE = -1,
+    LUA_TNIL = 0,
+    LUA_TBOOLEAN = 1,
+    LUA_TLIGHTUSERDATA = 2,
+    LUA_TNUMBER = 3,
+    LUA_TSTRING = 4,
+    LUA_TTABLE = 5,
+    LUA_TFUNCTION = 6,
+    LUA_TUSERDATA = 7,
+    LUA_TTHREAD = 8,
 };
 
 /* Predefined values in the registry. */
 enum lua_RegistryIndex {
-  LUA_NOREF = -2,
-  LUA_REFNIL = -1,
-  LUA_RIDX_MAINTHREAD = 1,
-  LUA_RIDX_LAST = LUA_RIDX_MAINTHREAD,
+    LUA_NOREF = -2,
+    LUA_REFNIL = -1,
+    LUA_RIDX_MAINTHREAD = 1,
+    LUA_RIDX_LAST = LUA_RIDX_MAINTHREAD,
 };
 
 /*
@@ -198,14 +198,14 @@ LUA_API int lua_status (lua_State *L);
 */
 
 enum lua_GCOption {
-  LUA_GCSTOP = 0,
-  LUA_GCRESTART = 1,
-  LUA_GCCOLLECT = 2,
-  LUA_GCCOUNT = 3,
-  LUA_GCCOUNTB = 4,
-  LUA_GCSTEP = 5,
-  LUA_GCSETPAUSE = 6,
-  LUA_GCSETSTEPMUL = 7,
+    LUA_GCSTOP = 0,
+    LUA_GCRESTART = 1,
+    LUA_GCCOLLECT = 2,
+    LUA_GCCOUNT = 3,
+    LUA_GCCOUNTB = 4,
+    LUA_GCSTEP = 5,
+    LUA_GCSETPAUSE = 6,
+    LUA_GCSETSTEPMUL = 7,
 };
 
 LUA_API int lua_gc (lua_State *L, int what, int dat);
@@ -249,7 +249,7 @@ LUA_API void lua_setallocf (lua_State *L, lua_Alloc f, void *ud);
 #define lua_isnoneornil(L, n) (lua_type(L, (n)) <= 0)
 
 #define lua_pushliteral(L, s)                                                  \
-  lua_pushlstring(L, "" s, (sizeof(s) / sizeof(char)) - 1)
+    lua_pushlstring(L, "" s, (sizeof(s) / sizeof(char)) - 1)
 
 #define lua_setglobal(L, s) lua_setfield(L, LUA_GLOBALSINDEX, (s))
 #define lua_getglobal(L, s) lua_getfield(L, LUA_GLOBALSINDEX, (s))
@@ -282,21 +282,21 @@ LUA_API void lua_setlevel (lua_State *from, lua_State *to);
 ** Event codes
 */
 enum lua_HookEvent {
-  LUA_HOOKCALL = 0,
-  LUA_HOOKRET = 1,
-  LUA_HOOKLINE = 2,
-  LUA_HOOKCOUNT = 3,
-  LUA_HOOKTAILRET = 4,
+    LUA_HOOKCALL = 0,
+    LUA_HOOKRET = 1,
+    LUA_HOOKLINE = 2,
+    LUA_HOOKCOUNT = 3,
+    LUA_HOOKTAILRET = 4,
 };
 
 /*
 ** Event masks
 */
 enum lua_HookMask {
-  LUA_MASKCALL = (1 << LUA_HOOKCALL),
-  LUA_MASKRET = (1 << LUA_HOOKRET),
-  LUA_MASKLINE = (1 << LUA_HOOKLINE),
-  LUA_MASKCOUNT = (1 << LUA_HOOKCOUNT),
+    LUA_MASKCALL = (1 << LUA_HOOKCALL),
+    LUA_MASKRET = (1 << LUA_HOOKRET),
+    LUA_MASKLINE = (1 << LUA_HOOKLINE),
+    LUA_MASKCOUNT = (1 << LUA_HOOKCOUNT),
 };
 
 typedef struct lua_Debug lua_Debug; /* activation record */
@@ -317,18 +317,18 @@ LUA_API int lua_gethookmask (lua_State *L);
 LUA_API int lua_gethookcount (lua_State *L);
 
 struct lua_Debug {
-  int event;
-  const char *name;           /* (n) */
-  const char *namewhat;       /* (n) `global', `local', `field', `method' */
-  const char *what;           /* (S) `Lua', `C', `main', `tail' */
-  const char *source;         /* (S) */
-  int currentline;            /* (l) */
-  int nups;                   /* (u) number of upvalues */
-  int linedefined;            /* (S) */
-  int lastlinedefined;        /* (S) */
-  char short_src[LUA_IDSIZE]; /* (S) */
-  /* private part */
-  int i_ci; /* active function */
+    int event;
+    const char *name;           /* (n) */
+    const char *namewhat;       /* (n) `global', `local', `field', `method' */
+    const char *what;           /* (S) `Lua', `C', `main', `tail' */
+    const char *source;         /* (S) */
+    int currentline;            /* (l) */
+    int nups;                   /* (u) number of upvalues */
+    int linedefined;            /* (S) */
+    int lastlinedefined;        /* (S) */
+    char short_src[LUA_IDSIZE]; /* (S) */
+    /* private part */
+    int i_ci; /* active function */
 };
 
 /* }====================================================================== */
@@ -355,17 +355,17 @@ LUA_API void lua_upvaluejoin (lua_State *L, int fidx1, int n1, int fidx2,
 typedef void (*lua_PFunction)(lua_State *L, void *ud);
 
 enum lua_TaintMode {
-  LUA_TAINTDISABLED, /* Disable all propagation of taint. */
-  LUA_TAINTRDONLY,   /* Propagate taint to stack on reads only. */
-  LUA_TAINTWRONLY,   /* Propagate taint to values on writes only. */
-  LUA_TAINTRDRW,     /* Propagate taint on all reads and writes. */
+    LUA_TAINTDISABLED, /* Disable all propagation of taint. */
+    LUA_TAINTRDONLY,   /* Propagate taint to stack on reads only. */
+    LUA_TAINTWRONLY,   /* Propagate taint to values on writes only. */
+    LUA_TAINTRDRW,     /* Propagate taint on all reads and writes. */
 };
 
 typedef struct lua_TaintState {
-  int mode;
-  const char *stacktaint;
-  const char *newobjecttaint;
-  const char *newclosuretaint;
+    int mode;
+    const char *stacktaint;
+    const char *newobjecttaint;
+    const char *newclosuretaint;
 } lua_TaintState;
 
 LUA_API int lua_gettaintmode (lua_State *L);
@@ -406,19 +406,19 @@ LUA_API void lua_resettaint (lua_State *L);
 typedef lua_Integer lua_Clock;
 
 typedef struct lua_GlobalStats {
-  size_t bytesused;      /* total number of bytes in use */
-  size_t bytesallocated; /* total number of bytes allocated */
+    size_t bytesused;      /* total number of bytes in use */
+    size_t bytesallocated; /* total number of bytes allocated */
 } lua_GlobalStats;
 
 typedef struct lua_SourceStats {
-  lua_Clock execticks; /* ticks spent executing owned functions */
-  size_t bytesowned;   /* total byte size owned objects */
+    lua_Clock execticks; /* ticks spent executing owned functions */
+    size_t bytesowned;   /* total byte size owned objects */
 } lua_SourceStats;
 
 typedef struct lua_FunctionStats {
-  int calls;          /* number of calls */
-  lua_Clock ownticks; /* ticks spent executing this function */
-  lua_Clock subticks; /* as above but including calls to subroutines */
+    int calls;          /* number of calls */
+    lua_Clock ownticks; /* ticks spent executing this function */
+    lua_Clock subticks; /* as above but including calls to subroutines */
 } lua_FunctionStats;
 
 LUA_API lua_Clock lua_clocktime (lua_State *L);
@@ -441,14 +441,15 @@ LUA_API void lua_getfunctionstats (lua_State *L, int funcindex,
  */
 
 enum lua_ExceptMask {
-  LUA_EXCEPTFPECOERCE = (1 << 0),
-  LUA_EXCEPTFPESTRICT = (1 << 1),
-  LUA_EXCEPTOVERFLOW = (1 << 2),
+    LUA_EXCEPTFPECOERCE = (1 << 0),
+    LUA_EXCEPTFPESTRICT = (1 << 1),
+    LUA_EXCEPTOVERFLOW = (1 << 2),
 };
 
 typedef struct lua_ScriptTimeout {
-  lua_Clock ticks;  /* how long to allow script execution before timing out? */
-  int instructions; /* how many instructions should pass between each check? */
+    lua_Clock ticks; /* how long to allow script execution before timing out? */
+    int instructions; /* how many instructions should pass between each check?
+                       */
 } lua_ScriptTimeout;
 
 LUA_API int lua_getexceptmask (lua_State *L);
