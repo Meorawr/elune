@@ -2,10 +2,6 @@
  * in the "LICENSE" file or at <http://www.lua.org/license.html> */
 
 
-#include <ctype.h>
-#include <stdlib.h>
-#include <string.h>
-
 #define lbaselib_c
 #define LUA_LIB
 
@@ -13,6 +9,10 @@
 
 #include "lauxlib.h"
 #include "lualib.h"
+
+#include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
 
 
 static int luaB_print (lua_State *L) {
@@ -524,10 +524,9 @@ static int luaB_secureexecuterange (lua_State *L) {
 
 
 static int luaB_geterrorhandler (lua_State *L) {
-  /* See 'luaB_seterrorhandler' for details about '__errorhandler'. */
   lua_pushvalue(L, LUA_ERRORHANDLERINDEX);
   lua_getfenv(L, -1);
-  if (luaL_getmetafield(L, -1, "__errorhandler") == 0) lua_settop(L, 1);
+  if (luaL_getmetafield(L, -1, "__environment") == 0) lua_settop(L, 1);
   return 1;
 }
 
@@ -553,26 +552,11 @@ static int luaB_seterrorhandler (lua_State *L) {
 
   lua_settop(L, 1);
 
-  /**
-   * When installing an error handler from scripts we'll wrap it in a proxy
-   * C function that handles the "UNKNOWN ERROR" quirk from the reference
-   * environment when an error is raised with a non-string value.
-   *
-   * To ensure that 'geterrorhandler()' returns the correct function, it needs
-   * to be able to get a reference to the Lua function stored with the proxy,
-   * however we probably also want to avoid just blindly returning the value
-   * stored as the first upvalue of said proxy function.
-   *
-   * To work around this the proxy error handler will have a custom environment
-   * with a metatable with an '__errorhandler' key. This is looked up and
-   * preferred by 'luaB_geterrorhandler' when available.
-   */
-
   /* Create an environment table that references the supplied function. */
   lua_createtable(L, 0, 0);
   lua_createtable(L, 0, 1);
   lua_pushvalue(L, 1);
-  lua_setfield(L, 3, "__errorhandler");
+  lua_setfield(L, 3, "__environment");
   lua_setmetatable(L, 2);
   lua_insert(L, 1);
 
