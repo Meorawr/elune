@@ -9,10 +9,6 @@ set(CMAKE_REQUIRED_LIBRARIES "bcrypt")
 check_symbol_exists(BCryptGenRandom "windows.h;bcrypt.h" LUA_USE_BCRYPT_GEN_RANDOM)
 set(CMAKE_REQUIRED_LIBRARIES)
 
-# -----------------------------------------------------------------------------
-# Lua library target (elune::liblua)
-# -----------------------------------------------------------------------------
-
 add_library(liblua)
 add_library(elune::liblua ALIAS liblua)
 
@@ -45,6 +41,8 @@ target_compile_definitions(
 target_include_directories(
   liblua
   PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/lua5.1>
+  PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
@@ -57,7 +55,14 @@ target_link_libraries(
     sheredom::utf8h
 )
 
-set(liblua_PUBLIC_HEADERS lua.h lauxlib.h lualib.h luaconf.h lua.hpp)
+set(
+  liblua_PUBLIC_HEADERS
+  "${PROJECT_SOURCE_DIR}/include/lua5.1/lauxlib.h"
+  "${PROJECT_SOURCE_DIR}/include/lua5.1/lua.h"
+  "${PROJECT_SOURCE_DIR}/include/lua5.1/lua.hpp"
+  "${PROJECT_SOURCE_DIR}/include/lua5.1/luaconf.h"
+  "${PROJECT_SOURCE_DIR}/include/lua5.1/lualib.h"
+)
 
 target_sources(
   liblua
@@ -115,65 +120,4 @@ set_target_properties(
   liblua
   PROPERTIES
     PUBLIC_HEADER "${liblua_PUBLIC_HEADERS}"  # Must be a string representation of a list.
-)
-
-# -----------------------------------------------------------------------------
-# Lua interpreter target (elune::lua)
-# -----------------------------------------------------------------------------
-
-add_executable(lua)
-add_executable(elune::lua ALIAS lua)
-
-set_target_properties(
-  lua
-  PROPERTIES
-    OUTPUT_NAME ${LUA_OUTPUT_NAME}
-    C_EXTENSIONS OFF
-    C_STANDARD 11
-    C_STANDARD_REQUIRED ON
-    BUILD_RPATH_USE_ORIGIN ON
-    INSTALL_RPATH "\$ORIGIN/../${CMAKE_INSTALL_LIBDIR}"
-)
-
-target_link_libraries(
-  lua
-  PRIVATE
-    elune::liblua
-    $<$<PLATFORM_ID:Darwin,Linux>:readline>
-)
-
-target_sources(
-  lua
-  PRIVATE
-    lua.c
-)
-
-# -----------------------------------------------------------------------------
-# Lua compiler target (elune::luac)
-# -----------------------------------------------------------------------------
-
-add_executable(luac)
-add_executable(elune::luac ALIAS luac)
-
-set_target_properties(
-  luac
-  PROPERTIES
-    OUTPUT_NAME ${LUAC_OUTPUT_NAME}
-    C_EXTENSIONS OFF
-    C_STANDARD 11
-    C_STANDARD_REQUIRED ON
-)
-
-target_link_libraries(
-  luac
-  PRIVATE
-    $<TARGET_GENEX_EVAL:liblua,$<TARGET_PROPERTY:liblua,LINK_LIBRARIES>>
-)
-
-target_sources(
-  luac
-  PRIVATE
-    luac.c
-    print.c
-    $<TARGET_OBJECTS:liblua>
 )
