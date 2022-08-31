@@ -368,7 +368,9 @@ static int libargs (lua_State *L, char **argv, int n) {
                 luaL_openlibsx(L, LUALIB_STANDARD);
                 loaded = 1;
             } else if (strcmp(extra, "wow") == 0) {
-                luaL_openlibsx(L, LUALIB_REFERENCE);
+                luaL_openlibsx(L, LUALIB_ELUNE);
+                loaded = 1;
+            } else if (strcmp(extra, "none") == 0) {
                 loaded = 1;
             } else {
                 lua_pushfstring(L, "unknown base library type: %s", extra);
@@ -380,7 +382,7 @@ static int libargs (lua_State *L, char **argv, int n) {
 
     if (!loaded) {
         /* Load both libraries with standard taking priority by default. */
-        luaL_openlibsx(L, LUALIB_REFERENCE);
+        luaL_openlibsx(L, LUALIB_ELUNE);
         luaL_openlibsx(L, LUALIB_STANDARD);
     }
 

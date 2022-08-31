@@ -233,7 +233,7 @@ LUALIB_API int luaopen_os (lua_State *L) {
     return 1;
 }
 
-LUALIB_API int luaopen_wow_os (lua_State *L) {
+LUALIB_API int luaopen_elune_os (lua_State *L) {
     lua_pushvalue(L, LUA_ENVIRONINDEX);
     luaL_setfuncs(L, syslib_global, 0);
     return 0;

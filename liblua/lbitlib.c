@@ -108,7 +108,7 @@ LUALIB_API int luaopen_bit (lua_State *L) {
     return 1;
 }
 
-LUALIB_API int luaopen_wow_bit (lua_State *L) {
+LUALIB_API int luaopen_elune_bit (lua_State *L) {
     luaL_getsubtable(L, LUA_ENVIRONINDEX, LUA_BITLIBNAME);
     luaL_setfuncs(L, bitlib_shared, 0);
     return 1;

@@ -531,7 +531,7 @@ LUALIB_API int luaopen_debug (lua_State *L) {
     return 1;
 }
 
-LUALIB_API int luaopen_wow_debug (lua_State *L) {
+LUALIB_API int luaopen_elune_debug (lua_State *L) {
     lua_pushvalue(L, LUA_ENVIRONINDEX);
     luaL_setfuncs(L, dblib_global, 0);
     dblib_opendebugprofile(L);

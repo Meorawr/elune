@@ -265,7 +265,7 @@ static const luaL_Reg mathlib_lua[] = {
     /* clang-format on */
 };
 
-static const luaL_Reg mathlib_wow[] = {
+static const luaL_Reg mathlib_elune[] = {
     { "random", math_securerandom },
     /* clang-format off */
     { NULL, NULL },
@@ -293,10 +293,10 @@ LUALIB_API int luaopen_math (lua_State *L) {
     return 1;
 }
 
-LUALIB_API int luaopen_wow_math (lua_State *L) {
+LUALIB_API int luaopen_elune_math (lua_State *L) {
     /* open math library */
     luaL_getsubtable(L, LUA_ENVIRONINDEX, LUA_MATHLIBNAME);
-    luaL_setfuncs(L, mathlib_wow, 0);
+    luaL_setfuncs(L, mathlib_elune, 0);
     mathlib_openshared(L);
 
     /* open global functions */

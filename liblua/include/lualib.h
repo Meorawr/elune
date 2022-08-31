@@ -12,7 +12,7 @@
 
 enum lua_LibrarySet {
     LUALIB_STANDARD, /* Lua 5.1 standard libraries */
-    LUALIB_REFERENCE, /* WoW-compatible reference libraries */
+    LUALIB_ELUNE, /* WoW-compatible reference libraries */
 };
 
 #define LUA_BASELIBNAME "_G"
@@ -26,7 +26,6 @@ enum lua_LibrarySet {
 #define LUA_OSLIBNAME "os"
 #define LUA_STRLIBNAME "string"
 #define LUA_TABLIBNAME "table"
-#define LUA_WOWLIBNAME "wow"
 
 LUALIB_API int luaopen_base (lua_State *L);
 LUALIB_API int luaopen_bit (lua_State *L);
@@ -51,15 +50,17 @@ LUALIB_API void luaL_openlibsx (lua_State *L, int set);
 ** =======================================================================
 */
 
-LUALIB_API int luaopen_wow_base (lua_State *L);
-LUALIB_API int luaopen_wow_bit (lua_State *L);
-LUALIB_API int luaopen_wow_debug (lua_State *L);
-LUALIB_API int luaopen_wow_coroutine (lua_State *L);
-LUALIB_API int luaopen_wow_os (lua_State *L);
-LUALIB_API int luaopen_wow_math (lua_State *L);
-LUALIB_API int luaopen_wow_string (lua_State *L);
-LUALIB_API int luaopen_wow_table (lua_State *L);
-LUALIB_API int luaopen_wow (lua_State *L);
+#define LUA_ELUNELIBNAME "elune"
+
+LUALIB_API int luaopen_elune_base (lua_State *L);
+LUALIB_API int luaopen_elune_bit (lua_State *L);
+LUALIB_API int luaopen_elune_debug (lua_State *L);
+LUALIB_API int luaopen_elune_coroutine (lua_State *L);
+LUALIB_API int luaopen_elune_os (lua_State *L);
+LUALIB_API int luaopen_elune_math (lua_State *L);
+LUALIB_API int luaopen_elune_string (lua_State *L);
+LUALIB_API int luaopen_elune_table (lua_State *L);
+LUALIB_API int luaopen_elune (lua_State *L);
 
 /* }====================================================================== */
 

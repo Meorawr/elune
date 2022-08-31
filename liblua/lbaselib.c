@@ -652,7 +652,7 @@ static const luaL_Reg baselib_lua[] = {
     /* clang-format on */
 };
 
-static const luaL_Reg baselib_wow[] = {
+static const luaL_Reg baselib_elune[] = {
     { "loadstring", luaB_loadstring },
     /* clang-format off */
     { NULL, NULL },
@@ -701,14 +701,14 @@ LUALIB_API int luaopen_base (lua_State *L) {
     return 2;
 }
 
-LUALIB_API int luaopen_wow_base (lua_State *L) {
+LUALIB_API int luaopen_elune_base (lua_State *L) {
     /* set field '_G' */
     lua_pushvalue(L, LUA_ENVIRONINDEX);
     lua_pushvalue(L, -1);
     lua_setfield(L, -2, LUA_BASELIBNAME);
 
     /* register '_G' base library */
-    luaL_setfuncs(L, baselib_wow, 0);
+    luaL_setfuncs(L, baselib_elune, 0);
     baselib_openshared(L);
 
     return 1;

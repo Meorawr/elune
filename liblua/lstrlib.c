@@ -1066,7 +1066,7 @@ LUALIB_API int luaopen_string (lua_State *L) {
     return 1;
 }
 
-LUALIB_API int luaopen_wow_string (lua_State *L) {
+LUALIB_API int luaopen_elune_string (lua_State *L) {
     /* open string library */
     luaL_getsubtable(L, LUA_ENVIRONINDEX, LUA_STRLIBNAME);
     luaL_setfuncs(L, strlib_shared, 0);

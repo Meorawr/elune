@@ -28,14 +28,14 @@ static const luaL_Reg lualibs[] = {
 };
 
 static const luaL_Reg reflibs[] = {
-    { LUA_BASELIBNAME, luaopen_wow_base },
-    { LUA_BITLIBNAME, luaopen_wow_bit },
-    { LUA_DBLIBNAME, luaopen_wow_debug },
-    { LUA_COLIBNAME, luaopen_wow_coroutine },
-    { LUA_MATHLIBNAME, luaopen_wow_math },
-    { LUA_OSLIBNAME, luaopen_wow_os },
-    { LUA_STRLIBNAME, luaopen_wow_string },
-    { LUA_TABLIBNAME, luaopen_wow_table },
+    { LUA_BASELIBNAME, luaopen_elune_base },
+    { LUA_BITLIBNAME, luaopen_elune_bit },
+    { LUA_DBLIBNAME, luaopen_elune_debug },
+    { LUA_COLIBNAME, luaopen_elune_coroutine },
+    { LUA_MATHLIBNAME, luaopen_elune_math },
+    { LUA_OSLIBNAME, luaopen_elune_os },
+    { LUA_STRLIBNAME, luaopen_elune_string },
+    { LUA_TABLIBNAME, luaopen_elune_table },
     { LUA_COMPATLIBNAME, luaopen_compat },
     /* clang-format off */
     { NULL, NULL },
@@ -59,16 +59,16 @@ LUALIB_API void luaL_openlibsx (lua_State *L, int type) {
         case LUALIB_STANDARD:
             openlibs(L, lualibs);
             break;
-        case LUALIB_REFERENCE:
+        case LUALIB_ELUNE:
             openlibs(L, reflibs);
             break;
     }
 }
 
-LUALIB_API int luaopen_wow (lua_State *L) {
+LUALIB_API int luaopen_elune (lua_State *L) {
     lua_createtable(L, 0, 2);
     lua_pushvalue(L, -1);
     lua_replace(L, LUA_ENVIRONINDEX);
-    luaL_openlibsx(L, LUALIB_REFERENCE);
+    luaL_openlibsx(L, LUALIB_ELUNE);
     return 1;
 }

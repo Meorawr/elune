@@ -526,7 +526,7 @@ static const luaL_Reg ll_funcs[] = {
 };
 
 static const luaL_Reg ll_preload[] = {
-    { LUA_WOWLIBNAME, luaopen_wow },
+    { LUA_ELUNELIBNAME, luaopen_elune },
     /* clang-format off */
     { NULL, NULL },
     /* clang-format on */
