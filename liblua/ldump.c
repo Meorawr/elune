@@ -72,20 +72,20 @@ static void DumpConstants (const Proto *f, DumpState *D) {
     const TValue *o = &f->k[i];
     DumpChar(ttype(o), D);
     switch (ttype(o)) {
-    case LUA_TNIL:
-      break;
-    case LUA_TBOOLEAN:
-      DumpChar(bvalue(o), D);
-      break;
-    case LUA_TNUMBER:
-      DumpNumber(nvalue(o), D);
-      break;
-    case LUA_TSTRING:
-      DumpString(rawtsvalue(o), D);
-      break;
-    default:
-      lua_assert(0); /* cannot happen */
-      break;
+      case LUA_TNIL:
+        break;
+      case LUA_TBOOLEAN:
+        DumpChar(bvalue(o), D);
+        break;
+      case LUA_TNUMBER:
+        DumpNumber(nvalue(o), D);
+        break;
+      case LUA_TSTRING:
+        DumpString(rawtsvalue(o), D);
+        break;
+      default:
+        lua_assert(0); /* cannot happen */
+        break;
     }
   }
   n = f->sizep;

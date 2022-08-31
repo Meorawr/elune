@@ -187,19 +187,19 @@ static int luaB_collectgarbage (lua_State *L) {
   int ex = luaL_optint(L, 2, 0);
   int res = lua_gc(L, optsnum[o], ex);
   switch (optsnum[o]) {
-  case LUA_GCCOUNT: {
-    int b = lua_gc(L, LUA_GCCOUNTB, 0);
-    lua_pushnumber(L, res + ((lua_Number) b / 1024));
-    return 1;
-  }
-  case LUA_GCSTEP: {
-    lua_pushboolean(L, res);
-    return 1;
-  }
-  default: {
-    lua_pushnumber(L, res);
-    return 1;
-  }
+    case LUA_GCCOUNT: {
+      int b = lua_gc(L, LUA_GCCOUNTB, 0);
+      lua_pushnumber(L, res + ((lua_Number) b / 1024));
+      return 1;
+    }
+    case LUA_GCSTEP: {
+      lua_pushboolean(L, res);
+      return 1;
+    }
+    default: {
+      lua_pushnumber(L, res);
+      return 1;
+    }
   }
 }
 
@@ -391,21 +391,21 @@ static int luaB_tostring (lua_State *L) {
     return 1;                              /* use its value */
   }
   switch (lua_type(L, 1)) {
-  case LUA_TNUMBER:
-    lua_pushstring(L, lua_tostring(L, 1));
-    break;
-  case LUA_TSTRING:
-    lua_pushvalue(L, 1);
-    break;
-  case LUA_TBOOLEAN:
-    lua_pushstring(L, (lua_toboolean(L, 1) ? "true" : "false"));
-    break;
-  case LUA_TNIL:
-    lua_pushliteral(L, "nil");
-    break;
-  default:
-    lua_pushfstring(L, "%s: %p", luaL_typename(L, 1), lua_topointer(L, 1));
-    break;
+    case LUA_TNUMBER:
+      lua_pushstring(L, lua_tostring(L, 1));
+      break;
+    case LUA_TSTRING:
+      lua_pushvalue(L, 1);
+      break;
+    case LUA_TBOOLEAN:
+      lua_pushstring(L, (lua_toboolean(L, 1) ? "true" : "false"));
+      break;
+    case LUA_TNIL:
+      lua_pushliteral(L, "nil");
+      break;
+    default:
+      lua_pushfstring(L, "%s: %p", luaL_typename(L, 1), lua_topointer(L, 1));
+      break;
   }
   return 1;
 }

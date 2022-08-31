@@ -292,72 +292,72 @@ static int collectargs (char **argv, int *first) {
     if (argv[i][0] != '-') { /* not an option? */
       return args;           /* stop handling options */
     }
-    switch (argv[i][1]) {       /* else check option */
-    case '-':                   /* '--' */
-      if (argv[i][2] != '\0') { /* extra characters after '--'? */
-        return has_error;       /* invalid option */
-      }
-      *first = i + 1;
-      return args;
-    case '\0':     /* '-' */
-      return args; /* script "name" is '-' */
-    case 'E':
-      if (argv[i][2] != '\0') { /* extra characters? */
-        return has_error;       /* invalid option */
-      }
-      args |= has_E;
-      break;
-    case 'p':
-      if (argv[i][2] != '\0') { /* extra characters? */
-        return has_error;       /* invalid option */
-      }
-      args |= has_p;
-      break;
-    case 't':
-      if (argv[i][2] != '\0') { /* extra characters? */
-        return has_error;       /* invalid option */
-      }
-      break;
-    case 'w':
-      if (argv[i][2] != '\0') { /* extra characters? */
-        return has_error;       /* invalid option */
-      }
-      args |= has_w;
-      break;
-    case 'L':
-      if (argv[i][2] != '\0') { /* extra characters? */
-        return has_error;       /* invalid option */
-      }
-      args |= has_L;
-      break;
-    case 'T':
-      if (argv[i][2] != '\0') { /* extra characters? */
-        return has_error;       /* invalid option */
-      }
-      args |= has_T;
-      break;
-    case 'i':
-      args |= has_i; /* (-i implies -v) */
-      LUA_FALLTHROUGH;
-    case 'v':
-      if (argv[i][2] != '\0') { /* extra characters? */
-        return has_error;       /* invalid option */
-      }
-      args |= has_v;
-      break;
-    case 'e':
-      args |= has_e;
-      LUA_FALLTHROUGH;
-    case 'l':                   /* both options need an argument */
-      if (argv[i][2] == '\0') { /* no concatenated argument? */
-        i++;                    /* try next 'argv' */
-        if (argv[i] == NULL || argv[i][0] == '-') {
-          return has_error; /* no next argument or it is another option */
+    switch (argv[i][1]) {         /* else check option */
+      case '-':                   /* '--' */
+        if (argv[i][2] != '\0') { /* extra characters after '--'? */
+          return has_error;       /* invalid option */
         }
-      }
-      break;
-    default: /* invalid option */
-      return has_error;
+        *first = i + 1;
+        return args;
+      case '\0':     /* '-' */
+        return args; /* script "name" is '-' */
+      case 'E':
+        if (argv[i][2] != '\0') { /* extra characters? */
+          return has_error;       /* invalid option */
+        }
+        args |= has_E;
+        break;
+      case 'p':
+        if (argv[i][2] != '\0') { /* extra characters? */
+          return has_error;       /* invalid option */
+        }
+        args |= has_p;
+        break;
+      case 't':
+        if (argv[i][2] != '\0') { /* extra characters? */
+          return has_error;       /* invalid option */
+        }
+        break;
+      case 'w':
+        if (argv[i][2] != '\0') { /* extra characters? */
+          return has_error;       /* invalid option */
+        }
+        args |= has_w;
+        break;
+      case 'L':
+        if (argv[i][2] != '\0') { /* extra characters? */
+          return has_error;       /* invalid option */
+        }
+        args |= has_L;
+        break;
+      case 'T':
+        if (argv[i][2] != '\0') { /* extra characters? */
+          return has_error;       /* invalid option */
+        }
+        args |= has_T;
+        break;
+      case 'i':
+        args |= has_i; /* (-i implies -v) */
+        LUA_FALLTHROUGH;
+      case 'v':
+        if (argv[i][2] != '\0') { /* extra characters? */
+          return has_error;       /* invalid option */
+        }
+        args |= has_v;
+        break;
+      case 'e':
+        args |= has_e;
+        LUA_FALLTHROUGH;
+      case 'l':                   /* both options need an argument */
+        if (argv[i][2] == '\0') { /* no concatenated argument? */
+          i++;                    /* try next 'argv' */
+          if (argv[i] == NULL || argv[i][0] == '-') {
+            return has_error; /* no next argument or it is another option */
+          }
+        }
+        break;
+      default: /* invalid option */
+        return has_error;
     }
   }
   *first = i; /* no script name */
@@ -374,25 +374,25 @@ static int runargs (lua_State *L, char **argv, int n) {
     int option = argv[i][1];
     lua_assert(argv[i][0] == '-'); /* already checked */
     switch (option) {
-    case 'e':
-    case 'l': {
-      int status;
-      char *extra = argv[i] + 2; /* both options need an argument */
-      if (*extra == '\0') {
-        extra = argv[++i];
+      case 'e':
+      case 'l': {
+        int status;
+        char *extra = argv[i] + 2; /* both options need an argument */
+        if (*extra == '\0') {
+          extra = argv[++i];
+        }
+        lua_assert(extra != NULL);
+        status = (option == 'e') ? dostring(L, extra, "=(command line)")
+                                 : dolibrary(L, extra);
+        if (status != LUA_OK) {
+          return 0;
+        }
+        break;
       }
-      lua_assert(extra != NULL);
-      status = (option == 'e') ? dostring(L, extra, "=(command line)")
-                               : dolibrary(L, extra);
-      if (status != LUA_OK) {
-        return 0;
+      case 't': {
+        luaL_forceinsecure(L);
+        break;
       }
-      break;
-    }
-    case 't': {
-      luaL_forceinsecure(L);
-      break;
-    }
     }
   }
   return 1;

@@ -72,13 +72,13 @@ const char *luaX_token2str (LexState *ls, int token) {
 
 static const char *txtToken (LexState *ls, int token) {
   switch (token) {
-  case TK_NAME:
-  case TK_STRING:
-  case TK_NUMBER:
-    save(ls, '\0');
-    return luaZ_buffer(ls->buff);
-  default:
-    return luaX_token2str(ls, token);
+    case TK_NAME:
+    case TK_STRING:
+    case TK_NUMBER:
+      save(ls, '\0');
+      return luaZ_buffer(ls->buff);
+    default:
+      return luaX_token2str(ls, token);
   }
 }
 
@@ -209,53 +209,53 @@ static void read_long_string (LexState *ls, SemInfo *seminfo, int sep) {
   }
   for (;;) {
     switch (ls->current) {
-    case EOZ:
-      luaX_lexerror(
-        ls, (seminfo) ? "unfinished long string" : "unfinished long comment",
-        TK_EOS);
-      break; /* to avoid warnings */
+      case EOZ:
+        luaX_lexerror(
+          ls, (seminfo) ? "unfinished long string" : "unfinished long comment",
+          TK_EOS);
+        break; /* to avoid warnings */
 #if defined(LUA_COMPAT_LSTR)
-    case '[': {
-      if (skip_sep(ls) == sep) {
-        save_and_next(ls); /* skip 2nd `[' */
-        cont++;
+      case '[': {
+        if (skip_sep(ls) == sep) {
+          save_and_next(ls); /* skip 2nd `[' */
+          cont++;
 #if LUA_COMPAT_LSTR == 1
-        if (sep == 0) {
-          luaX_lexerror(ls, "nesting of [[...]] is deprecated", '[');
+          if (sep == 0) {
+            luaX_lexerror(ls, "nesting of [[...]] is deprecated", '[');
+          }
+#endif
         }
-#endif
+        break;
       }
-      break;
-    }
 #endif
-    case ']': {
-      if (skip_sep(ls) == sep) {
-        save_and_next(ls); /* skip 2nd `]' */
+      case ']': {
+        if (skip_sep(ls) == sep) {
+          save_and_next(ls); /* skip 2nd `]' */
 #if defined(LUA_COMPAT_LSTR) && LUA_COMPAT_LSTR == 2
-        cont--;
-        if (sep == 0 && cont >= 0)
-          break;
+          cont--;
+          if (sep == 0 && cont >= 0)
+            break;
 #endif
-        goto endloop;
+          goto endloop;
+        }
+        break;
       }
-      break;
-    }
-    case '\n':
-    case '\r': {
-      save(ls, '\n');
-      inclinenumber(ls);
-      if (!seminfo) {
-        luaZ_resetbuffer(ls->buff); /* avoid wasting space */
+      case '\n':
+      case '\r': {
+        save(ls, '\n');
+        inclinenumber(ls);
+        if (!seminfo) {
+          luaZ_resetbuffer(ls->buff); /* avoid wasting space */
+        }
+        break;
       }
-      break;
-    }
-    default: {
-      if (seminfo) {
-        save_and_next(ls);
-      } else {
-        next(ls);
+      default: {
+        if (seminfo) {
+          save_and_next(ls);
+        } else {
+          next(ls);
+        }
       }
-    }
     }
   }
 endloop:
@@ -269,69 +269,69 @@ static void read_string (LexState *ls, int del, SemInfo *seminfo) {
   save_and_next(ls);
   while (ls->current != del) {
     switch (ls->current) {
-    case EOZ:
-      luaX_lexerror(ls, "unfinished string", TK_EOS);
-      continue; /* to avoid warnings */
-    case '\n':
-    case '\r':
-      luaX_lexerror(ls, "unfinished string", TK_STRING);
-      continue; /* to avoid warnings */
-    case '\\': {
-      int c;
-      next(ls); /* do not save the `\' */
-      switch (ls->current) {
-      case 'a':
-        c = '\a';
-        break;
-      case 'b':
-        c = '\b';
-        break;
-      case 'f':
-        c = '\f';
-        break;
-      case 'n':
-        c = '\n';
-        break;
-      case 'r':
-        c = '\r';
-        break;
-      case 't':
-        c = '\t';
-        break;
-      case 'v':
-        c = '\v';
-        break;
-      case '\n': /* go through */
-      case '\r':
-        save(ls, '\n');
-        inclinenumber(ls);
-        continue;
       case EOZ:
-        continue; /* will raise an error next loop */
-      default: {
-        if (!isdigit(ls->current)) {
-          save_and_next(ls); /* handles \\, \", \', and \? */
-        } else {             /* \xxx */
-          int i = 0;
-          c = 0;
-          do {
-            c = 10 * c + (ls->current - '0');
-            next(ls);
-          } while (++i < 3 && isdigit(ls->current));
-          if (c > UCHAR_MAX) {
-            luaX_lexerror(ls, "escape sequence too large", TK_STRING);
+        luaX_lexerror(ls, "unfinished string", TK_EOS);
+        continue; /* to avoid warnings */
+      case '\n':
+      case '\r':
+        luaX_lexerror(ls, "unfinished string", TK_STRING);
+        continue; /* to avoid warnings */
+      case '\\': {
+        int c;
+        next(ls); /* do not save the `\' */
+        switch (ls->current) {
+          case 'a':
+            c = '\a';
+            break;
+          case 'b':
+            c = '\b';
+            break;
+          case 'f':
+            c = '\f';
+            break;
+          case 'n':
+            c = '\n';
+            break;
+          case 'r':
+            c = '\r';
+            break;
+          case 't':
+            c = '\t';
+            break;
+          case 'v':
+            c = '\v';
+            break;
+          case '\n': /* go through */
+          case '\r':
+            save(ls, '\n');
+            inclinenumber(ls);
+            continue;
+          case EOZ:
+            continue; /* will raise an error next loop */
+          default: {
+            if (!isdigit(ls->current)) {
+              save_and_next(ls); /* handles \\, \", \', and \? */
+            } else {             /* \xxx */
+              int i = 0;
+              c = 0;
+              do {
+                c = 10 * c + (ls->current - '0');
+                next(ls);
+              } while (++i < 3 && isdigit(ls->current));
+              if (c > UCHAR_MAX) {
+                luaX_lexerror(ls, "escape sequence too large", TK_STRING);
+              }
+              save(ls, c);
+            }
+            continue;
           }
-          save(ls, c);
         }
+        save(ls, c);
+        next(ls);
         continue;
       }
-      }
-      save(ls, c);
-      next(ls);
-      continue;
-    }
-    default:
-      save_and_next(ls);
+      default:
+        save_and_next(ls);
     }
   }
   save_and_next(ls); /* skip delimiter */
@@ -343,130 +343,131 @@ static int llex (LexState *ls, SemInfo *seminfo) {
   luaZ_resetbuffer(ls->buff);
   for (;;) {
     switch (ls->current) {
-    case '\n':
-    case '\r': {
-      inclinenumber(ls);
-      continue;
-    }
-    case '-': {
-      next(ls);
-      if (ls->current != '-') {
-        return '-';
-      }
-      /* else is a comment */
-      next(ls);
-      if (ls->current == '[') {
-        int sep = skip_sep(ls);
-        luaZ_resetbuffer(ls->buff); /* `skip_sep' may dirty the buffer */
-        if (sep >= 0) {
-          read_long_string(ls, NULL, sep); /* long comment */
-          luaZ_resetbuffer(ls->buff);
-          continue;
-        }
-      }
-      /* else short comment */
-      while (!currIsNewline(ls) && ls->current != EOZ) {
-        next(ls);
-      }
-      continue;
-    }
-    case '[': {
-      int sep = skip_sep(ls);
-      if (sep >= 0) {
-        read_long_string(ls, seminfo, sep);
-        return TK_STRING;
-      } else if (sep == -1) {
-        return '[';
-      } else {
-        luaX_lexerror(ls, "invalid long string delimiter", TK_STRING);
-      }
-    }
-    case '=': {
-      next(ls);
-      if (ls->current != '=') {
-        return '=';
-      } else {
-        next(ls);
-        return TK_EQ;
-      }
-    }
-    case '<': {
-      next(ls);
-      if (ls->current != '=') {
-        return '<';
-      } else {
-        next(ls);
-        return TK_LE;
-      }
-    }
-    case '>': {
-      next(ls);
-      if (ls->current != '=') {
-        return '>';
-      } else {
-        next(ls);
-        return TK_GE;
-      }
-    }
-    case '~': {
-      next(ls);
-      if (ls->current != '=') {
-        return '~';
-      } else {
-        next(ls);
-        return TK_NE;
-      }
-    }
-    case '"':
-    case '\'': {
-      read_string(ls, ls->current, seminfo);
-      return TK_STRING;
-    }
-    case '.': {
-      save_and_next(ls);
-      if (check_next(ls, ".")) {
-        if (check_next(ls, ".")) {
-          return TK_DOTS; /* ... */
-        } else {
-          return TK_CONCAT; /* .. */
-        }
-      } else if (!isdigit(ls->current)) {
-        return '.';
-      } else {
-        read_numeral(ls, seminfo);
-        return TK_NUMBER;
-      }
-    }
-    case EOZ: {
-      return TK_EOS;
-    }
-    default: {
-      if (isspace(ls->current)) {
-        lua_assert(!currIsNewline(ls));
-        next(ls);
+      case '\n':
+      case '\r': {
+        inclinenumber(ls);
         continue;
-      } else if (isdigit(ls->current)) {
-        read_numeral(ls, seminfo);
-        return TK_NUMBER;
-      } else if (isalpha(ls->current) || ls->current == '_') {
-        /* identifier or reserved word */
-        TString *ts;
-        do {
-          save_and_next(ls);
-        } while (isalnum(ls->current) || ls->current == '_');
-        ts = luaX_newstring(ls, luaZ_buffer(ls->buff), luaZ_bufflen(ls->buff));
-        if (ts->tsv.reserved > 0) { /* reserved word? */
-          return ts->tsv.reserved - 1 + FIRST_RESERVED;
-        } else {
-          seminfo->ts = ts;
-          return TK_NAME;
-        }
-      } else {
-        int c = ls->current;
-        next(ls);
-        return c; /* single-char tokens (+ - / ...) */
       }
-    }
+      case '-': {
+        next(ls);
+        if (ls->current != '-') {
+          return '-';
+        }
+        /* else is a comment */
+        next(ls);
+        if (ls->current == '[') {
+          int sep = skip_sep(ls);
+          luaZ_resetbuffer(ls->buff); /* `skip_sep' may dirty the buffer */
+          if (sep >= 0) {
+            read_long_string(ls, NULL, sep); /* long comment */
+            luaZ_resetbuffer(ls->buff);
+            continue;
+          }
+        }
+        /* else short comment */
+        while (!currIsNewline(ls) && ls->current != EOZ) {
+          next(ls);
+        }
+        continue;
+      }
+      case '[': {
+        int sep = skip_sep(ls);
+        if (sep >= 0) {
+          read_long_string(ls, seminfo, sep);
+          return TK_STRING;
+        } else if (sep == -1) {
+          return '[';
+        } else {
+          luaX_lexerror(ls, "invalid long string delimiter", TK_STRING);
+        }
+      }
+      case '=': {
+        next(ls);
+        if (ls->current != '=') {
+          return '=';
+        } else {
+          next(ls);
+          return TK_EQ;
+        }
+      }
+      case '<': {
+        next(ls);
+        if (ls->current != '=') {
+          return '<';
+        } else {
+          next(ls);
+          return TK_LE;
+        }
+      }
+      case '>': {
+        next(ls);
+        if (ls->current != '=') {
+          return '>';
+        } else {
+          next(ls);
+          return TK_GE;
+        }
+      }
+      case '~': {
+        next(ls);
+        if (ls->current != '=') {
+          return '~';
+        } else {
+          next(ls);
+          return TK_NE;
+        }
+      }
+      case '"':
+      case '\'': {
+        read_string(ls, ls->current, seminfo);
+        return TK_STRING;
+      }
+      case '.': {
+        save_and_next(ls);
+        if (check_next(ls, ".")) {
+          if (check_next(ls, ".")) {
+            return TK_DOTS; /* ... */
+          } else {
+            return TK_CONCAT; /* .. */
+          }
+        } else if (!isdigit(ls->current)) {
+          return '.';
+        } else {
+          read_numeral(ls, seminfo);
+          return TK_NUMBER;
+        }
+      }
+      case EOZ: {
+        return TK_EOS;
+      }
+      default: {
+        if (isspace(ls->current)) {
+          lua_assert(!currIsNewline(ls));
+          next(ls);
+          continue;
+        } else if (isdigit(ls->current)) {
+          read_numeral(ls, seminfo);
+          return TK_NUMBER;
+        } else if (isalpha(ls->current) || ls->current == '_') {
+          /* identifier or reserved word */
+          TString *ts;
+          do {
+            save_and_next(ls);
+          } while (isalnum(ls->current) || ls->current == '_');
+          ts =
+            luaX_newstring(ls, luaZ_buffer(ls->buff), luaZ_bufflen(ls->buff));
+          if (ts->tsv.reserved > 0) { /* reserved word? */
+            return ts->tsv.reserved - 1 + FIRST_RESERVED;
+          } else {
+            seminfo->ts = ts;
+            return TK_NAME;
+          }
+        } else {
+          int c = ls->current;
+          next(ls);
+          return c; /* single-char tokens (+ - / ...) */
+        }
+      }
     }
   }
 }

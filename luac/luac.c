@@ -265,39 +265,39 @@ static void printstring (const TString *ts) {
     int c = s[i];
 
     switch (c) {
-    case '"':
-      printf("\\\"");
-      break;
-    case '\\':
-      printf("\\\\");
-      break;
-    case '\a':
-      printf("\\a");
-      break;
-    case '\b':
-      printf("\\b");
-      break;
-    case '\f':
-      printf("\\f");
-      break;
-    case '\n':
-      printf("\\n");
-      break;
-    case '\r':
-      printf("\\r");
-      break;
-    case '\t':
-      printf("\\t");
-      break;
-    case '\v':
-      printf("\\v");
-      break;
-    default:
-      if (isprint((unsigned char) c)) {
-        putchar(c);
-      } else {
-        printf("\\%03u", (unsigned char) c);
-      }
+      case '"':
+        printf("\\\"");
+        break;
+      case '\\':
+        printf("\\\\");
+        break;
+      case '\a':
+        printf("\\a");
+        break;
+      case '\b':
+        printf("\\b");
+        break;
+      case '\f':
+        printf("\\f");
+        break;
+      case '\n':
+        printf("\\n");
+        break;
+      case '\r':
+        printf("\\r");
+        break;
+      case '\t':
+        printf("\\t");
+        break;
+      case '\v':
+        printf("\\v");
+        break;
+      default:
+        if (isprint((unsigned char) c)) {
+          putchar(c);
+        } else {
+          printf("\\%03u", (unsigned char) c);
+        }
     }
   }
 
@@ -307,21 +307,21 @@ static void printstring (const TString *ts) {
 static void printconstant (const Proto *f, int i) {
   const TValue *o = &f->k[i];
   switch (ttype(o)) {
-  case LUA_TNIL:
-    printf("nil");
-    break;
-  case LUA_TBOOLEAN:
-    printf(bvalue(o) ? "true" : "false");
-    break;
-  case LUA_TNUMBER:
-    printf(LUA_NUMBER_FMT, nvalue(o));
-    break;
-  case LUA_TSTRING:
-    printstring(rawtsvalue(o));
-    break;
-  default: /* cannot happen */
-    printf("? type=%d", ttype(o));
-    break;
+    case LUA_TNIL:
+      printf("nil");
+      break;
+    case LUA_TBOOLEAN:
+      printf(bvalue(o) ? "true" : "false");
+      break;
+    case LUA_TNUMBER:
+      printf(LUA_NUMBER_FMT, nvalue(o));
+      break;
+    case LUA_TSTRING:
+      printstring(rawtsvalue(o));
+      break;
+    default: /* cannot happen */
+      printf("? type=%d", ttype(o));
+      break;
   }
 }
 
@@ -351,98 +351,98 @@ static void printcode (const Proto *f) {
     printf("%-9s\t", luaP_opnames[o]);
 
     switch (getOpMode(o)) {
-    case iABC:
-      printf("%d", a);
+      case iABC:
+        printf("%d", a);
 
-      if (getBMode(o) != OpArgN) {
-        printf(" %d", ISK(b) ? (-1 - INDEXK(b)) : b);
-      }
+        if (getBMode(o) != OpArgN) {
+          printf(" %d", ISK(b) ? (-1 - INDEXK(b)) : b);
+        }
 
-      if (getCMode(o) != OpArgN) {
-        printf(" %d", ISK(c) ? (-1 - INDEXK(c)) : c);
-      }
+        if (getCMode(o) != OpArgN) {
+          printf(" %d", ISK(c) ? (-1 - INDEXK(c)) : c);
+        }
 
-      break;
-    case iABx:
-      if (getBMode(o) == OpArgK) {
-        printf("%d %d", a, (-1 - bx));
-      } else {
-        printf("%d %d", a, bx);
-      }
+        break;
+      case iABx:
+        if (getBMode(o) == OpArgK) {
+          printf("%d %d", a, (-1 - bx));
+        } else {
+          printf("%d %d", a, bx);
+        }
 
-      break;
-    case iAsBx:
-      if (o == OP_JMP) {
-        printf("%d", sbx);
-      } else {
-        printf("%d %d", a, sbx);
-      }
+        break;
+      case iAsBx:
+        if (o == OP_JMP) {
+          printf("%d", sbx);
+        } else {
+          printf("%d %d", a, sbx);
+        }
 
-      break;
+        break;
     }
 
     switch (o) {
-    case OP_LOADK:
-      printf("\t; ");
-      printconstant(f, bx);
-      break;
-    case OP_GETUPVAL:
-    case OP_SETUPVAL:
-      printf("\t; %s", (f->sizeupvalues > 0) ? getstr(f->upvalues[b]) : "-");
-      break;
-    case OP_GETGLOBAL:
-    case OP_SETGLOBAL:
-      printf("\t; %s", svalue(&f->k[bx]));
-      break;
-    case OP_GETTABLE:
-    case OP_SELF:
-      if (ISK(c)) {
+      case OP_LOADK:
         printf("\t; ");
-        printconstant(f, INDEXK(c));
-      }
-      break;
-    case OP_SETTABLE:
-    case OP_ADD:
-    case OP_SUB:
-    case OP_MUL:
-    case OP_DIV:
-    case OP_POW:
-    case OP_EQ:
-    case OP_LT:
-    case OP_LE:
-      if (ISK(b) || ISK(c)) {
-        printf("\t; ");
-        if (ISK(b)) {
-          printconstant(f, INDEXK(b));
-        } else {
-          printf("-");
-        }
-
-        printf(" ");
+        printconstant(f, bx);
+        break;
+      case OP_GETUPVAL:
+      case OP_SETUPVAL:
+        printf("\t; %s", (f->sizeupvalues > 0) ? getstr(f->upvalues[b]) : "-");
+        break;
+      case OP_GETGLOBAL:
+      case OP_SETGLOBAL:
+        printf("\t; %s", svalue(&f->k[bx]));
+        break;
+      case OP_GETTABLE:
+      case OP_SELF:
         if (ISK(c)) {
+          printf("\t; ");
           printconstant(f, INDEXK(c));
-        } else {
-          printf("-");
         }
-      }
-      break;
-    case OP_JMP:
-    case OP_FORLOOP:
-    case OP_FORPREP:
-      printf("\t; to %d", (sbx + pc + 2));
-      break;
-    case OP_CLOSURE:
-      printf("\t; %p", VOID(f->p[bx]));
-      break;
-    case OP_SETLIST:
-      if (c == 0) {
-        printf("\t; %d", (int) code[++pc]);
-      } else {
-        printf("\t; %d", c);
-      }
-      break;
-    default:
-      break;
+        break;
+      case OP_SETTABLE:
+      case OP_ADD:
+      case OP_SUB:
+      case OP_MUL:
+      case OP_DIV:
+      case OP_POW:
+      case OP_EQ:
+      case OP_LT:
+      case OP_LE:
+        if (ISK(b) || ISK(c)) {
+          printf("\t; ");
+          if (ISK(b)) {
+            printconstant(f, INDEXK(b));
+          } else {
+            printf("-");
+          }
+
+          printf(" ");
+          if (ISK(c)) {
+            printconstant(f, INDEXK(c));
+          } else {
+            printf("-");
+          }
+        }
+        break;
+      case OP_JMP:
+      case OP_FORLOOP:
+      case OP_FORPREP:
+        printf("\t; to %d", (sbx + pc + 2));
+        break;
+      case OP_CLOSURE:
+        printf("\t; %p", VOID(f->p[bx]));
+        break;
+      case OP_SETLIST:
+        if (c == 0) {
+          printf("\t; %d", (int) code[++pc]);
+        } else {
+          printf("\t; %d", c);
+        }
+        break;
+      default:
+        break;
     }
 
     printf("\n");

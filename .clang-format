@@ -21,6 +21,7 @@ IncludeCategories:
     Priority: 2
   - Regex: '<[[:alnum:].]+>'
     Priority: 4
+IndentCaseLabels: true
 PointerAlignment: Right
 SortIncludes: true
 SpaceAfterCStyleCast: true

@@ -67,47 +67,47 @@ static void reallymarkobject (global_State *g, GCObject *o) {
   lua_assert(iswhite(o) && !isdead(g, o));
   white2gray(o);
   switch (o->gch.tt) {
-  case LUA_TSTRING: {
-    return;
-  }
-  case LUA_TUSERDATA: {
-    Table *mt = gco2u(o)->metatable;
-    gray2black(o); /* udata are never gray */
-    if (mt)
-      markobject(g, mt);
-    markobject(g, gco2u(o)->env);
-    return;
-  }
-  case LUA_TUPVAL: {
-    UpVal *uv = gco2uv(o);
-    markvalue(g, uv->v);
-    if (uv->v == &uv->u.value) { /* closed? */
-      gray2black(o);             /* open upvalues are never black */
+    case LUA_TSTRING: {
+      return;
     }
-    return;
-  }
-  case LUA_TFUNCTION: {
-    gco2cl(o)->c.gclist = g->gray;
-    g->gray = o;
-    break;
-  }
-  case LUA_TTABLE: {
-    gco2h(o)->gclist = g->gray;
-    g->gray = o;
-    break;
-  }
-  case LUA_TTHREAD: {
-    gco2th(o)->gclist = g->gray;
-    g->gray = o;
-    break;
-  }
-  case LUA_TPROTO: {
-    gco2p(o)->gclist = g->gray;
-    g->gray = o;
-    break;
-  }
-  default:
-    lua_assert(0);
+    case LUA_TUSERDATA: {
+      Table *mt = gco2u(o)->metatable;
+      gray2black(o); /* udata are never gray */
+      if (mt)
+        markobject(g, mt);
+      markobject(g, gco2u(o)->env);
+      return;
+    }
+    case LUA_TUPVAL: {
+      UpVal *uv = gco2uv(o);
+      markvalue(g, uv->v);
+      if (uv->v == &uv->u.value) { /* closed? */
+        gray2black(o);             /* open upvalues are never black */
+      }
+      return;
+    }
+    case LUA_TFUNCTION: {
+      gco2cl(o)->c.gclist = g->gray;
+      g->gray = o;
+      break;
+    }
+    case LUA_TTABLE: {
+      gco2h(o)->gclist = g->gray;
+      g->gray = o;
+      break;
+    }
+    case LUA_TTHREAD: {
+      gco2th(o)->gclist = g->gray;
+      g->gray = o;
+      break;
+    }
+    case LUA_TPROTO: {
+      gco2p(o)->gclist = g->gray;
+      g->gray = o;
+      break;
+    }
+    default:
+      lua_assert(0);
   }
 }
 
@@ -153,41 +153,41 @@ size_t luaC_separateudata (lua_State *L, int all) {
 
 size_t luaC_objectsize (const GCObject *o) {
   switch (o->gch.tt) {
-  case LUA_TSTRING: {
-    return sizestring(gco2ts(o));
-  }
-  case LUA_TTABLE: {
-    const Table *h = gco2h(o);
-    return sizeof(Table) + sizeof(TValue) * h->sizearray +
-           sizeof(Node) * sizenode(h);
-  }
-  case LUA_TFUNCTION: {
-    const Closure *cl = gco2cl(o);
-    return (cl->c.isC) ? sizeCclosure(cl->c.nupvalues)
-                       : sizeLclosure(cl->l.nupvalues);
-  }
-  case LUA_TUSERDATA: {
-    return sizeudata(gco2u(o));
-  }
-  case LUA_TTHREAD: {
-    const lua_State *th = gco2th(o);
-    return sizeof(lua_State) + sizeof(TValue) * th->stacksize +
-           sizeof(CallInfo) * th->size_ci;
-  }
-  case LUA_TPROTO: {
-    const Proto *p = gco2p(o);
-    return sizeof(Proto) + sizeof(Instruction) * p->sizecode +
-           sizeof(Proto *) * p->sizep + sizeof(TValue) * p->sizek +
-           sizeof(int) * p->sizelineinfo + sizeof(LocVar) * p->sizelocvars +
-           sizeof(TString *) * p->sizeupvalues;
-  }
-  case LUA_TUPVAL: {
-    return sizeof(UpVal);
-  }
-  default: {
-    lua_assert(0);
-    return 0;
-  }
+    case LUA_TSTRING: {
+      return sizestring(gco2ts(o));
+    }
+    case LUA_TTABLE: {
+      const Table *h = gco2h(o);
+      return sizeof(Table) + sizeof(TValue) * h->sizearray +
+             sizeof(Node) * sizenode(h);
+    }
+    case LUA_TFUNCTION: {
+      const Closure *cl = gco2cl(o);
+      return (cl->c.isC) ? sizeCclosure(cl->c.nupvalues)
+                         : sizeLclosure(cl->l.nupvalues);
+    }
+    case LUA_TUSERDATA: {
+      return sizeudata(gco2u(o));
+    }
+    case LUA_TTHREAD: {
+      const lua_State *th = gco2th(o);
+      return sizeof(lua_State) + sizeof(TValue) * th->stacksize +
+             sizeof(CallInfo) * th->size_ci;
+    }
+    case LUA_TPROTO: {
+      const Proto *p = gco2p(o);
+      return sizeof(Proto) + sizeof(Instruction) * p->sizecode +
+             sizeof(Proto *) * p->sizep + sizeof(TValue) * p->sizek +
+             sizeof(int) * p->sizelineinfo + sizeof(LocVar) * p->sizelocvars +
+             sizeof(TString *) * p->sizeupvalues;
+    }
+    case LUA_TUPVAL: {
+      return sizeof(UpVal);
+    }
+    default: {
+      lua_assert(0);
+      return 0;
+    }
   }
 }
 
@@ -323,38 +323,38 @@ static ptrdiff_t propagatemark (global_State *g) {
   lua_assert(isgray(o));
   gray2black(o);
   switch (o->gch.tt) {
-  case LUA_TTABLE: {
-    Table *h = gco2h(o);
-    g->gray = h->gclist;
-    if (traversetable(g, h)) { /* table is weak? */
-      black2gray(o);           /* keep it gray */
+    case LUA_TTABLE: {
+      Table *h = gco2h(o);
+      g->gray = h->gclist;
+      if (traversetable(g, h)) { /* table is weak? */
+        black2gray(o);           /* keep it gray */
+      }
+      return luaC_objectsize(o);
     }
-    return luaC_objectsize(o);
-  }
-  case LUA_TFUNCTION: {
-    Closure *cl = gco2cl(o);
-    g->gray = cl->c.gclist;
-    traverseclosure(g, cl);
-    return luaC_objectsize(o);
-  }
-  case LUA_TTHREAD: {
-    lua_State *th = gco2th(o);
-    g->gray = th->gclist;
-    th->gclist = g->grayagain;
-    g->grayagain = o;
-    black2gray(o);
-    traversestack(g, th);
-    return luaC_objectsize(o);
-  }
-  case LUA_TPROTO: {
-    Proto *p = gco2p(o);
-    g->gray = p->gclist;
-    traverseproto(g, p);
-    return luaC_objectsize(o);
-  }
-  default:
-    lua_assert(0);
-    return 0;
+    case LUA_TFUNCTION: {
+      Closure *cl = gco2cl(o);
+      g->gray = cl->c.gclist;
+      traverseclosure(g, cl);
+      return luaC_objectsize(o);
+    }
+    case LUA_TTHREAD: {
+      lua_State *th = gco2th(o);
+      g->gray = th->gclist;
+      th->gclist = g->grayagain;
+      g->grayagain = o;
+      black2gray(o);
+      traversestack(g, th);
+      return luaC_objectsize(o);
+    }
+    case LUA_TPROTO: {
+      Proto *p = gco2p(o);
+      g->gray = p->gclist;
+      traverseproto(g, p);
+      return luaC_objectsize(o);
+    }
+    default:
+      lua_assert(0);
+      return 0;
   }
 }
 
@@ -417,34 +417,34 @@ static void cleartable (GCObject *l) {
 
 static void freeobj (lua_State *L, GCObject *o) {
   switch (o->gch.tt) {
-  case LUA_TPROTO:
-    luaF_freeproto(L, gco2p(o));
-    break;
-  case LUA_TFUNCTION:
-    luaF_freeclosure(L, gco2cl(o));
-    break;
-  case LUA_TUPVAL:
-    luaF_freeupval(L, gco2uv(o));
-    break;
-  case LUA_TTABLE:
-    luaH_free(L, gco2h(o));
-    break;
-  case LUA_TTHREAD: {
-    lua_assert(gco2th(o) != L && gco2th(o) != G(L)->mainthread);
-    luaE_freethread(L, gco2th(o));
-    break;
-  }
-  case LUA_TSTRING: {
-    G(L)->strt.nuse--;
-    luaM_freemem(L, o, sizestring(gco2ts(o)));
-    break;
-  }
-  case LUA_TUSERDATA: {
-    luaM_freemem(L, o, sizeudata(gco2u(o)));
-    break;
-  }
-  default:
-    lua_assert(0);
+    case LUA_TPROTO:
+      luaF_freeproto(L, gco2p(o));
+      break;
+    case LUA_TFUNCTION:
+      luaF_freeclosure(L, gco2cl(o));
+      break;
+    case LUA_TUPVAL:
+      luaF_freeupval(L, gco2uv(o));
+      break;
+    case LUA_TTABLE:
+      luaH_free(L, gco2h(o));
+      break;
+    case LUA_TTHREAD: {
+      lua_assert(gco2th(o) != L && gco2th(o) != G(L)->mainthread);
+      luaE_freethread(L, gco2th(o));
+      break;
+    }
+    case LUA_TSTRING: {
+      G(L)->strt.nuse--;
+      luaM_freemem(L, o, sizestring(gco2ts(o)));
+      break;
+    }
+    case LUA_TUSERDATA: {
+      luaM_freemem(L, o, sizeudata(gco2u(o)));
+      break;
+    }
+    default:
+      lua_assert(0);
   }
 }
 
@@ -602,55 +602,55 @@ static ptrdiff_t singlestep (lua_State *L) {
   global_State *g = G(L);
   /*lua_checkmemory(L);*/
   switch (g->gcstate) {
-  case GCSpause: {
-    markroot(L); /* start a new collection */
-    return 0;
-  }
-  case GCSpropagate: {
-    if (g->gray) {
-      return propagatemark(g);
-    } else {     /* no more `gray' objects */
-      atomic(L); /* finish mark phase */
+    case GCSpause: {
+      markroot(L); /* start a new collection */
       return 0;
     }
-  }
-  case GCSsweepstring: {
-    size_t old = g->totalbytes;
-    sweepwholelist(L, &g->strt.hash[g->sweepstrgc++]);
-    if (g->sweepstrgc >= g->strt.size) { /* nothing more to sweep? */
-      g->gcstate = GCSsweep;             /* end sweep-string phase */
-    }
-    lua_assert(old >= g->totalbytes);
-    g->estimate -= old - g->totalbytes;
-    return GCSWEEPCOST;
-  }
-  case GCSsweep: {
-    size_t old = g->totalbytes;
-    g->sweepgc = sweeplist(L, g->sweepgc, GCSWEEPMAX);
-    if (*g->sweepgc == NULL) { /* nothing more to sweep? */
-      checkSizes(L);
-      g->gcstate = GCSfinalize; /* end sweep phase */
-    }
-    lua_assert(old >= g->totalbytes);
-    g->estimate -= old - g->totalbytes;
-    return GCSWEEPMAX * GCSWEEPCOST;
-  }
-  case GCSfinalize: {
-    if (g->tmudata) {
-      GCTM(L);
-      if (g->estimate > GCFINALIZECOST) {
-        g->estimate -= GCFINALIZECOST;
+    case GCSpropagate: {
+      if (g->gray) {
+        return propagatemark(g);
+      } else {     /* no more `gray' objects */
+        atomic(L); /* finish mark phase */
+        return 0;
       }
-      return GCFINALIZECOST;
-    } else {
-      g->gcstate = GCSpause; /* end collection */
-      g->gcdept = 0;
-      return 0;
     }
-  }
-  default:
-    lua_assert(0);
-    return 0;
+    case GCSsweepstring: {
+      size_t old = g->totalbytes;
+      sweepwholelist(L, &g->strt.hash[g->sweepstrgc++]);
+      if (g->sweepstrgc >= g->strt.size) { /* nothing more to sweep? */
+        g->gcstate = GCSsweep;             /* end sweep-string phase */
+      }
+      lua_assert(old >= g->totalbytes);
+      g->estimate -= old - g->totalbytes;
+      return GCSWEEPCOST;
+    }
+    case GCSsweep: {
+      size_t old = g->totalbytes;
+      g->sweepgc = sweeplist(L, g->sweepgc, GCSWEEPMAX);
+      if (*g->sweepgc == NULL) { /* nothing more to sweep? */
+        checkSizes(L);
+        g->gcstate = GCSfinalize; /* end sweep phase */
+      }
+      lua_assert(old >= g->totalbytes);
+      g->estimate -= old - g->totalbytes;
+      return GCSWEEPMAX * GCSWEEPCOST;
+    }
+    case GCSfinalize: {
+      if (g->tmudata) {
+        GCTM(L);
+        if (g->estimate > GCFINALIZECOST) {
+          g->estimate -= GCFINALIZECOST;
+        }
+        return GCFINALIZECOST;
+      } else {
+        g->gcstate = GCSpause; /* end collection */
+        g->gcdept = 0;
+        return 0;
+      }
+    }
+    default:
+      lua_assert(0);
+      return 0;
   }
 }
 

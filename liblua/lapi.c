@@ -50,23 +50,23 @@ static TValue *index2adr (lua_State *L, int idx) {
     return L->top + idx;
   } else {
     switch (idx) { /* pseudo-indices */
-    case LUA_ERRORHANDLERINDEX:
-      return &G(L)->l_errfunc;
-    case LUA_REGISTRYINDEX:
-      return registry(L);
-    case LUA_ENVIRONINDEX: {
-      Closure *func = curr_func(L);
-      sethvalue(L, &L->env, func->c.env);
-      return &L->env;
-    }
-    case LUA_GLOBALSINDEX:
-      return gt(L);
-    default: {
-      Closure *func = curr_func(L);
-      idx = LUA_GLOBALSINDEX - idx;
-      return (idx <= func->c.nupvalues) ? &func->c.upvalue[idx - 1]
-                                        : cast(TValue *, luaO_nilobject);
-    }
+      case LUA_ERRORHANDLERINDEX:
+        return &G(L)->l_errfunc;
+      case LUA_REGISTRYINDEX:
+        return registry(L);
+      case LUA_ENVIRONINDEX: {
+        Closure *func = curr_func(L);
+        sethvalue(L, &L->env, func->c.env);
+        return &L->env;
+      }
+      case LUA_GLOBALSINDEX:
+        return gt(L);
+      default: {
+        Closure *func = curr_func(L);
+        idx = LUA_GLOBALSINDEX - idx;
+        return (idx <= func->c.nupvalues) ? &func->c.upvalue[idx - 1]
+                                          : cast(TValue *, luaO_nilobject);
+      }
     }
   }
 }
@@ -345,21 +345,21 @@ LUA_API const char *lua_tolstring (lua_State *L, int idx, size_t *len) {
 LUA_API size_t lua_objlen (lua_State *L, int idx) {
   StkId o = index2adr(L, idx);
   switch (ttype(o)) {
-  case LUA_TSTRING:
-    return tsvalue(o)->len;
-  case LUA_TUSERDATA:
-    return uvalue(o)->len;
-  case LUA_TTABLE:
-    return luaH_getn(hvalue(o));
-  case LUA_TNUMBER: {
-    size_t l;
-    lua_lock(L); /* `luaV_tostring' may create a new string */
-    l = (luaV_tostring(L, o) ? tsvalue(o)->len : 0);
-    lua_unlock(L);
-    return l;
-  }
-  default:
-    return 0;
+    case LUA_TSTRING:
+      return tsvalue(o)->len;
+    case LUA_TUSERDATA:
+      return uvalue(o)->len;
+    case LUA_TTABLE:
+      return luaH_getn(hvalue(o));
+    case LUA_TNUMBER: {
+      size_t l;
+      lua_lock(L); /* `luaV_tostring' may create a new string */
+      l = (luaV_tostring(L, o) ? tsvalue(o)->len : 0);
+      lua_unlock(L);
+      return l;
+    }
+    default:
+      return 0;
   }
 }
 
@@ -371,12 +371,12 @@ LUA_API lua_CFunction lua_tocfunction (lua_State *L, int idx) {
 LUA_API void *lua_touserdata (lua_State *L, int idx) {
   StkId o = index2adr(L, idx);
   switch (ttype(o)) {
-  case LUA_TUSERDATA:
-    return (rawuvalue(o) + 1);
-  case LUA_TLIGHTUSERDATA:
-    return pvalue(o);
-  default:
-    return NULL;
+    case LUA_TUSERDATA:
+      return (rawuvalue(o) + 1);
+    case LUA_TLIGHTUSERDATA:
+      return pvalue(o);
+    default:
+      return NULL;
   }
 }
 
@@ -388,17 +388,17 @@ LUA_API lua_State *lua_tothread (lua_State *L, int idx) {
 LUA_API const void *lua_topointer (lua_State *L, int idx) {
   StkId o = index2adr(L, idx);
   switch (ttype(o)) {
-  case LUA_TTABLE:
-    return hvalue(o);
-  case LUA_TFUNCTION:
-    return clvalue(o);
-  case LUA_TTHREAD:
-    return thvalue(o);
-  case LUA_TUSERDATA:
-  case LUA_TLIGHTUSERDATA:
-    return lua_touserdata(L, idx);
-  default:
-    return NULL;
+    case LUA_TTABLE:
+      return hvalue(o);
+    case LUA_TFUNCTION:
+      return clvalue(o);
+    case LUA_TTHREAD:
+      return thvalue(o);
+    case LUA_TUSERDATA:
+    case LUA_TLIGHTUSERDATA:
+      return lua_touserdata(L, idx);
+    default:
+      return NULL;
   }
 }
 
@@ -563,15 +563,15 @@ LUA_API int lua_getmetatable (lua_State *L, int objindex) {
   lua_lock(L);
   obj = index2adr(L, objindex);
   switch (ttype(obj)) {
-  case LUA_TTABLE:
-    mt = hvalue(obj)->metatable;
-    break;
-  case LUA_TUSERDATA:
-    mt = uvalue(obj)->metatable;
-    break;
-  default:
-    mt = G(L)->mt[ttype(obj)];
-    break;
+    case LUA_TTABLE:
+      mt = hvalue(obj)->metatable;
+      break;
+    case LUA_TUSERDATA:
+      mt = uvalue(obj)->metatable;
+      break;
+    default:
+      mt = G(L)->mt[ttype(obj)];
+      break;
   }
   if (mt == NULL) {
     res = 0;
@@ -590,18 +590,18 @@ LUA_API void lua_getfenv (lua_State *L, int idx) {
   o = index2adr(L, idx);
   api_checkvalidindex(L, o);
   switch (ttype(o)) {
-  case LUA_TFUNCTION:
-    sethvalue(L, L->top, clvalue(o)->c.env);
-    break;
-  case LUA_TUSERDATA:
-    sethvalue(L, L->top, uvalue(o)->env);
-    break;
-  case LUA_TTHREAD:
-    setobj2s(L, L->top, gt(thvalue(o)));
-    break;
-  default:
-    setnilvalue(L, L->top);
-    break;
+    case LUA_TFUNCTION:
+      sethvalue(L, L->top, clvalue(o)->c.env);
+      break;
+    case LUA_TUSERDATA:
+      sethvalue(L, L->top, uvalue(o)->env);
+      break;
+    case LUA_TTHREAD:
+      setobj2s(L, L->top, gt(thvalue(o)));
+      break;
+    default:
+      setnilvalue(L, L->top);
+      break;
   }
   api_incr_top(L);
   lua_unlock(L);
@@ -673,22 +673,22 @@ LUA_API int lua_setmetatable (lua_State *L, int objindex) {
     mt = hvalue(L->top - 1);
   }
   switch (ttype(obj)) {
-  case LUA_TTABLE: {
-    hvalue(obj)->metatable = mt;
-    if (mt)
-      luaC_objbarriert(L, hvalue(obj), mt);
-    break;
-  }
-  case LUA_TUSERDATA: {
-    uvalue(obj)->metatable = mt;
-    if (mt)
-      luaC_objbarrier(L, rawuvalue(obj), mt);
-    break;
-  }
-  default: {
-    G(L)->mt[ttype(obj)] = mt;
-    break;
-  }
+    case LUA_TTABLE: {
+      hvalue(obj)->metatable = mt;
+      if (mt)
+        luaC_objbarriert(L, hvalue(obj), mt);
+      break;
+    }
+    case LUA_TUSERDATA: {
+      uvalue(obj)->metatable = mt;
+      if (mt)
+        luaC_objbarrier(L, rawuvalue(obj), mt);
+      break;
+    }
+    default: {
+      G(L)->mt[ttype(obj)] = mt;
+      break;
+    }
   }
   L->top--;
   lua_unlock(L);
@@ -704,18 +704,18 @@ LUA_API int lua_setfenv (lua_State *L, int idx) {
   api_checkvalidindex(L, o);
   api_check(L, ttistable(L->top - 1));
   switch (ttype(o)) {
-  case LUA_TFUNCTION:
-    clvalue(o)->c.env = hvalue(L->top - 1);
-    break;
-  case LUA_TUSERDATA:
-    uvalue(o)->env = hvalue(L->top - 1);
-    break;
-  case LUA_TTHREAD:
-    sethvalue(L, gt(thvalue(o)), hvalue(L->top - 1));
-    break;
-  default:
-    res = 0;
-    break;
+    case LUA_TFUNCTION:
+      clvalue(o)->c.env = hvalue(L->top - 1);
+      break;
+    case LUA_TUSERDATA:
+      uvalue(o)->env = hvalue(L->top - 1);
+      break;
+    case LUA_TTHREAD:
+      sethvalue(L, gt(thvalue(o)), hvalue(L->top - 1));
+      break;
+    default:
+      res = 0;
+      break;
   }
   if (res)
     luaC_objbarrier(L, gcvalue(o), hvalue(L->top - 1));
@@ -857,55 +857,55 @@ LUA_API int lua_gc (lua_State *L, int what, int data) {
   lua_lock(L);
   g = G(L);
   switch (what) {
-  case LUA_GCSTOP: {
-    g->GCthreshold = LUA_PTRDIFF_MAX;
-    break;
-  }
-  case LUA_GCRESTART: {
-    g->GCthreshold = g->totalbytes;
-    break;
-  }
-  case LUA_GCCOLLECT: {
-    luaC_fullgc(L);
-    break;
-  }
-  case LUA_GCCOUNT: {
-    /* GC values are expressed in Kbytes: #bytes/2^10 */
-    res = cast_int(g->totalbytes >> 10);
-    break;
-  }
-  case LUA_GCCOUNTB: {
-    res = cast_int(g->totalbytes & 0x3ff);
-    break;
-  }
-  case LUA_GCSTEP: {
-    size_t a = (cast(size_t, data) << 10);
-    if (a <= g->totalbytes) {
-      g->GCthreshold = g->totalbytes - a;
-    } else {
-      g->GCthreshold = 0;
+    case LUA_GCSTOP: {
+      g->GCthreshold = LUA_PTRDIFF_MAX;
+      break;
     }
-    while (g->GCthreshold <= g->totalbytes) {
-      luaC_step(L);
-      if (g->gcstate == GCSpause) { /* end of cycle? */
-        res = 1;                    /* signal it */
-        break;
+    case LUA_GCRESTART: {
+      g->GCthreshold = g->totalbytes;
+      break;
+    }
+    case LUA_GCCOLLECT: {
+      luaC_fullgc(L);
+      break;
+    }
+    case LUA_GCCOUNT: {
+      /* GC values are expressed in Kbytes: #bytes/2^10 */
+      res = cast_int(g->totalbytes >> 10);
+      break;
+    }
+    case LUA_GCCOUNTB: {
+      res = cast_int(g->totalbytes & 0x3ff);
+      break;
+    }
+    case LUA_GCSTEP: {
+      size_t a = (cast(size_t, data) << 10);
+      if (a <= g->totalbytes) {
+        g->GCthreshold = g->totalbytes - a;
+      } else {
+        g->GCthreshold = 0;
       }
+      while (g->GCthreshold <= g->totalbytes) {
+        luaC_step(L);
+        if (g->gcstate == GCSpause) { /* end of cycle? */
+          res = 1;                    /* signal it */
+          break;
+        }
+      }
+      break;
     }
-    break;
-  }
-  case LUA_GCSETPAUSE: {
-    res = g->gcpause;
-    g->gcpause = data;
-    break;
-  }
-  case LUA_GCSETSTEPMUL: {
-    res = g->gcstepmul;
-    g->gcstepmul = data;
-    break;
-  }
-  default:
-    res = -1; /* invalid option */
+    case LUA_GCSETPAUSE: {
+      res = g->gcpause;
+      g->gcpause = data;
+      break;
+    }
+    case LUA_GCSETSTEPMUL: {
+      res = g->gcstepmul;
+      g->gcstepmul = data;
+      break;
+    }
+    default:
+      res = -1; /* invalid option */
   }
   lua_unlock(L);
   return res;

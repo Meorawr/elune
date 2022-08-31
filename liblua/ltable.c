@@ -89,16 +89,16 @@ static Node *hashnum (const Table *t, lua_Number n) {
 */
 static Node *mainposition (const Table *t, const TValue *key) {
   switch (ttype(key)) {
-  case LUA_TNUMBER:
-    return hashnum(t, nvalue(key));
-  case LUA_TSTRING:
-    return hashstr(t, rawtsvalue(key));
-  case LUA_TBOOLEAN:
-    return hashboolean(t, bvalue(key));
-  case LUA_TLIGHTUSERDATA:
-    return hashpointer(t, pvalue(key));
-  default:
-    return hashpointer(t, gcvalue(key));
+    case LUA_TNUMBER:
+      return hashnum(t, nvalue(key));
+    case LUA_TSTRING:
+      return hashstr(t, rawtsvalue(key));
+    case LUA_TBOOLEAN:
+      return hashboolean(t, bvalue(key));
+    case LUA_TLIGHTUSERDATA:
+      return hashpointer(t, pvalue(key));
+    default:
+      return hashpointer(t, gcvalue(key));
   }
 }
 
@@ -457,31 +457,31 @@ const TValue *luaH_getstr (Table *t, TString *key) {
 */
 const TValue *luaH_get (Table *t, const TValue *key) {
   switch (ttype(key)) {
-  case LUA_TNIL:
-    return luaO_nilobject;
-  case LUA_TSTRING:
-    return luaH_getstr(t, rawtsvalue(key));
-  case LUA_TNUMBER: {
-    int k;
-    lua_Number n = nvalue(key);
-    lua_number2int(k, n);
-    if (luai_numeq(cast_num(k), nvalue(key))) { /* index is int? */
-      return luaH_getnum(t, k);                 /* use specialized version */
-    }
-    /* else go through */
-    LUA_FALLTHROUGH;
-  }
-  default: {
-    Node *n = mainposition(t, key);
-    do { /* check whether `key' is somewhere in the chain */
-      if (luaO_rawequalObj(key2tval(n), key)) {
-        return gval(n); /* that's it */
-      } else {
-        n = gnext(n);
+    case LUA_TNIL:
+      return luaO_nilobject;
+    case LUA_TSTRING:
+      return luaH_getstr(t, rawtsvalue(key));
+    case LUA_TNUMBER: {
+      int k;
+      lua_Number n = nvalue(key);
+      lua_number2int(k, n);
+      if (luai_numeq(cast_num(k), nvalue(key))) { /* index is int? */
+        return luaH_getnum(t, k);                 /* use specialized version */
       }
-    } while (n);
-    return luaO_nilobject;
-  }
+      /* else go through */
+      LUA_FALLTHROUGH;
+    }
+    default: {
+      Node *n = mainposition(t, key);
+      do { /* check whether `key' is somewhere in the chain */
+        if (luaO_rawequalObj(key2tval(n), key)) {
+          return gval(n); /* that's it */
+        } else {
+          n = gnext(n);
+        }
+      } while (n);
+      return luaO_nilobject;
+    }
   }
 }
 

@@ -206,67 +206,67 @@ static int capture_to_close (MatchState *ms) {
 
 static const char *classend (MatchState *ms, const char *p) {
   switch (*p++) {
-  case L_ESC: {
-    if (*p == '\0') {
-      luaL_error(ms->L, "malformed pattern (ends with '%%')");
-    }
-    return p + 1;
-  }
-  case '[': {
-    if (*p == '^') {
-      p++;
-    }
-    do { /* look for a `]' */
+    case L_ESC: {
       if (*p == '\0') {
-        luaL_error(ms->L, "malformed pattern (missing ']')");
+        luaL_error(ms->L, "malformed pattern (ends with '%%')");
       }
-      if (*(p++) == L_ESC && *p != '\0') {
-        p++; /* skip escapes (e.g. `%]') */
+      return p + 1;
+    }
+    case '[': {
+      if (*p == '^') {
+        p++;
       }
-    } while (*p != ']');
-    return p + 1;
-  }
-  default: {
-    return p;
-  }
+      do { /* look for a `]' */
+        if (*p == '\0') {
+          luaL_error(ms->L, "malformed pattern (missing ']')");
+        }
+        if (*(p++) == L_ESC && *p != '\0') {
+          p++; /* skip escapes (e.g. `%]') */
+        }
+      } while (*p != ']');
+      return p + 1;
+    }
+    default: {
+      return p;
+    }
   }
 }
 
 static int match_class (int c, int cl) {
   int res;
   switch (tolower(cl)) {
-  case 'a':
-    res = isalpha(c);
-    break;
-  case 'c':
-    res = iscntrl(c);
-    break;
-  case 'd':
-    res = isdigit(c);
-    break;
-  case 'l':
-    res = islower(c);
-    break;
-  case 'p':
-    res = ispunct(c);
-    break;
-  case 's':
-    res = isspace(c);
-    break;
-  case 'u':
-    res = isupper(c);
-    break;
-  case 'w':
-    res = isalnum(c);
-    break;
-  case 'x':
-    res = isxdigit(c);
-    break;
-  case 'z':
-    res = (c == 0);
-    break;
-  default:
-    return (cl == c);
+    case 'a':
+      res = isalpha(c);
+      break;
+    case 'c':
+      res = iscntrl(c);
+      break;
+    case 'd':
+      res = isdigit(c);
+      break;
+    case 'l':
+      res = islower(c);
+      break;
+    case 'p':
+      res = ispunct(c);
+      break;
+    case 's':
+      res = isspace(c);
+      break;
+    case 'u':
+      res = isupper(c);
+      break;
+    case 'w':
+      res = isalnum(c);
+      break;
+    case 'x':
+      res = isxdigit(c);
+      break;
+    case 'z':
+      res = (c == 0);
+      break;
+    default:
+      return (cl == c);
   }
   return (islower(cl) ? res : !res);
 }
@@ -297,14 +297,14 @@ static int matchbracketclass (int c, const char *p, const char *ec) {
 
 static int singlematch (int c, const char *p, const char *ep) {
   switch (*p) {
-  case '.':
-    return 1; /* matches any char */
-  case L_ESC:
-    return match_class(c, uchar(*(p + 1)));
-  case '[':
-    return matchbracketclass(c, p, ep - 1);
-  default:
-    return (uchar(*p) == c);
+    case '.':
+      return 1; /* matches any char */
+    case L_ESC:
+      return match_class(c, uchar(*(p + 1)));
+    case '[':
+      return matchbracketclass(c, p, ep - 1);
+    default:
+      return (uchar(*p) == c);
   }
 }
 
@@ -405,97 +405,97 @@ static const char *match_capture (MatchState *ms, const char *s, int l) {
 static const char *match (MatchState *ms, const char *s, const char *p) {
 init: /* using goto's to optimize tail recursion */
   switch (*p) {
-  case '(': {              /* start capture */
-    if (*(p + 1) == ')') { /* position capture? */
-      return start_capture(ms, s, p + 2, CAP_POSITION);
-    } else {
-      return start_capture(ms, s, p + 1, CAP_UNFINISHED);
-    }
-  }
-  case ')': { /* end capture */
-    return end_capture(ms, s, p + 1);
-  }
-  case L_ESC: {
-    switch (*(p + 1)) {
-    case 'b': { /* balanced string? */
-      s = matchbalance(ms, s, p + 2);
-      if (s == NULL) {
-        return NULL;
+    case '(': {              /* start capture */
+      if (*(p + 1) == ')') { /* position capture? */
+        return start_capture(ms, s, p + 2, CAP_POSITION);
+      } else {
+        return start_capture(ms, s, p + 1, CAP_UNFINISHED);
       }
-      p += 4;
-      goto init; /* else return match(ms, s, p+4); */
     }
-    case 'f': { /* frontier? */
-      const char *ep;
-      char previous;
-      p += 2;
-      if (*p != '[') {
-        luaL_error(ms->L, "missing '[' after '%%f' in pattern");
-      }
-      ep = classend(ms, p); /* points to what is next */
-      previous = (s == ms->src_init) ? '\0' : *(s - 1);
-      if (matchbracketclass(uchar(previous), p, ep - 1) ||
-          !matchbracketclass(uchar(*s), p, ep - 1)) {
-        return NULL;
-      }
-      p = ep;
-      goto init; /* else return match(ms, s, ep); */
+    case ')': { /* end capture */
+      return end_capture(ms, s, p + 1);
     }
-    default: {
-      if (isdigit(uchar(*(p + 1)))) { /* capture results (%0-%9)? */
-        s = match_capture(ms, s, uchar(*(p + 1)));
-        if (s == NULL) {
-          return NULL;
+    case L_ESC: {
+      switch (*(p + 1)) {
+        case 'b': { /* balanced string? */
+          s = matchbalance(ms, s, p + 2);
+          if (s == NULL) {
+            return NULL;
+          }
+          p += 4;
+          goto init; /* else return match(ms, s, p+4); */
         }
-        p += 2;
-        goto init; /* else return match(ms, s, p+2) */
+        case 'f': { /* frontier? */
+          const char *ep;
+          char previous;
+          p += 2;
+          if (*p != '[') {
+            luaL_error(ms->L, "missing '[' after '%%f' in pattern");
+          }
+          ep = classend(ms, p); /* points to what is next */
+          previous = (s == ms->src_init) ? '\0' : *(s - 1);
+          if (matchbracketclass(uchar(previous), p, ep - 1) ||
+              !matchbracketclass(uchar(*s), p, ep - 1)) {
+            return NULL;
+          }
+          p = ep;
+          goto init; /* else return match(ms, s, ep); */
+        }
+        default: {
+          if (isdigit(uchar(*(p + 1)))) { /* capture results (%0-%9)? */
+            s = match_capture(ms, s, uchar(*(p + 1)));
+            if (s == NULL) {
+              return NULL;
+            }
+            p += 2;
+            goto init; /* else return match(ms, s, p+2) */
+          }
+          goto dflt; /* case default */
+        }
       }
-      goto dflt; /* case default */
     }
+    case '\0': { /* end of pattern */
+      return s;  /* match succeeded */
     }
-  }
-  case '\0': { /* end of pattern */
-    return s;  /* match succeeded */
-  }
-  case '$': {
-    if (*(p + 1) == '\0') { /* is the `$' the last char in pattern? */
-      return (s == ms->src_end) ? s : NULL; /* check end of string */
-    } else {
-      goto dflt;
-    }
-  }
-  default:
-  dflt : {                            /* it is a pattern item */
-    const char *ep = classend(ms, p); /* points to what is next */
-    int m = s < ms->src_end && singlematch(uchar(*s), p, ep);
-    switch (*ep) {
-    case '?': { /* optional */
-      const char *res;
-      if (m && ((res = match(ms, s + 1, ep + 1)) != NULL)) {
-        return res;
+    case '$': {
+      if (*(p + 1) == '\0') { /* is the `$' the last char in pattern? */
+        return (s == ms->src_end) ? s : NULL; /* check end of string */
+      } else {
+        goto dflt;
       }
-      p = ep + 1;
-      goto init; /* else return match(ms, s, ep+1); */
     }
-    case '*': { /* 0 or more repetitions */
-      return max_expand(ms, s, p, ep);
-    }
-    case '+': { /* 1 or more repetitions */
-      return (m ? max_expand(ms, s + 1, p, ep) : NULL);
-    }
-    case '-': { /* 0 or more repetitions (minimum) */
-      return min_expand(ms, s, p, ep);
-    }
-    default: {
-      if (!m) {
-        return NULL;
+    default:
+    dflt : {                            /* it is a pattern item */
+      const char *ep = classend(ms, p); /* points to what is next */
+      int m = s < ms->src_end && singlematch(uchar(*s), p, ep);
+      switch (*ep) {
+        case '?': { /* optional */
+          const char *res;
+          if (m && ((res = match(ms, s + 1, ep + 1)) != NULL)) {
+            return res;
+          }
+          p = ep + 1;
+          goto init; /* else return match(ms, s, ep+1); */
+        }
+        case '*': { /* 0 or more repetitions */
+          return max_expand(ms, s, p, ep);
+        }
+        case '+': { /* 1 or more repetitions */
+          return (m ? max_expand(ms, s + 1, p, ep) : NULL);
+        }
+        case '-': { /* 0 or more repetitions (minimum) */
+          return min_expand(ms, s, p, ep);
+        }
+        default: {
+          if (!m) {
+            return NULL;
+          }
+          s++;
+          p = ep;
+          goto init; /* else return match(ms, s+1, ep); */
+        }
       }
-      s++;
-      p = ep;
-      goto init; /* else return match(ms, s+1, ep); */
     }
-    }
-  }
   }
 }
 
@@ -671,23 +671,23 @@ static void add_value (MatchState *ms, luaL_Buffer *b, const char *s,
                        const char *e) {
   lua_State *L = ms->L;
   switch (lua_type(L, 3)) {
-  case LUA_TNUMBER:
-  case LUA_TSTRING: {
-    add_s(ms, b, s, e);
-    return;
-  }
-  case LUA_TFUNCTION: {
-    int n;
-    lua_pushvalue(L, 3);
-    n = push_captures(ms, s, e);
-    lua_call(L, n, 1);
-    break;
-  }
-  case LUA_TTABLE: {
-    push_onecapture(ms, 0, s, e);
-    lua_gettable(L, 3);
-    break;
-  }
+    case LUA_TNUMBER:
+    case LUA_TSTRING: {
+      add_s(ms, b, s, e);
+      return;
+    }
+    case LUA_TFUNCTION: {
+      int n;
+      lua_pushvalue(L, 3);
+      n = push_captures(ms, s, e);
+      lua_call(L, n, 1);
+      break;
+    }
+    case LUA_TTABLE: {
+      push_onecapture(ms, 0, s, e);
+      lua_gettable(L, 3);
+      break;
+    }
   }
   if (!lua_toboolean(L, -1)) { /* nil or false? */
     lua_pop(L, 1);
@@ -754,25 +754,25 @@ static void addquoted (lua_State *L, luaL_Buffer *b, int arg) {
   luaL_addchar(b, '"');
   while (l--) {
     switch (*s) {
-    case '"':
-    case '\\':
-    case '\n': {
-      luaL_addchar(b, '\\');
-      luaL_addchar(b, *s);
-      break;
-    }
-    case '\r': {
-      luaL_addlstring(b, "\\r", 2);
-      break;
-    }
-    case '\0': {
-      luaL_addlstring(b, "\\000", 4);
-      break;
-    }
-    default: {
-      luaL_addchar(b, *s);
-      break;
-    }
+      case '"':
+      case '\\':
+      case '\n': {
+        luaL_addchar(b, '\\');
+        luaL_addchar(b, *s);
+        break;
+      }
+      case '\r': {
+        luaL_addlstring(b, "\\r", 2);
+        break;
+      }
+      case '\0': {
+        luaL_addlstring(b, "\\000", 4);
+        break;
+      }
+      default: {
+        luaL_addchar(b, *s);
+        break;
+      }
     }
     s++;
   }
@@ -851,60 +851,60 @@ static int str_format (lua_State *L) {
       strfrmt = scanarg(strfrmt, &arg);
       strfrmt = scanformat(L, strfrmt, strfrmt_end, form);
       switch (*strfrmt++) {
-      case 'c': {
-        sprintf(buff, form, (int) luaL_checknumber(L, arg));
-        break;
-      }
-      case 'd':
-      case 'i': {
-        int num = lua_toint(L, arg);
-        addintlen(form);
-        sprintf(buff, form, (LUA_INTFRM_T) num);
-        break;
-      }
-      case 'o':
-      case 'u':
-      case 'x':
-      case 'X': {
-        lua_Number num = luaL_checknumber(L, arg);
-        addintlen(form);
-        sprintf(buff, form, (unsigned LUA_INTFRM_T) num);
-        break;
-      }
-      case 'e':
-      case 'E':
-      case 'f':
-      case 'g':
-      case 'G': {
-        sprintf(buff, form, (double) luaL_checknumber(L, arg));
-        break;
-      }
-      case 'F': {
-        form[strlen(form) - 1] = 'f';
-        sprintf(buff, form, (double) luaL_checknumber(L, arg));
-        break;
-      }
-      case 'q': {
-        addquoted(L, &b, arg);
-        continue; /* skip the 'addsize' at the end */
-      }
-      case 's': {
-        size_t l;
-        const char *s = luaL_checklstring(L, arg, &l);
-        if (!strchr(form, '.') && l >= 100) {
-          /* no precision and string is too long to be formatted;
-             keep original string */
-          lua_pushvalue(L, arg);
-          luaL_addvalue(&b);
-          continue; /* skip the `addsize' at the end */
-        } else {
-          sprintf(buff, form, s);
+        case 'c': {
+          sprintf(buff, form, (int) luaL_checknumber(L, arg));
           break;
         }
-      }
-      default: { /* also treat cases `pnLlh' */
-        return luaL_error(L, "invalid option in `format'");
-      }
+        case 'd':
+        case 'i': {
+          int num = lua_toint(L, arg);
+          addintlen(form);
+          sprintf(buff, form, (LUA_INTFRM_T) num);
+          break;
+        }
+        case 'o':
+        case 'u':
+        case 'x':
+        case 'X': {
+          lua_Number num = luaL_checknumber(L, arg);
+          addintlen(form);
+          sprintf(buff, form, (unsigned LUA_INTFRM_T) num);
+          break;
+        }
+        case 'e':
+        case 'E':
+        case 'f':
+        case 'g':
+        case 'G': {
+          sprintf(buff, form, (double) luaL_checknumber(L, arg));
+          break;
+        }
+        case 'F': {
+          form[strlen(form) - 1] = 'f';
+          sprintf(buff, form, (double) luaL_checknumber(L, arg));
+          break;
+        }
+        case 'q': {
+          addquoted(L, &b, arg);
+          continue; /* skip the 'addsize' at the end */
+        }
+        case 's': {
+          size_t l;
+          const char *s = luaL_checklstring(L, arg, &l);
+          if (!strchr(form, '.') && l >= 100) {
+            /* no precision and string is too long to be formatted;
+               keep original string */
+            lua_pushvalue(L, arg);
+            luaL_addvalue(&b);
+            continue; /* skip the `addsize' at the end */
+          } else {
+            sprintf(buff, form, s);
+            break;
+          }
+        }
+        default: { /* also treat cases `pnLlh' */
+          return luaL_error(L, "invalid option in `format'");
+        }
       }
       luaL_addlstring(&b, buff, strlen(buff));
     }

@@ -77,17 +77,17 @@ int luaO_rawequalObj (const TValue *t1, const TValue *t2) {
     return 0;
   } else {
     switch (ttype(t1)) {
-    case LUA_TNIL:
-      return 1;
-    case LUA_TNUMBER:
-      return luai_numeq(nvalue(t1), nvalue(t2));
-    case LUA_TBOOLEAN:
-      return bvalue(t1) == bvalue(t2); /* boolean true must be 1 !! */
-    case LUA_TLIGHTUSERDATA:
-      return pvalue(t1) == pvalue(t2);
-    default:
-      lua_assert(iscollectable(t1));
-      return gcvalue(t1) == gcvalue(t2);
+      case LUA_TNIL:
+        return 1;
+      case LUA_TNUMBER:
+        return luai_numeq(nvalue(t1), nvalue(t2));
+      case LUA_TBOOLEAN:
+        return bvalue(t1) == bvalue(t2); /* boolean true must be 1 !! */
+      case LUA_TLIGHTUSERDATA:
+        return pvalue(t1) == pvalue(t2);
+      default:
+        lua_assert(iscollectable(t1));
+        return gcvalue(t1) == gcvalue(t2);
     }
   }
 }
@@ -130,49 +130,50 @@ const char *luaO_pushvfstring (lua_State *L, const char *fmt, va_list argp) {
     setsvalue2s(L, L->top, luaS_newlstr(L, fmt, e - fmt));
     incr_top(L);
     switch (*(e + 1)) {
-    case 's': {
-      const char *s = va_arg(argp, char *);
-      if (s == NULL) {
-        s = "(null)";
+      case 's': {
+        const char *s = va_arg(argp, char *);
+        if (s == NULL) {
+          s = "(null)";
+        }
+        pushstr(L, s);
+        break;
       }
-      pushstr(L, s);
-      break;
-    }
-    case 'c': {
-      char buff[2];
-      buff[0] = cast(char, va_arg(argp, int));
-      buff[1] = '\0';
-      pushstr(L, buff);
-      break;
-    }
-    case 'd': {
-      setnvalue(L, L->top, cast_num(va_arg(argp, int)));
-      incr_top(L);
-      break;
-    }
-    case 'f': {
-      setnvalue(L, L->top, cast_num(va_arg(argp, l_uacNumber)));
-      incr_top(L);
-      break;
-    }
-    case 'p': {
-      char buff[4 * sizeof(void *) + 8]; /* should be enough space for a `%p' */
-      sprintf(buff, "%p", va_arg(argp, void *));
-      pushstr(L, buff);
-      break;
-    }
-    case '%': {
-      pushstr(L, "%");
-      break;
-    }
-    default: {
-      char buff[3];
-      buff[0] = '%';
-      buff[1] = *(e + 1);
-      buff[2] = '\0';
-      pushstr(L, buff);
-      break;
-    }
+      case 'c': {
+        char buff[2];
+        buff[0] = cast(char, va_arg(argp, int));
+        buff[1] = '\0';
+        pushstr(L, buff);
+        break;
+      }
+      case 'd': {
+        setnvalue(L, L->top, cast_num(va_arg(argp, int)));
+        incr_top(L);
+        break;
+      }
+      case 'f': {
+        setnvalue(L, L->top, cast_num(va_arg(argp, l_uacNumber)));
+        incr_top(L);
+        break;
+      }
+      case 'p': {
+        char
+          buff[4 * sizeof(void *) + 8]; /* should be enough space for a `%p' */
+        sprintf(buff, "%p", va_arg(argp, void *));
+        pushstr(L, buff);
+        break;
+      }
+      case '%': {
+        pushstr(L, "%");
+        break;
+      }
+      default: {
+        char buff[3];
+        buff[0] = '%';
+        buff[1] = *(e + 1);
+        buff[2] = '\0';
+        pushstr(L, buff);
+        break;
+      }
     }
     n += 2;
     fmt = e + 2;

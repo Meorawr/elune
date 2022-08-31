@@ -102,21 +102,21 @@ static void LoadConstants (LoadState *S, Proto *f) {
     TValue *o = &f->k[i];
     int t = LoadChar(S);
     switch (t) {
-    case LUA_TNIL:
-      setnilvalue(S->L, o);
-      break;
-    case LUA_TBOOLEAN:
-      setbvalue(S->L, o, LoadChar(S) != 0);
-      break;
-    case LUA_TNUMBER:
-      setnvalue(S->L, o, LoadNumber(S));
-      break;
-    case LUA_TSTRING:
-      setsvalue2n(S->L, o, LoadString(S));
-      break;
-    default:
-      error(S, "bad constant");
-      break;
+      case LUA_TNIL:
+        setnilvalue(S->L, o);
+        break;
+      case LUA_TBOOLEAN:
+        setbvalue(S->L, o, LoadChar(S) != 0);
+        break;
+      case LUA_TNUMBER:
+        setnvalue(S->L, o, LoadNumber(S));
+        break;
+      case LUA_TSTRING:
+        setsvalue2n(S->L, o, LoadString(S));
+        break;
+      default:
+        error(S, "bad constant");
+        break;
     }
   }
   n = LoadInt(S);
