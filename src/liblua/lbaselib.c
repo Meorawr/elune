@@ -284,7 +284,7 @@ static int luaB_loadstring (lua_State *L) {
   size_t l;
   const char *s = luaL_checklstring(L, 1, &l);
   const char *chunkname = luaL_optstring(L, 2, s);
-  lua_setstacktaint(L, LUALIB_LOADSTRING_TAINT);
+  lua_setstacktaint(L, LUA_LOADSTRING_TAINT);
   return load_aux(L, luaL_loadbuffer(L, s, l, chunkname));
 }
 

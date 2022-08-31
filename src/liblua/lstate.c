@@ -95,8 +95,8 @@ static void f_luaopen (lua_State *L, void *ud) {
   luaT_init(L);
   luaX_init(L);
   luaS_fix(luaS_newliteral(L, MEMERRMSG));
-  luaS_fix(luaS_newliteral(L, LUALIB_FORCEINSECURE_TAINT));
-  luaS_fix(luaS_newliteral(L, LUALIB_LOADSTRING_TAINT));
+  luaS_fix(luaS_newliteral(L, LUA_FORCEINSECURE_TAINT));
+  luaS_fix(luaS_newliteral(L, LUA_LOADSTRING_TAINT));
   g->GCthreshold = 4*g->totalbytes;
 }
 

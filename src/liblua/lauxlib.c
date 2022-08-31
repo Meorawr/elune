@@ -930,7 +930,7 @@ LUALIB_API void luaL_createsecurehook (lua_State *L) {
 
 LUALIB_API void luaL_forceinsecure (lua_State *L) {
   if (luaL_issecure(L)) {
-    lua_setstacktaint(L, LUALIB_FORCEINSECURE_TAINT);
+    lua_setstacktaint(L, LUA_FORCEINSECURE_TAINT);
   }
 }
 

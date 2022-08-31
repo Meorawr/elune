@@ -53,7 +53,7 @@ static void test_protecttaint_secure_normal (void) {
 
 static void test_protecttaint_tainted_normal (void) {
   lua_State *L = luatest_newstate();
-  lua_protecttaint(L, &f_protecttaint_normal, LUALIB_FORCEINSECURE_TAINT);
+  lua_protecttaint(L, &f_protecttaint_normal, LUA_FORCEINSECURE_TAINT);
   TEST_CHECK((!luaL_issecure(L)));  /* on success we should be tainted */
   TEST_CHECK((!luaL_issecurevalue(L, -1)));  /* the return value should also be tainted */
   lua_close(L);
@@ -77,7 +77,7 @@ static void test_protecttaint_secure_error (void) {
   int status;
 
   lua_State *L = luatest_newstate();  /* start secure */
-  status = lua_cpcall(L, &f_protecttaint_inner, LUALIB_FORCEINSECURE_TAINT);
+  status = lua_cpcall(L, &f_protecttaint_inner, LUA_FORCEINSECURE_TAINT);
   TEST_CHECK((status != 0));  /* the call should have failed */
   TEST_CHECK((luaL_issecure(L)));  /* we should restore to a secure state */
   lua_close(L);
@@ -88,7 +88,7 @@ static void test_protecttaint_tainted_error (void) {
   int status;
 
   lua_State *L = luatest_newstate();
-  lua_setstacktaint(L, LUALIB_FORCEINSECURE_TAINT);  /* start tainted */
+  lua_setstacktaint(L, LUA_FORCEINSECURE_TAINT);  /* start tainted */
   status = lua_cpcall(L, &f_protecttaint_inner, NULL);
   TEST_CHECK((status != 0));  /* the call should have failed */
   TEST_CHECK((!luaL_issecure(L)));  /* we should restore to a tainted state */

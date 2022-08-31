@@ -748,25 +748,25 @@ union luai_Cast { double l_d; long l_l; };
 
 
 /*
-@@ LUALIB_FORCEINSECURE_TAINT is the string name of the taint applied by Lua
+@@ LUA_FORCEINSECURE_TAINT is the string name of the taint applied by Lua
 @@ when taint needs to be forcibly applied from an anonymous source.
 **
 ** CHANGE this to another string if desired.
 */
-#if !defined(LUALIB_FORCEINSECURE_TAINT)
-#define LUALIB_FORCEINSECURE_TAINT "*** TaintForced ***"
+#if !defined(LUA_FORCEINSECURE_TAINT)
+#define LUA_FORCEINSECURE_TAINT "*** TaintForced ***"
 #endif
 
 
 /*
-@@ LUALIB_LOADSTRING_TAINT is the string name of the taint source applied
+@@ LUA_LOADSTRING_TAINT is the string name of the taint source applied
 @@ by Lua when taint is forcibly applied for dynamically loaded code through
 @@ the loadstring function.
 **
 ** CHANGE this to another string if desired.
 */
-#if !defined(LUALIB_LOADSTRING_TAINT)
-#define LUALIB_LOADSTRING_TAINT "*** ForceTaint_Strong ***"
+#if !defined(LUA_LOADSTRING_TAINT)
+#define LUA_LOADSTRING_TAINT "*** ForceTaint_Strong ***"
 #endif
 
 
