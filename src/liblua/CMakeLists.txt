@@ -95,7 +95,6 @@ target_sources(
     lbitlib.c
     lcompatlib.c
     ldblib.c
-    lelunelib.c
     liolib.c
     lmathlib.c
     loadlib.c
@@ -104,6 +103,7 @@ target_sources(
     lstatslib.c
     lstrlib.c
     ltablib.c
+    lwowlib.c
     linit.c
 )
 

@@ -539,7 +539,7 @@ static const luaL_Reg ll_funcs[] = {
 
 
 static const luaL_Reg ll_preload[] = {
-  {"elune", luaopen_elune},
+  {LUA_WOWLIBNAME, luaopen_wow},
   {NULL, NULL}
 };
 
@@ -583,8 +583,9 @@ LUALIB_API int luaopen_package (lua_State *L) {
   lua_newtable(L);
   luaL_setfuncs(L, ll_preload, 0);
   lua_setfield(L, -2, "preload");
+  /* open lib into global table */
   lua_pushvalue(L, LUA_GLOBALSINDEX);
-  luaL_register(L, NULL, ll_funcs);  /* open lib into global table */
+  luaL_register(L, NULL, ll_funcs);
   lua_pop(L, 1);
   return 1;  /* return 'package' table */
 }

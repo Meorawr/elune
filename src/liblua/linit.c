@@ -29,15 +29,15 @@ static const luaL_Reg lualibs[] = {
 };
 
 
-static const luaL_Reg elunelibs[] = {
-  /* { .name = LUA_BASELIBNAME, .func = luaopen_elune_base }, */
-  /* { .name = LUA_BITLIBNAME, .func = luaopen_elune_bit }, */
-  /* { .name = LUA_DBLIBNAME, .func = luaopen_elune_debug }, */
-  /* { .name = LUA_COLIBNAME, .func = luaopen_elune_coroutine }, */
-  /* { .name = LUA_MATHLIBNAME, .func = luaopen_elune_math }, */
-  /* { .name = LUA_OSLIBNAME, .func = luaopen_elune_os }, */
-  /* { .name = LUA_STRLIBNAME, .func = luaopen_elune_string }, */
-  /* { .name = LUA_TABLIBNAME, .func = luaopen_elune_table }, */
+static const luaL_Reg wowlibs[] = {
+  /* { .name = LUA_BASELIBNAME, .func = luaopen_wow_base }, */
+  /* { .name = LUA_BITLIBNAME, .func = luaopen_wow_bit }, */
+  /* { .name = LUA_DBLIBNAME, .func = luaopen_wow_debug }, */
+  /* { .name = LUA_COLIBNAME, .func = luaopen_wow_coroutine }, */
+  /* { .name = LUA_MATHLIBNAME, .func = luaopen_wow_math }, */
+  /* { .name = LUA_OSLIBNAME, .func = luaopen_wow_os }, */
+  /* { .name = LUA_STRLIBNAME, .func = luaopen_wow_string }, */
+  /* { .name = LUA_TABLIBNAME, .func = luaopen_wow_table }, */
   { .name = NULL, .func = NULL },
 };
 
@@ -56,6 +56,6 @@ LUALIB_API void luaL_openlibs (lua_State *L) {
 }
 
 
-LUALIB_API void luaL_openelunelibs (lua_State *L) {
-  openlibs(L, elunelibs);
+LUALIB_API void luaL_openwowlibs (lua_State *L) {
+  openlibs(L, wowlibs);
 }

@@ -444,8 +444,8 @@ static int openlibs (lua_State *L, char **argv) {
 
     if (strcmp(lib, "lua") == 0) {
       openfunc = luaL_openlibs;
-    } else if ((strcmp(lib, "elune") == 0) || (strcmp(lib, "wow") == 0)) {
-      openfunc = luaL_openelunelibs;
+    } else if (strcmp(lib, "wow") == 0) {
+      openfunc = luaL_openwowlibs;
     } else {
       goto exit_failure;  /* invalid lib name */
     }
