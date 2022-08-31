@@ -35,31 +35,8 @@ target_sources(
     luatest_scriptcases.lua
 )
 
-# The scripted test cases need copying to the build directory as they're not
-# embedded automatically.
-
-get_property(GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
-get_property(RUNTIME_OUTPUT_DIRECTORY TARGET luatest PROPERTY RUNTIME_OUTPUT_DIRECTORY)
-
-set(luatest_script_source "${CMAKE_CURRENT_SOURCE_DIR}/luatest_scriptcases.lua")
-set(luatest_script_output "${RUNTIME_OUTPUT_DIRECTORY}/$<$<BOOL:${GENERATOR_IS_MULTI_CONFIG}>:$<CONFIG>/>luatest_scriptcases.lua")
-
-add_custom_command(
-  OUTPUT ${luatest_script_output}
-  DEPENDS ${luatest_script_source}
-  COMMAND ${CMAKE_COMMAND} -E copy ${luatest_script_source} ${luatest_script_output}
-  VERBATIM
-)
-
-set_source_files_properties(
-  ${luatest_script_source}
-  PROPERTIES
-    HEADER_FILE_ONLY ON
-)
-
-target_sources(
+elune_target_copy_file(
   luatest
-  PRIVATE
-    ${luatest_script_source}
-    ${luatest_script_output}
+  SOURCE luatest_scriptcases.lua
+  OUTPUT luatest_scriptcases.lua
 )
