@@ -400,7 +400,7 @@ LUA_API void lua_resettaint (lua_State *L);
  * Profiling and Statistics APIs
  */
 
-typedef lua_Integer lua_Clock;
+typedef int64_t lua_Clock;
 
 typedef struct lua_GlobalStats {
     size_t bytesused; /* total number of bytes in use */
