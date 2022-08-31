@@ -54,6 +54,8 @@
 #define LUA_IDSIZE 60
 /* Maximum number of captures accepted by pattern matching functions. */
 #define LUA_MAXCAPTURES 32
+/* Minimum Lua stack available to a C function. */
+#define LUA_MINSTACK 100
 /* Maximum number of nested Lua calls. */
 #define LUAI_MAXCALLS 20000
 /* Maximum number of nested C calls. */
