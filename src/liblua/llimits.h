@@ -9,12 +9,12 @@
 
 
 #include <limits.h>
+#include <math.h>
 #include <stddef.h>
 #include <stdint.h>
 
 
 #include "lua.h"
-
 
 /* Chars used as small naturals (so that `char' is reserved for characters). */
 typedef unsigned char lu_byte;
@@ -42,45 +42,57 @@ typedef uint_least32_t Instruction;
 /* Minimum size for string buffer */
 #define LUAI_MINBUFFER 32
 
+/* Numeric operations */
+
+#define luai_numadd(a,b) ((a)+(b))
+#define luai_numsub(a,b) ((a)-(b))
+#define luai_nummul(a,b) ((a)*(b))
+#define luai_numdiv(a,b) ((a)/(b))
+#define luai_nummod(a,b) ((a) - floor((a)/(b))*(b))
+#define luai_numpow(a,b) (pow(a,b))
+#define luai_numunm(a) (-(a))
+#define luai_numeq(a,b) ((a)==(b))
+#define luai_numlt(a,b) ((a)<(b))
+#define luai_numle(a,b) ((a)<=(b))
+#define luai_numisnan(a) (!luai_numeq((a), (a)))
+
+/* Lua state synchronization */
+
+#define lua_lock(L) lua_nop()
+#define lua_unlock(L) lua_nop()
+
+#define luai_userstateopen(L) lua_unused((L))
+#define luai_userstateclose(L) lua_unused((L))
+#define luai_userstatethread(L,L1) { lua_unused((L)); lua_unused((L1)); }
+#define luai_userstatefree(L) lua_unused((L))
+#define luai_userstateresume(L,n) { lua_unused((L)); lua_unused((n)); }
+#define luai_userstateyield(L,n) { lua_unused((L)); lua_unused((n)); }
+
+#define luai_threadyield(L) {lua_unlock(L); lua_lock(L);}
+
+/* Stack reallocation tests */
+#ifndef HARDSTACKTESTS
+#define condhardstacktests(x)	lua_nop()
+#else
+#define condhardstacktests(x)	x
+#endif
+
 /*
 ** conversion of pointer to integer
 ** this is for hashing only; there is no problem if the integer
 ** cannot hold the whole pointer value
 */
-#define IntPoint(p)  ((unsigned int)(size_t)(p))
-
+#define IntPoint(p) ((unsigned int)(size_t)(p))
 
 /* internal assertions for in-house debugging */
-#define check_exp(c,e)		(e)
-#define api_check		luai_apicheck
-
+#define check_exp(c,e) (e)
+#define api_check luai_apicheck
 
 #ifndef cast
-#define cast(t, exp)	((t)(exp))
+#define cast(t, exp) ((t)(exp))
 #endif
-
-#define cast_byte(i)	cast(lu_byte, (i))
-#define cast_num(i)	cast(lua_Number, (i))
-#define cast_int(i)	cast(int, (i))
-
-
-#ifndef lua_lock
-#define lua_lock(L)     ((void) 0)
-#define lua_unlock(L)   ((void) 0)
-#endif
-
-#ifndef luai_threadyield
-#define luai_threadyield(L)     {lua_unlock(L); lua_lock(L);}
-#endif
-
-
-/*
-** macro to control inclusion of some hard tests on stack reallocation
-*/
-#ifndef HARDSTACKTESTS
-#define condhardstacktests(x)	((void)0)
-#else
-#define condhardstacktests(x)	x
-#endif
+#define cast_byte(i) cast(lu_byte, (i))
+#define cast_num(i) cast(lua_Number, (i))
+#define cast_int(i) cast(int, (i))
 
 #endif

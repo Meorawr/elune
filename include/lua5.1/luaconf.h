@@ -528,25 +528,6 @@
 
 
 /*
-@@ The luai_num* macros define the primitive operations over numbers.
-*/
-#if defined(LUA_CORE)
-#include <math.h>
-#define luai_numadd(a,b)	((a)+(b))
-#define luai_numsub(a,b)	((a)-(b))
-#define luai_nummul(a,b)	((a)*(b))
-#define luai_numdiv(a,b)	((a)/(b))
-#define luai_nummod(a,b)	((a) - floor((a)/(b))*(b))
-#define luai_numpow(a,b)	(pow(a,b))
-#define luai_numunm(a)		(-(a))
-#define luai_numeq(a,b)		((a)==(b))
-#define luai_numlt(a,b)		((a)<(b))
-#define luai_numle(a,b)		((a)<=(b))
-#define luai_numisnan(a)	(!luai_numeq((a), (a)))
-#endif
-
-
-/*
 @@ lua_number2int is a macro to convert lua_Number to int.
 @@ lua_number2integer is a macro to convert lua_Number to lua_Integer.
 ** CHANGE them if you know a faster way to convert a lua_Number to
@@ -708,19 +689,6 @@ union luai_Cast { double l_d; long l_l; };
 
 
 /*
-@@ luai_userstate* allow user-specific actions on threads.
-** CHANGE them if you defined LUAI_EXTRASPACE and need to do something
-** extra when a thread is created/deleted/resumed/yielded.
-*/
-#define luai_userstateopen(L)		((void)L)
-#define luai_userstateclose(L)		((void)L)
-#define luai_userstatethread(L,L1)	((void)L)
-#define luai_userstatefree(L)		((void)L)
-#define luai_userstateresume(L,n)	((void)L)
-#define luai_userstateyield(L,n)	((void)L)
-
-
-/*
 @@ LUA_INTFRMLEN is the length modifier for integer conversions
 @* in 'string.format'.
 @@ LUA_INTFRM_T is the integer type correspoding to the previous length
@@ -735,16 +703,6 @@ union luai_Cast { double l_d; long l_l; };
 #define LUA_INTFRMLEN		"l"
 #define LUA_INTFRM_T		long
 #endif
-
-
-/*
-@@ LUA_INTEGER_MIN is the minimum bound of an integer for underflow checks.
-@@ LUA_INTEGER_MAX is the maximum bound of an integer for overflow checks.
-** CHANGE them to control the bounds checked in double-to-integer casts.
-*/
-
-#define LUA_INTEGER_MIN INT_MIN
-#define LUA_INTEGER_MAX INT_MAX
 
 
 /*
