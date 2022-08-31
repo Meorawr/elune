@@ -15,9 +15,10 @@
 
 /* Build configuration */
 
-#cmakedefine LUA_USE_SHARED
+#cmakedefine LUA_USE_CXX
 #cmakedefine LUA_USE_CXX_EXCEPTIONS
 #cmakedefine LUA_USE_LONGLONG
+#cmakedefine LUA_USE_SHARED
 
 /* Optional APIs and Libraries */
 
@@ -167,7 +168,7 @@
 
 /* Export declarations */
 
-#if defined(__cplusplus) && !defined(LUA_USE_CXX_EXCEPTIONS)
+#if defined(__cplusplus) && !defined(LUA_USE_CXX)
 #define LUA_DECL_EXTERN extern "C"
 #else
 #define LUA_DECL_EXTERN extern

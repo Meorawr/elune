@@ -83,7 +83,10 @@ set(LUA_APICHECK_CONFIGS "Debug" CACHE STRING "List of build configurations wher
 # Config Header Generation
 #
 
+set(LUA_USE_CXX OFF)
+set(LUA_USE_CXX_EXCEPTIONS ${LUA_USE_CXX})
 set(LUA_USE_SHARED ${BUILD_SHARED_LIBS})
+set(LUA_USE_LONGLONG OFF)
 
 # For library paths we support two avenues of configuration.
 #
