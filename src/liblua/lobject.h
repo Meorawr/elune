@@ -217,8 +217,8 @@ typedef struct UpVal {
 
 typedef struct ClosureStats {
   uint_least32_t calls;  /* number of calls */
-  lua_Time ownticks;  /* ticks spent executing this closure */
-  lua_Time subticks;  /* as above but including calls to subroutines */
+  lua_Clock ownticks;  /* ticks spent executing this closure */
+  lua_Clock subticks;  /* as above but including calls to subroutines */
 } ClosureStats;
 
 

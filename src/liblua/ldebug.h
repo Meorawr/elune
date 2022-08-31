@@ -30,7 +30,7 @@ LUAI_FUNC void luaG_init (global_State *g);
 LUAI_FUNC void luaG_profileenter (lua_State *L);
 LUAI_FUNC void luaG_profileleave (lua_State *L);
 LUAI_FUNC void luaG_profileresume (lua_State *L);
-LUAI_FUNC lua_Time luaG_gettickcount (const global_State *g);
-LUAI_FUNC lua_Time luaG_gettickfrequency (const global_State *g);
+LUAI_FUNC lua_Clock luaG_clocktime (const global_State *g);
+LUAI_FUNC lua_Clock luaG_clockrate (const global_State *g);
 
 #endif

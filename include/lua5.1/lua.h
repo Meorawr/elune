@@ -433,7 +433,7 @@ LUA_API void (lua_resettaint) (lua_State *L);
  * Profiling and Statistics APIs
  */
 
-typedef lua_Integer lua_Time;
+typedef lua_Integer lua_Clock;
 
 typedef struct lua_GlobalStats {
   size_t bytesused;  /* total number of bytes in use */
@@ -441,18 +441,18 @@ typedef struct lua_GlobalStats {
 } lua_GlobalStats;
 
 typedef struct lua_SourceStats {
-  lua_Time execticks;  /* ticks spent executing owned functions */
+  lua_Clock execticks;  /* ticks spent executing owned functions */
   size_t bytesowned;  /* total byte size owned objects */
 } lua_SourceStats;
 
 typedef struct lua_FunctionStats {
   int calls;  /* number of calls */
-  lua_Time ownticks;  /* ticks spent executing this function */
-  lua_Time subticks;  /* as above but including calls to subroutines */
+  lua_Clock ownticks;  /* ticks spent executing this function */
+  lua_Clock subticks;  /* as above but including calls to subroutines */
 } lua_FunctionStats;
 
-LUA_API lua_Time (lua_gettickcount) (lua_State *L);
-LUA_API lua_Time (lua_gettickfrequency) (lua_State *L);
+LUA_API lua_Clock (lua_clocktime) (lua_State *L);
+LUA_API lua_Clock (lua_clockrate) (lua_State *L);
 
 LUA_API int (lua_isprofilingenabled) (lua_State *L);
 LUA_API void (lua_setprofilingenabled) (lua_State *L, int enable);
@@ -476,7 +476,7 @@ enum lua_ExceptMask {
 };
 
 typedef struct lua_ScriptTimeout {
-  lua_Time ticks;  /* how long to allow script execution before timing out? */
+  lua_Clock ticks;  /* how long to allow script execution before timing out? */
   int instructions;  /* how many instructions should pass between each check? */
 } lua_ScriptTimeout;
 

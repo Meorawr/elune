@@ -8,33 +8,33 @@
 #include "lualib.h"
 
 
-static void aux_pushtime (lua_State *L, lua_Time ticks) {
-  lua_pushnumber(L, (lua_Number) ticks / lua_gettickfrequency(L));
+static void aux_pushtime (lua_State *L, lua_Clock ticks) {
+  lua_pushnumber(L, (lua_Number) ticks / lua_clockrate(L));
 }
 
 
 static int statslib_gettickcount (lua_State *L) {
-  lua_pushinteger(L, lua_gettickcount(L));
+  lua_pushinteger(L, lua_clocktime(L));
   return 1;
 }
 
 
 static int statslib_gettickfrequency (lua_State *L) {
-  lua_pushinteger(L, lua_gettickfrequency(L));
+  lua_pushinteger(L, lua_clockrate(L));
   return 1;
 }
 
 
 static int statslib_gettime (lua_State *L) {
-  lua_Time ticks = luaL_optinteger(L, 1, lua_gettickcount(L));
+  lua_Clock ticks = luaL_optinteger(L, 1, lua_clocktime(L));
   aux_pushtime(L, ticks);
   return 1;
 }
 
 
 static int statslib_getelapsedtime (lua_State *L) {
-  lua_Time tickstart = luaL_checkinteger(L, 1);
-  lua_Time tickend = luaL_checkinteger(L, 2);
+  lua_Clock tickstart = luaL_checkinteger(L, 1);
+  lua_Clock tickend = luaL_checkinteger(L, 2);
   aux_pushtime(L, (tickend - tickstart));
   return 1;
 }

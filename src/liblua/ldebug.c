@@ -674,12 +674,12 @@ void luaG_init (global_State *g) {
 }
 
 
-lua_Time luaG_gettickcount (const global_State *g) {
+lua_Clock luaG_clocktime (const global_State *g) {
   return (l_gettickcount() - g->startticks);
 }
 
 
-lua_Time luaG_gettickfrequency (const global_State *g) {
+lua_Clock luaG_clockrate (const global_State *g) {
   return g->tickfreq;
 }
 
@@ -691,7 +691,7 @@ void luaG_profileenter (lua_State *L) {
   ClosureStats *cs = cl->c.stats;
 
   if (g->enablestats && cs != NULL) {
-    lua_Time now = luaG_gettickcount(g);
+    lua_Clock now = luaG_clocktime(g);
 
     /* Are we starting profiling on a new call? */
     if (ci->entryticks == 0) {
@@ -711,7 +711,7 @@ void luaG_profileleave (lua_State *L) {
   ClosureStats *cs = cl->c.stats;
 
   if (g->enablestats && ci->entryticks != 0 && cs != NULL) {
-    lua_Time now = luaG_gettickcount(g);
+    lua_Clock now = luaG_clocktime(g);
 
     /* Commit the current execution time of this call. */
     cs->ownticks += (now - ci->startticks);
@@ -734,6 +734,6 @@ void luaG_profileresume (lua_State *L) {
 
   if (g->enablestats && ci->entryticks != 0 && cs != NULL) {
     /* Reset entry time upon thread resumption for the current call only. */
-    ci->entryticks = luaG_gettickcount(g);
+    ci->entryticks = luaG_clocktime(g);
   }
 }

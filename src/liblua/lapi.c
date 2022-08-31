@@ -1502,19 +1502,19 @@ LUA_API void lua_resettaint (lua_State *L) {
  */
 
 
-LUA_API lua_Time lua_gettickcount (lua_State *L) {
-  lua_Time ticks;
+LUA_API lua_Clock lua_clocktime (lua_State *L) {
+  lua_Clock ticks;
   lua_lock(L);
-  ticks = luaG_gettickcount(G(L));
+  ticks = luaG_clocktime(G(L));
   lua_unlock(L);
   return ticks;
 }
 
 
-LUA_API lua_Time lua_gettickfrequency (lua_State *L) {
-  lua_Time rate;
+LUA_API lua_Clock lua_clockrate (lua_State *L) {
+  lua_Clock rate;
   lua_lock(L);
-  rate = luaG_gettickfrequency(G(L));
+  rate = luaG_clockrate(G(L));
   lua_unlock(L);
   return rate;
 }

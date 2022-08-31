@@ -424,7 +424,7 @@ static int db_getscripttimeout (lua_State *L) {
   lua_ScriptTimeout timeout;
   lua_getscripttimeout(L, &timeout);
 
-  lua_pushnumber(L, (lua_Number) timeout.ticks / lua_gettickfrequency(L));
+  lua_pushnumber(L, (lua_Number) timeout.ticks / lua_clockrate(L));
   lua_pushinteger(L, timeout.instructions);
   return 2;
 }
@@ -432,7 +432,7 @@ static int db_getscripttimeout (lua_State *L) {
 
 static int db_setscripttimeout (lua_State *L) {
   lua_ScriptTimeout timeout;
-  timeout.ticks = (lua_Time) (luaL_checknumber(L, 1) * lua_gettickfrequency(L));
+  timeout.ticks = (lua_Clock) (luaL_checknumber(L, 1) * lua_clockrate(L));
   timeout.instructions = luaL_checkint(L, 2);
   lua_setscripttimeout(L, &timeout);
   return 0;
