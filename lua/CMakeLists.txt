@@ -12,7 +12,6 @@ target_link_libraries(
   lua
   PRIVATE
     elune::liblua
-    $<$<BOOL:${LUA_USE_READLINE}>:readline>
 )
 
 target_sources(
