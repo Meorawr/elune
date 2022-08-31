@@ -375,6 +375,7 @@ static int runargs (lua_State *L, char **argv, int n) {
         if (argv[i][2] == '\0') {
           ++i;
         }
+        break;
       }
       case 't': {
         luaL_forceinsecure(L);
