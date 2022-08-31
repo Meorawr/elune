@@ -161,6 +161,10 @@ LUALIB_API void (luaL_setfuncs) (lua_State *L, const luaL_Reg *l, int nup);
 
 LUALIB_API void (luaL_traceback) (lua_State *L, lua_State *L1, const char *msg, int level);
 
+LUALIB_API void (luaL_writestring) (const char *s, size_t sz);
+LUALIB_API void (luaL_writestringerror) (const char *s, ...);
+LUALIB_API void (luaL_writeline) (void);
+
 
 /**
  * Security APIs

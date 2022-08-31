@@ -608,22 +608,21 @@ LUALIB_API int (luaL_loadstring) (lua_State *L, const char *s) {
 /* }====================================================== */
 
 static void *l_alloc (void *ud, void *ptr, size_t osize, size_t nsize) {
-  (void)ud;
-  (void)osize;
+  lua_unused(ud);
+  lua_unused(osize);
+
   if (nsize == 0) {
     free(ptr);
     return NULL;
-  }
-  else
+  } else {
     return realloc(ptr, nsize);
+  }
 }
 
 
 static int panic (lua_State *L) {
-  (void)L;  /* to avoid warnings */
-  fprintf(stderr, "PANIC: unprotected error in call to Lua API (%s)\n",
-                   lua_tostring(L, -1));
-  return 0;
+  luaL_writestringerror("PANIC: unprotected error in call to Lua API (%s)\n", lua_tostring(L, -1));
+  return 0;  /* return to Lua to abort */
 }
 
 
@@ -764,6 +763,26 @@ LUALIB_API void luaL_traceback (lua_State *L, lua_State *L1, const char *msg, in
     }
   }
   lua_concat(L, lua_gettop(L) - top);
+}
+
+
+LUALIB_API void (luaL_writestring) (const char *s, size_t sz) {
+  fwrite(s, sizeof(char), sz, stdout);
+}
+
+
+LUALIB_API void (luaL_writestringerror) (const char *s, ...) {
+  va_list args;
+  va_start(args, s);
+  vfprintf(stderr, s, args);
+  va_end(args);
+  fflush(stderr);
+}
+
+
+LUALIB_API void (luaL_writeline) (void) {
+  luaL_writestring("\n", 1);
+  fflush(stdout);
 }
 
 

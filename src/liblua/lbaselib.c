@@ -3,7 +3,6 @@
 
 
 #include <ctype.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -16,32 +15,24 @@
 #include "lualib.h"
 
 
-
-
-/*
-** If your system does not support `stdout', you can just remove this function.
-** If you need, you can define your own `print' function, following this
-** model but changing `fputs' to put the strings at a proper place
-** (a console window or a log file, for instance).
-*/
 static int luaB_print (lua_State *L) {
   int n = lua_gettop(L);  /* number of arguments */
   int i;
   lua_getglobal(L, "tostring");
   for (i=1; i<=n; i++) {
     const char *s;
+    size_t l;
     lua_pushvalue(L, -1);  /* function to be called */
     lua_pushvalue(L, i);   /* value to print */
     lua_call(L, 1, 1);
-    s = lua_tostring(L, -1);  /* get result */
+    s = lua_tolstring(L, -1, &l);  /* get result */
     if (s == NULL)
-      return luaL_error(L, LUA_QL("tostring") " must return a string to "
-                           LUA_QL("print"));
-    if (i>1) fputs("\t", stdout);
-    fputs(s, stdout);
+      return luaL_error(L, LUA_QL("tostring") " must return a string to " LUA_QL("print"));
+    if (i>1) luaL_writestring("\t", 1);
+    luaL_writestring(s, l);
     lua_pop(L, 1);  /* pop result */
   }
-  fputs("\n", stdout);
+  luaL_writeline();
   return 0;
 }
 
