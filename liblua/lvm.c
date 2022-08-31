@@ -605,8 +605,8 @@ reentry: /* entry point */
                 continue;
             }
             case OP_NOT: {
-                int res = l_isfalse(
-                    RB(i)); /* next assignment may change this value */
+                /* next assignment may change this value */
+                int res = l_isfalse(RB(i));
                 setbvalue(L, ra, res);
                 continue;
             }
@@ -687,8 +687,7 @@ reentry: /* entry point */
                         goto reentry;
                     }
                     case PCRC: {
-                        /* it was a C function (`precall' called it); adjust
-                         * results */
+                        /* it was a C function (`precall' called it) */
                         if (nresults >= 0) {
                             L->top = L->ci->top;
                         }
