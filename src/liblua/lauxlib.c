@@ -91,16 +91,13 @@ LUALIB_API int luaL_error (lua_State *L, const char *fmt, ...) {
 /* }====================================================== */
 
 
-LUALIB_API int luaL_checkoption (lua_State *L, int narg, const char *def,
-                                 const char *const lst[]) {
-  const char *name = (def) ? luaL_optstring(L, narg, def) :
-                             luaL_checkstring(L, narg);
+LUALIB_API int luaL_checkoption (lua_State *L, int narg, const char *def, const char *const lst[]) {
+  const char *name = (def) ? luaL_optstring(L, narg, def) : luaL_checkstring(L, narg);
   int i;
   for (i=0; lst[i]; i++)
     if (strcmp(lst[i], name) == 0)
       return i;
-  return luaL_argerror(L, narg,
-                       lua_pushfstring(L, "invalid option " LUA_QS, name));
+  return luaL_argerror(L, narg, lua_pushfstring(L, "invalid option " LUA_QS, name));
 }
 
 
@@ -157,8 +154,7 @@ LUALIB_API const char *luaL_checklstring (lua_State *L, int narg, size_t *len) {
 }
 
 
-LUALIB_API const char *luaL_optlstring (lua_State *L, int narg,
-                                        const char *def, size_t *len) {
+LUALIB_API const char *luaL_optlstring (lua_State *L, int narg, const char *def, size_t *len) {
   if (lua_isnoneornil(L, narg)) {
     if (len)
       *len = (def ? strlen(def) : 0);
@@ -189,8 +185,7 @@ LUALIB_API lua_Integer luaL_checkinteger (lua_State *L, int narg) {
 }
 
 
-LUALIB_API lua_Integer luaL_optinteger (lua_State *L, int narg,
-                                                      lua_Integer def) {
+LUALIB_API lua_Integer luaL_optinteger (lua_State *L, int narg, lua_Integer def) {
   return luaL_opt(L, luaL_checkinteger, narg, def);
 }
 
@@ -245,8 +240,7 @@ LUALIB_API int luaL_callmeta (lua_State *L, int obj, const char *event) {
 }
 
 
-LUALIB_API void (luaL_register) (lua_State *L, const char *libname,
-                                const luaL_Reg *l) {
+LUALIB_API void (luaL_register) (lua_State *L, const char *libname, const luaL_Reg *l) {
   luaI_openlib(L, libname, l, 0);
 }
 
@@ -258,8 +252,7 @@ static int libsize (const luaL_Reg *l) {
 }
 
 
-LUALIB_API void luaI_openlib (lua_State *L, const char *libname,
-                              const luaL_Reg *l, int nup) {
+LUALIB_API void luaI_openlib (lua_State *L, const char *libname, const luaL_Reg *l, int nup) {
   if (libname) {
     int size = libsize(l);
     /* check whether lib already exists */
@@ -356,8 +349,7 @@ LUALIB_API int luaL_getn (lua_State *L, int t) {
 
 
 
-LUALIB_API const char *luaL_gsub (lua_State *L, const char *s, const char *p,
-                                                               const char *r) {
+LUALIB_API const char *luaL_gsub (lua_State *L, const char *s, const char *p, const char *r) {
   const char *wild;
   size_t l = strlen(p);
   luaL_Buffer b;
@@ -373,8 +365,7 @@ LUALIB_API const char *luaL_gsub (lua_State *L, const char *s, const char *p,
 }
 
 
-LUALIB_API const char *luaL_findtable (lua_State *L, int idx,
-                                       const char *fname, int szhint) {
+LUALIB_API const char *luaL_findtable (lua_State *L, int idx, const char *fname, int szhint) {
   const char *e;
   lua_pushvalue(L, idx);
   do {
