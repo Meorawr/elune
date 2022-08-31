@@ -601,41 +601,6 @@ static int luaB_scrub (lua_State *L) {
     return argc;
 }
 
-static const char lua_print[] =
-    "local LOCAL_PrintHandler;\n"
-    "local error = error;\n"
-    "local forceinsecure = forceinsecure;\n"
-    "local geterrorhandler = geterrorhandler;\n"
-    "local pcall = pcall;\n"
-    "local securecall = securecall;\n"
-    "local type = type;\n"
-    "\n"
-    "function getprinthandler()\n"
-    "  return LOCAL_PrintHandler;\n"
-    "end\n"
-    "\n"
-    "function setprinthandler(func)\n"
-    "  if type(func) ~= 'function' then\n"
-    "    error('Invalid print handler');\n"
-    "  else\n"
-    "    LOCAL_PrintHandler = func;\n"
-    "  end\n"
-    "end\n"
-    "\n"
-    "local function print_inner(...)\n"
-    "  forceinsecure();\n"
-    "  local ok, err = pcall(LOCAL_PrintHandler, ...);\n"
-    "  if not ok then\n"
-    "    local func = geterrorhandler()\n"
-    "    func(err);\n"
-    "  end\n"
-    "end\n"
-    "\n"
-    "function print(...)\n"
-    "  securecall(pcall, print_inner, ...);\n"
-    "end\n"
-    "\n";
-
 /**
  * Base library registration
  */
@@ -655,6 +620,7 @@ static const luaL_Reg baselib_shared[] = {
     { "loadstring_untainted", luaB_loadstringuntainted },
     { "next", luaB_next },
     { "pcall", luaB_pcall },
+    { "print", luaB_print },
     { "rawequal", luaB_rawequal },
     { "rawget", luaB_rawget },
     { "rawset", luaB_rawset },
@@ -681,7 +647,6 @@ static const luaL_Reg baselib_lua[] = {
     { "load", luaB_load },
     { "loadfile", luaB_loadfile },
     { "loadstring", luaB_loadstringuntainted },
-    { "print", luaB_print },
     /* clang-format off */
     { NULL, NULL },
     /* clang-format on */
@@ -745,20 +710,6 @@ LUALIB_API int luaopen_wow_base (lua_State *L) {
     /* register '_G' base library */
     luaL_setfuncs(L, baselib_wow, 0);
     baselib_openshared(L);
-
-    /* register print infrastructure */
-    if (luaL_loadbuffer(L, lua_print, sizeof(lua_print) - 1, "print.lua") != 0) {
-        lua_error(L);
-    } else {
-        lua_pushvalue(L, LUA_ENVIRONINDEX);
-        lua_setfenv(L, -2); /* replace environment of loaded script */
-        lua_call(L, 0, 0);
-    }
-
-    /* assign default print handler */
-    lua_getfield(L, -1, "setprinthandler");
-    lua_pushcclosure(L, luaB_print, 0);
-    lua_call(L, 1, 0);
 
     return 1;
 }
