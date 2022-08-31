@@ -13,24 +13,24 @@ static void aux_pushtime (lua_State *L, lua_Clock ticks) {
 }
 
 static int statslib_gettickcount (lua_State *L) {
-    lua_pushinteger(L, lua_clocktime(L));
+    lua_pushnumber(L, lua_clocktime(L));
     return 1;
 }
 
 static int statslib_gettickfrequency (lua_State *L) {
-    lua_pushinteger(L, lua_clockrate(L));
+    lua_pushnumber(L, lua_clockrate(L));
     return 1;
 }
 
 static int statslib_gettime (lua_State *L) {
-    lua_Clock ticks = luaL_optinteger(L, 1, lua_clocktime(L));
+    lua_Clock ticks = luaL_optnumber(L, 1, lua_clocktime(L));
     aux_pushtime(L, ticks);
     return 1;
 }
 
 static int statslib_getelapsedtime (lua_State *L) {
-    lua_Clock tickstart = luaL_checkinteger(L, 1);
-    lua_Clock tickend = luaL_checkinteger(L, 2);
+    lua_Clock tickstart = luaL_checknumber(L, 1);
+    lua_Clock tickend = luaL_checknumber(L, 2);
     aux_pushtime(L, (tickend - tickstart));
     return 1;
 }
@@ -50,9 +50,9 @@ static int statslib_getglobalstats (lua_State *L) {
     lua_getglobalstats(L, &stats);
 
     lua_createtable(L, 0, 5);
-    lua_pushinteger(L, stats.bytesused);
+    lua_pushnumber(L, stats.bytesused);
     lua_setfield(L, -2, "bytesused");
-    lua_pushinteger(L, stats.bytesallocated);
+    lua_pushnumber(L, stats.bytesallocated);
     lua_setfield(L, -2, "bytesallocated");
 
     return 1;
@@ -64,11 +64,11 @@ static int statslib_getfunctionstats (lua_State *L) {
     lua_getfunctionstats(L, 1, &stats);
 
     lua_createtable(L, 0, 3);
-    lua_pushinteger(L, stats.calls);
+    lua_pushnumber(L, stats.calls);
     lua_setfield(L, -2, "calls");
-    lua_pushinteger(L, stats.ownticks);
+    lua_pushnumber(L, stats.ownticks);
     lua_setfield(L, -2, "ownticks");
-    lua_pushinteger(L, stats.subticks);
+    lua_pushnumber(L, stats.subticks);
     lua_setfield(L, -2, "subticks");
 
     return 1;
@@ -80,9 +80,9 @@ static int statslib_getsourcestats (lua_State *L) {
     lua_getsourcestats(L, luaL_optstring(L, 1, NULL), &stats);
 
     lua_createtable(L, 0, 4);
-    lua_pushinteger(L, stats.execticks);
+    lua_pushnumber(L, stats.execticks);
     lua_setfield(L, -2, "execticks");
-    lua_pushinteger(L, (lua_Integer) stats.bytesowned);
+    lua_pushnumber(L, stats.bytesowned);
     lua_setfield(L, -2, "bytesowned");
 
     return 1;
