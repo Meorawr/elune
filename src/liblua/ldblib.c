@@ -11,7 +11,7 @@
 
 #include "lauxlib.h"
 #include "lualib.h"
-#include "lreadline.h"
+#include "loslib.h"
 
 
 
@@ -295,12 +295,12 @@ static int db_gethook (lua_State *L) {
 
 static int db_debug (lua_State *L) {
   char buffer[LUA_MAXINPUT];
-  lua_initreadline(L);
+  l_initreadline(L);
 
   for (;;) {
     char *b = buffer;
     size_t l;
-    int readstatus = lua_readline(L, b, "lua_debug> ");
+    int readstatus = l_readline(L, b, "lua_debug> ");
     if (readstatus == 0)
       return 0;  /* no input */
     l = strlen(b);
@@ -313,8 +313,8 @@ static int db_debug (lua_State *L) {
     }
     lua_settop(L, 0);  /* remove eventual returns */
     if (b[0] != '\0')  /* non empty? */
-      lua_saveline(L, b);  /* keep history */
-    lua_freeline(L, b);
+      l_saveline(L, b);  /* keep history */
+    l_freeline(L, b);
   }
 }
 

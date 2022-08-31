@@ -14,14 +14,7 @@
 
 #include "lauxlib.h"
 #include "lualib.h"
-
-
-#if defined(LUA_USE_MKSTEMP)
-#include <unistd.h>
-#define LUA_TMPNAMBUFSIZE 32
-#else
-#define LUA_TMPNAMBUFSIZE L_tmpnam
-#endif
+#include "loslib.h"
 
 
 static int os_pushresult (lua_State *L, int i, const char *filename) {
@@ -58,26 +51,10 @@ static int os_rename (lua_State *L) {
 }
 
 
-static int aux_tmpnam (char *buf) {
-  int err;
-#if defined(LUA_USE_MKSTEMP)
-  {
-    int fd;
-    strcpy(buf, "/tmp/lua_XXXXXX");
-    fd = mkstemp(buf);
-    if (fd != -1) close(fd);
-    err = (fd == -1);
-  }
-#else
-  err = (tmpnam(buf) == NULL);
-#endif
-  return err;
-}
-
-
 static int os_tmpname (lua_State *L) {
   char buff[LUA_TMPNAMBUFSIZE];
-  int err = aux_tmpnam(buff);
+  int err;
+  l_tmpnam(buff, err);
   if (err)
     return luaL_error(L, "unable to generate a unique filename");
   lua_pushstring(L, buff);

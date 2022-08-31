@@ -13,6 +13,7 @@
 
 #include "lauxlib.h"
 #include "lualib.h"
+#include "loslib.h"
 
 
 
@@ -106,26 +107,9 @@ static int io_noclose (lua_State *L) {
 */
 
 
-static int aux_pclose (lua_State *L, FILE *file) {
-  int errc;
-  lua_unused(L);
-
-#if defined(LUA_USE_POSIX_POPEN)
-  errc = (pclose(file) != -1);
-#elif defined(LUA_USE_WINDOWS_POPEN)
-  errc = (_pclose(file) != -1);
-#else
-  lua_unused(file);
-  errc = 0;
-#endif
-
-  return errc;
-}
-
-
 static int io_pclose (lua_State *L) {
   FILE **p = tofilep(L);
-  int ok = aux_pclose(L, *p);
+  int ok = l_pclose(L, *p);
   *p = NULL;
   return pushresult(L, ok, NULL);
 }
@@ -191,31 +175,12 @@ static int io_open (lua_State *L) {
 */
 
 
-static FILE *aux_popen (lua_State *L, const char *command, const char *mode) {
-  FILE *file;
-  lua_unused(L);
-
-#if defined(LUA_USE_POSIX_POPEN)
-  fflush(NULL);
-  file = popen(command, mode);
-#elif defined(LUA_USE_WINDOWS_POPEN)
-  file = _popen(command, mode);
-#else
-  lua_unused(command);
-  lua_unused(mode);
-  luaL_error(L, LUA_QL("popen") " not supported");
-  file = NULL;
-#endif
-
-  return file;
-}
-
-
 static int io_popen (lua_State *L) {
   const char *filename = luaL_checkstring(L, 1);
   const char *mode = luaL_optstring(L, 2, "r");
   FILE **pf = newfile(L);
-  *pf = aux_popen(L, filename, mode);
+  luaL_argcheck(L, l_checkmodep(mode), 2, "invalid mode");
+  *pf = l_popen(L, filename, mode);
   return (*pf == NULL) ? pushresult(L, 0, filename) : 1;
 }
 

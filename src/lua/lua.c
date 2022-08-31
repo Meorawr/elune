@@ -14,16 +14,7 @@
 
 #include "lauxlib.h"
 #include "lualib.h"
-#include "lreadline.h"
-
-
-#if !defined(LUA_PROGNAME)
-#define LUA_PROGNAME            "lua"
-#endif
-
-#if !defined(LUA_INIT)
-#define LUA_INIT            "LUA_INIT"
-#endif
+#include "loslib.h"
 
 
 static lua_State *globalL = NULL;
@@ -409,33 +400,6 @@ static int handle_luainit (lua_State *L) {
 ** ===================================================================
 */
 
-/*
-** lua_stdin_is_tty detects whether the standard input is a 'tty' (that
-** is, whether we're running lua interactively).
-*/
-#if !defined(lua_stdin_is_tty)  /* { */
-
-#if defined(LUA_USE_POSIX_ISATTY)      /* { */
-
-#include <unistd.h>
-#define lua_stdin_is_tty()      isatty(0)
-
-#elif defined(LUA_USE_WINDOWS_ISATTY)  /* }{ */
-
-#include <io.h>
-#include <windows.h>
-
-#define lua_stdin_is_tty()      _isatty(_fileno(stdin))
-
-#else                           /* }{ */
-
-/* ISO C definition */
-#define lua_stdin_is_tty()      1  /* assume stdin is a tty */
-
-#endif                          /* } */
-
-#endif                          /* } */
-
 
 /*
 ** Return the string to be used as a prompt by the interpreter. Leave
@@ -484,7 +448,7 @@ static int pushline (lua_State *L, int firstline) {
   char *b = buffer;
   size_t l;
   const char *prmt = get_prompt(L, firstline);
-  int readstatus = lua_readline(L, b, prmt);
+  int readstatus = l_readline(L, b, prmt);
   if (readstatus == 0)
     return 0;  /* no input (prompt will be popped by caller) */
   lua_pop(L, 1);  /* remove prompt */
@@ -495,7 +459,7 @@ static int pushline (lua_State *L, int firstline) {
     lua_pushfstring(L, "return %s", b + 1);  /* change '=' to 'return' */
   else
     lua_pushlstring(L, b, l);
-  lua_freeline(L, b);
+  l_freeline(L, b);
   return 1;
 }
 
@@ -511,7 +475,7 @@ static int addreturn (lua_State *L) {
   if (status == LUA_OK) {
     lua_remove(L, -2);  /* remove modified line */
     if (line[0] != '\0')  /* non empty? */
-      lua_saveline(L, line);  /* keep history */
+      l_saveline(L, line);  /* keep history */
   }
   else
     lua_pop(L, 2);  /* pop result from 'luaL_loadbuffer' and modified line */
@@ -528,7 +492,7 @@ static int multiline (lua_State *L) {
     const char *line = lua_tolstring(L, 1, &len);  /* get what it has */
     int status = luaL_loadbuffer(L, line, len, "=stdin");  /* try it */
     if (!incomplete(L, status) || !pushline(L, 0)) {
-      lua_saveline(L, line);  /* keep history */
+      l_saveline(L, line);  /* keep history */
       return status;  /* cannot or should not try to add continuation line */
     }
     lua_pushliteral(L, "\n");  /* add newline... */
@@ -581,7 +545,7 @@ static void doREPL (lua_State *L) {
   int status;
   const char *oldprogname = progname;
   progname = NULL;  /* no 'progname' on errors in interactive mode */
-  lua_initreadline(L);
+  l_initreadline(L);
   while ((status = loadline(L)) != -1) {
     if (status == LUA_OK)
       status = docall(L, 0, LUA_MULTRET);
@@ -639,7 +603,7 @@ static int pmain (lua_State *L) {
   if (args & has_i)  /* -i option? */
     doREPL(L);  /* do read-eval-print loop */
   else if (script == argc && !(args & (has_e | has_v))) {  /* no arguments? */
-    if (lua_stdin_is_tty()) {  /* running in interactive mode? */
+    if (l_stdin_is_tty()) {  /* running in interactive mode? */
       print_version();
       doREPL(L);  /* do read-eval-print loop */
     }

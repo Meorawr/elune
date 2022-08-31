@@ -33,6 +33,7 @@ target_compile_definitions(
   PRIVATE
     $<$<IN_LIST:$<CONFIG>,${LUA_ASSERT_CONFIGS}>:LUA_USE_ASSERT>
     $<$<IN_LIST:$<CONFIG>,${LUA_APICHECK_CONFIGS}>:LUA_USE_APICHECK>
+    $<$<PLATFORM_ID:Windows>:WIN32_LEAN_AND_MEAN>
 )
 
 target_include_directories(
@@ -63,7 +64,7 @@ elune_target_headers(
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/lua5.1/lua.hpp>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/lua5.1/lualib.h>
   PRIVATE
-    ${PROJECT_SOURCE_DIR}/include/lua5.1/lreadline.h
+    ${PROJECT_SOURCE_DIR}/include/lua5.1/loslib.h
 )
 
 target_sources(

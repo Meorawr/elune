@@ -7,22 +7,11 @@
 #include "lua.h"
 #include "lauxlib.h"
 #include "lualib.h"
+#include "loslib.h"
 
 #include <stdint.h>
 #include <stdlib.h>
 #include <math.h>
-
-#if defined(LUA_USE_GETRANDOM)
-#include <errno.h>
-#include <string.h>
-#include <sys/random.h>
-#elif defined(LUA_USE_ARC4RANDOM)
-#include <stdlib.h>
-#elif defined(LUA_USE_BCRYPTGENRANDOM)
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <bcrypt.h>
-#endif
 
 
 #undef PI
@@ -242,31 +231,7 @@ static int math_fastrandom (lua_State *L) {
 
 
 static int math_securerandom (lua_State *L) {
-  uint32_t i;
-
-#if defined(LUA_USE_GETRANDOM)
-  ssize_t read = 0;
-
-  do {
-    ssize_t result = getrandom((&i) + read, sizeof(i) - read, 0);
-
-    if (result < 0) {
-      lua_pushfstring(L, "%s", strerror(errno));
-      return lua_error(L);
-    } else {
-      read += result;
-    }
-  } while (read != sizeof(i));
-
-#elif defined(LUA_USE_ARC4RANDOM)
-  i = arc4random();
-#elif defined(LUA_USE_BCRYPTGENRANDOM)
-  BCryptGenRandom(NULL, (PUCHAR) &i, sizeof(i), BCRYPT_USE_SYSTEM_PREFERRED_RNG);
-#else
-  luaL_error(L, "secure random generator not available on this platform");
-#endif
-
-  return randomrange(L, ((lua_Number) i / UINT32_MAX));
+  return randomrange(L, ((lua_Number) l_securerandom(L) / UINT32_MAX));
 }
 
 
