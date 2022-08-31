@@ -322,7 +322,7 @@ LUA_API void lua_setscripttimeout (lua_State *L, const lua_ScriptTimeout *timeou
 
 
 static int precheck (const Proto *pt) {
-  check(pt->maxstacksize <= MAXSTACK);
+  check(pt->maxstacksize <= LUAI_MAXSTACK);
   check(pt->numparams+(pt->is_vararg & VARARG_HASARG) <= pt->maxstacksize);
   check(!(pt->is_vararg & VARARG_NEEDSARG) ||
               (pt->is_vararg & VARARG_HASARG));
@@ -711,8 +711,8 @@ void luaG_runerror (lua_State *L, const char *fmt, ...) {
 }
 
 
-static lu_int64 os_gettickcount (void);
-static lu_int64 os_gettickfrequency (void);
+static uint_least64_t os_gettickcount (void);
+static uint_least64_t os_gettickfrequency (void);
 
 
 void luaG_init (global_State *g) {
@@ -793,7 +793,7 @@ void luaG_profileresume (lua_State *L) {
 #endif
 
 
-static lu_int64 os_gettickcount (void) {
+static uint_least64_t os_gettickcount (void) {
 #if defined(LUA_USE_QUERY_PERFORMANCE_COUNTER)
   LARGE_INTEGER counter;
   QueryPerformanceCounter(&counter);
@@ -810,7 +810,7 @@ static lu_int64 os_gettickcount (void) {
 }
 
 
-static lu_int64 os_gettickfrequency (void) {
+static uint_least64_t os_gettickfrequency (void) {
 #if defined(LUA_USE_QUERY_PERFORMANCE_COUNTER)
   LARGE_INTEGER frequency;
   QueryPerformanceFrequency(&frequency);

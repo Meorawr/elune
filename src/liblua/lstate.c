@@ -91,7 +91,7 @@ static void f_luaopen (lua_State *L, void *ud) {
   stack_init(L, L);  /* init stack */
   sethvalue(L, gt(L), luaH_new(L, 0, 2));  /* table of globals */
   init_registry(L, g);
-  luaS_resize(L, MINSTRTABSIZE);  /* initial size of string table */
+  luaS_resize(L, LUAI_MINSTRTABSIZE);  /* initial size of string table */
   luaT_init(L);
   luaX_init(L);
   luaS_fix(luaS_newliteral(L, MEMERRMSG));

@@ -231,7 +231,7 @@ void luaD_callhook (lua_State *L, int event, int line) {
   if (hook && L->allowhook) {
     ptrdiff_t top = savestack(L, L->top);
     ptrdiff_t ci_top = savestack(L, L->ci->top);
-    lu_intptr vmexecmask = L->ts.vmexecmask;
+    uintptr_t vmexecmask = L->ts.vmexecmask;
     lua_Debug ar;
     ar.event = event;
     ar.currentline = line;

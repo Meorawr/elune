@@ -201,7 +201,7 @@ void luaK_concat (FuncState *fs, int *l1, int l2) {
 void luaK_checkstack (FuncState *fs, int n) {
   int newstack = fs->freereg + n;
   if (newstack > fs->f->maxstacksize) {
-    if (newstack >= MAXSTACK)
+    if (newstack >= LUAI_MAXSTACK)
       luaX_syntaxerror(fs->ls, "function or expression too complex");
     fs->f->maxstacksize = cast_byte(newstack);
   }
@@ -793,11 +793,11 @@ static int luaK_code (FuncState *fs, Instruction i, int line) {
   dischargejpc(fs);  /* `pc' will change */
   /* put new instruction in code array */
   luaM_growvector(fs->L, f->code, fs->pc, f->sizecode, Instruction,
-                  MAX_INT, "code size overflow");
+                  LUA_INT_MAX, "code size overflow");
   f->code[fs->pc] = i;
   /* save corresponding line information */
   luaM_growvector(fs->L, f->lineinfo, fs->pc, f->sizelineinfo, int,
-                  MAX_INT, "code size overflow");
+                  LUA_INT_MAX, "code size overflow");
   f->lineinfo[fs->pc] = line;
   return fs->pc++;
 }

@@ -412,42 +412,19 @@
 
 
 /*
-@@ LUAI_BITSINT defines the number of bits in an int.
+@@ LUA_INT_WIDTH defines the number of bits in an int.
 ** CHANGE here if Lua cannot automatically detect the number of bits of
 ** your machine. Probably you do not need to change this.
 */
 /* avoid overflows in comparison */
 #if INT_MAX-20 < 32760
-#define LUAI_BITSINT	16
+#define LUA_INT_WIDTH	16
 #elif INT_MAX > 2147483640L
 /* int has at least 32 bits */
-#define LUAI_BITSINT	32
+#define LUA_INT_WIDTH	32
 #else
 #error "you must define LUA_BITSINT with number of bits in an integer"
 #endif
-
-
-/*
-@@ LUAI_UINT32 is an unsigned integer with at least 32 bits.
-@@ LUAI_UINT64 is an unsigned integer with at least 64 bits.
-@@ LUAI_UINTPTR is an unsigned integer capable of holding a pointer value.
-@@ LUAI_INT32 is an signed integer with at least 32 bits.
-@@ LUAI_UMEM is an unsigned integer big enough to count the total
-@* memory used by Lua.
-@@ LUAI_MEM is a signed integer big enough to count the total memory
-@* used by Lua.
-** CHANGE here if for some weird reason the default definitions are not
-** good enough for your machine. (The definitions in the 'else'
-** part always works, but may waste space on machines with 64-bit
-** longs.) Probably you do not need to change this.
-*/
-#define LUAI_UINT32	uint_least32_t
-#define LUAI_UINT64 uint_least64_t
-#define LUAI_UINTPTR uintptr_t
-#define LUAI_INT32	int_least32_t
-#define LUAI_MAXINT32	INT_LEAST32_MAX
-#define LUAI_UMEM	size_t
-#define LUAI_MEM	ptrdiff_t
 
 
 /*
@@ -607,16 +584,6 @@ union luai_Cast { double l_d; long l_l; };
 #endif
 
 /* }================================================================== */
-
-
-/*
-@@ LUAI_USER_ALIGNMENT_T is a type that requires maximum alignment.
-** CHANGE it if your system requires alignments larger than double. (For
-** instance, if your system supports long doubles and they must be
-** aligned in 16-byte boundaries, then you should add long double in the
-** union.) Probably you do not need to change this.
-*/
-#define LUAI_USER_ALIGNMENT_T	union { double u; void *s; long l; }
 
 
 /*

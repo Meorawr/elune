@@ -39,10 +39,10 @@
 /*
 ** max size of array part is 2^MAXBITS
 */
-#if LUAI_BITSINT > 26
+#if LUA_INT_WIDTH > 26
 #define MAXBITS		26
 #else
-#define MAXBITS		(LUAI_BITSINT-2)
+#define MAXBITS		(LUA_INT_WIDTH-2)
 #endif
 
 #define MAXASIZE	(1 << MAXBITS)
@@ -537,7 +537,7 @@ static int unbound_search (Table *t, unsigned int j) {
   while (!ttisnil(luaH_getnum(t, j))) {
     i = j;
     j *= 2;
-    if (j > cast(unsigned int, MAX_INT)) {  /* overflow? */
+    if (j > cast(unsigned int, LUA_INT_MAX)) {  /* overflow? */
       /* table was built with bad purposes: resort to linear search */
       i = 1;
       while (!ttisnil(luaH_getnum(t, i))) i++;

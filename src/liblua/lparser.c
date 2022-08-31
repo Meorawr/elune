@@ -194,7 +194,7 @@ static int indexupvalue (FuncState *fs, TString *name, expdesc *v) {
   /* new one */
   luaY_checklimit(fs, f->nups + 1, LUAI_MAXUPVALUES, "upvalues");
   luaM_growvector(fs->L, f->upvalues, f->nups, f->sizeupvalues,
-                  TString *, MAX_INT, "");
+                  TString *, LUA_INT_MAX, "");
   while (oldsize < f->sizeupvalues) f->upvalues[oldsize++] = NULL;
   f->upvalues[f->nups] = name;
   luaC_objbarrier(fs->L, f, name);
@@ -448,7 +448,7 @@ static void recfield (LexState *ls, struct ConsControl *cc) {
   expdesc key, val;
   int rkkey;
   if (ls->t.token == TK_NAME) {
-    luaY_checklimit(fs, cc->nh, MAX_INT, "items in a constructor");
+    luaY_checklimit(fs, cc->nh, LUA_INT_MAX, "items in a constructor");
     checkname(ls, &key);
   }
   else  /* ls->t.token == '[' */
@@ -490,7 +490,7 @@ static void lastlistfield (FuncState *fs, struct ConsControl *cc) {
 
 static void listfield (LexState *ls, struct ConsControl *cc) {
   expr(ls, &cc->v);
-  luaY_checklimit(ls->fs, cc->na, MAX_INT, "items in a constructor");
+  luaY_checklimit(ls->fs, cc->na, LUA_INT_MAX, "items in a constructor");
   cc->na++;
   cc->tostore++;
 }

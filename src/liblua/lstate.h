@@ -37,7 +37,7 @@ struct lua_longjmp;  /* defined in ldo.c */
 
 typedef struct stringtable {
   GCObject **hash;
-  lu_int32 nuse;  /* number of elements */
+  uint_least32_t nuse;  /* number of elements */
   int size;
 } stringtable;
 
@@ -70,7 +70,7 @@ typedef struct CallInfo {
 typedef struct SourceStats {
   TString *owner;
   lua_clock_t execticks;  /* ticks spent executing owned functions */
-  lu_mem bytesowned;  /* total size of owned allocations */
+  size_t bytesowned;  /* total size of owned allocations */
   struct SourceStats *next;
 } SourceStats;
 
@@ -93,15 +93,15 @@ typedef struct global_State {
   GCObject *weak;  /* list of weak tables (to be cleared) */
   GCObject *tmudata;  /* last element of list of userdata to be GC */
   Mbuffer buff;  /* temporary buffer for string concatentation */
-  lu_mem GCthreshold;
-  lu_mem totalbytes;  /* number of bytes currently allocated */
-  lu_mem estimate;  /* an estimate of number of bytes actually in use */
-  lu_mem gcdept;  /* how much GC is `behind schedule' */
+  size_t GCthreshold;
+  size_t totalbytes;  /* number of bytes currently allocated */
+  size_t estimate;  /* an estimate of number of bytes actually in use */
+  size_t gcdept;  /* how much GC is `behind schedule' */
   int gcpause;  /* size of pause between successive GCs */
   int gcstepmul;  /* GC `granularity' */
   lua_clock_t startticks;  /* tick count at startup */
   lua_clock_t tickfreq;  /* tick frequency; cached on startup */
-  lu_mem bytesallocated;  /* total number of bytes allocated */
+  size_t bytesallocated;  /* total number of bytes allocated */
   SourceStats *sourcestats;  /* list of source-specific statistics */
   lua_CFunction panic;  /* to be called in unprotected errors */
   TValue l_registry;
@@ -118,16 +118,16 @@ typedef struct global_State {
 ** per-thread taint state
 */
 typedef struct TaintState {
-  lu_intptr readmask;  /* user-controlled mask applied to taint on reads */
-  lu_intptr vmexecmask;  /* read-mask enabled only when executing an insecure Lua closure */
-  lu_intptr writemask;  /* user-controlled mask applied to taint on writes */
+  uintptr_t readmask;  /* user-controlled mask applied to taint on reads */
+  uintptr_t vmexecmask;  /* read-mask enabled only when executing an insecure Lua closure */
+  uintptr_t writemask;  /* user-controlled mask applied to taint on writes */
   TString *stacktaint;  /* current stack taint */
   TString *newgctaint;  /* taint applied to newly allocated objects */
   TString *newcltaint;  /* taint applied to newly allocated closures */
 } TaintState;
 
-static const lu_intptr LUA_TAINTALLOWED = UINTPTR_MAX;
-static const lu_intptr LUA_TAINTBLOCKED = 0;
+static const uintptr_t LUA_TAINTALLOWED = UINTPTR_MAX;
+static const uintptr_t LUA_TAINTBLOCKED = 0;
 
 
 /*
@@ -208,12 +208,12 @@ LUAI_FUNC void luaE_freethread (lua_State *L, lua_State *L1);
 
 
 static inline TString *luaE_maskreadtaint (lua_State *L, TString *taint) {
-  return cast(TString *, (cast(lu_intptr, taint) & (L->ts.readmask | L->ts.vmexecmask)));
+  return cast(TString *, (cast(uintptr_t, taint) & (L->ts.readmask | L->ts.vmexecmask)));
 }
 
 
 static inline TString *luaE_maskwritetaint (lua_State *L) {
-  return cast(TString *, (cast(lu_intptr, L->ts.stacktaint) & (L->ts.writemask)));
+  return cast(TString *, (cast(uintptr_t, L->ts.stacktaint) & (L->ts.writemask)));
 }
 
 
@@ -228,7 +228,7 @@ static inline TString *luaE_maskalloctaint (lua_State *L, int tt) {
     taint = L->ts.newcltaint;
   }
 
-  return cast(TString *, (cast(lu_intptr, taint) & (L->ts.writemask)));
+  return cast(TString *, (cast(uintptr_t, taint) & (L->ts.writemask)));
 }
 
 

@@ -53,7 +53,7 @@ static void save (LexState *ls, int c) {
   Mbuffer *b = ls->buff;
   if (b->n + 1 > b->buffsize) {
     size_t newsize;
-    if (b->buffsize >= MAX_SIZET/2)
+    if (b->buffsize >= LUA_SIZE_MAX/2)
       luaX_lexerror(ls, "lexical element too long", 0);
     newsize = b->buffsize * 2;
     luaZ_resizebuffer(ls->L, b, newsize);
@@ -133,7 +133,7 @@ static void inclinenumber (LexState *ls) {
   next(ls);  /* skip `\n' or `\r' */
   if (currIsNewline(ls) && ls->current != old)
     next(ls);  /* skip `\n\r' or `\r\n' */
-  if (++ls->linenumber >= MAX_INT)
+  if (++ls->linenumber >= LUA_INT_MAX)
     luaX_syntaxerror(ls, "chunk has too many lines");
 }
 
@@ -147,7 +147,7 @@ void luaX_setinput (lua_State *L, LexState *ls, ZIO *z, TString *source) {
   ls->linenumber = 1;
   ls->lastline = 1;
   ls->source = source;
-  luaZ_resizebuffer(ls->L, ls->buff, LUA_MINBUFFER);  /* initialize buffer */
+  luaZ_resizebuffer(ls->L, ls->buff, LUAI_MINBUFFER);  /* initialize buffer */
   next(ls);  /* read first char */
 }
 

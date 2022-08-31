@@ -362,7 +362,7 @@ LUA_API lua_Integer lua_tointeger (lua_State *L, int idx) {
 LUA_API int lua_toint (lua_State *L, int idx) {
   lua_Number n = lua_tonumber(L, idx);
 
-  if ((L->exceptmask & LUA_EXCEPTOVERFLOW) && (n < LUA_INTEGER_MIN || n > LUA_INTEGER_MAX)) {
+  if ((L->exceptmask & LUA_EXCEPTOVERFLOW) && (n < INT_MIN || n > INT_MAX)) {
     lua_lock(L);
     luaG_overflowerror(L, n);
     lua_unlock(L);
@@ -954,7 +954,7 @@ LUA_API int lua_gc (lua_State *L, int what, int data) {
   g = G(L);
   switch (what) {
     case LUA_GCSTOP: {
-      g->GCthreshold = MAX_LUMEM;
+      g->GCthreshold = LUA_PTRDIFF_MAX;
       break;
     }
     case LUA_GCRESTART: {
@@ -975,7 +975,7 @@ LUA_API int lua_gc (lua_State *L, int what, int data) {
       break;
     }
     case LUA_GCSTEP: {
-      lu_mem a = (cast(lu_mem, data) << 10);
+      size_t a = (cast(size_t, data) << 10);
       if (a <= g->totalbytes)
         g->GCthreshold = g->totalbytes - a;
       else

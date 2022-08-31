@@ -10,47 +10,44 @@
 
 #include <limits.h>
 #include <stddef.h>
+#include <stdint.h>
 
 
 #include "lua.h"
 
 
-typedef LUAI_UINT32 lu_int32;
-typedef LUAI_UINT64 lu_int64;
-typedef LUAI_UINTPTR lu_intptr;
-
-typedef LUAI_UMEM lu_mem;
-
-typedef LUAI_MEM l_mem;
-
-
-
-/* chars used as small naturals (so that `char' is reserved for characters) */
+/* Chars used as small naturals (so that `char' is reserved for characters). */
 typedef unsigned char lu_byte;
 
+/* Type to ensure maximum alignment. */
+typedef struct { LUA_NUMBER d; void *p; LUA_INTEGER i; } L_Umaxalign;
 
-#define MAX_SIZET	((size_t)(~(size_t)0)-2)
+/* Result of a `usual argument conversion' over lua_Number. */
+typedef LUAI_UACNUMBER l_uacNumber;
 
-#define MAX_LUMEM	((lu_mem)(~(lu_mem)0)-2)
+/* Type used for VM instructions. Must be an unsigned with (at least) 4 bytes;
+ * see details in lopcodes.h. */
+typedef uint_least32_t Instruction;
 
+/* Integer maximums; these are subtracted for safety per the original defines. */
 
-#define MAX_INT (INT_MAX-2)  /* maximum value of an int (-2 for safety) */
+#define LUA_SIZE_MAX ((size_t) (SIZE_MAX - 2))
+#define LUA_PTRDIFF_MAX	((size_t) (PTRDIFF_MAX - 2))
+#define LUA_INT_MAX ((int) (INT_MAX - 2))
+
+/* Maximum stack for a Lua function */
+#define LUAI_MAXSTACK	250
+/* Minimum size for the string table (must be power of 2) */
+#define LUAI_MINSTRTABSIZE 32
+/* Minimum size for string buffer */
+#define LUAI_MINBUFFER 32
 
 /*
 ** conversion of pointer to integer
 ** this is for hashing only; there is no problem if the integer
 ** cannot hold the whole pointer value
 */
-#define IntPoint(p)  ((unsigned int)(lu_mem)(p))
-
-
-
-/* type to ensure maximum alignment */
-typedef LUAI_USER_ALIGNMENT_T L_Umaxalign;
-
-
-/* result of a `usual argument conversion' over lua_Number */
-typedef LUAI_UACNUMBER l_uacNumber;
+#define IntPoint(p)  ((unsigned int)(size_t)(p))
 
 
 /* internal assertions for in-house debugging */
@@ -70,32 +67,6 @@ typedef LUAI_UACNUMBER l_uacNumber;
 #define cast_byte(i)	cast(lu_byte, (i))
 #define cast_num(i)	cast(lua_Number, (i))
 #define cast_int(i)	cast(int, (i))
-
-
-
-/*
-** type for virtual-machine instructions
-** must be an unsigned with (at least) 4 bytes (see details in lopcodes.h)
-*/
-typedef lu_int32 Instruction;
-
-
-
-/* maximum stack for a Lua function */
-#define MAXSTACK	250
-
-
-
-/* minimum size for the string table (must be power of 2) */
-#ifndef MINSTRTABSIZE
-#define MINSTRTABSIZE	32
-#endif
-
-
-/* minimum size for string buffer */
-#ifndef LUA_MINBUFFER
-#define LUA_MINBUFFER	32
-#endif
 
 
 #ifndef lua_lock
