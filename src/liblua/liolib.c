@@ -51,6 +51,9 @@ static void fileerror (lua_State *L, int arg, const char *filename) {
 }
 
 
+static const char *LUA_FILEHANDLE = "FILE*";
+
+
 #define tofilep(L)	((FILE **)luaL_checkudata(L, 1, LUA_FILEHANDLE))
 
 

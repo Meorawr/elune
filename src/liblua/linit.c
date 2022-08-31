@@ -1,8 +1,9 @@
-/*
-** $Id: linit.c,v 1.14.1.1 2007/12/27 13:02:25 roberto Exp $
-** Initialization of libraries for lua.c
-** See Copyright Notice in lua.h
-*/
+/**
+ * Initialization of libraries for lua.c
+ *
+ * Licensed under the terms of the MIT License; see full copyright information
+ * in the "LICENSE" file or at <http://www.lua.org/license.html>
+ */
 
 
 #define linit_c
@@ -15,28 +16,48 @@
 
 
 static const luaL_Reg lualibs[] = {
-  {"", luaopen_base},
-  {LUA_LOADLIBNAME, luaopen_package},
-  {LUA_TABLIBNAME, luaopen_table},
-  {LUA_IOLIBNAME, luaopen_io},
-  {LUA_OSLIBNAME, luaopen_os},
-  {LUA_STRLIBNAME, luaopen_string},
-  {LUA_MATHLIBNAME, luaopen_math},
-  {LUA_DBLIBNAME, luaopen_debug},
-  {LUA_BITLIBNAME, luaopen_bit},
-  {LUA_COMPATLIBNAME, luaopen_compat},
-  {LUA_SECLIBNAME, luaopen_security},
-  {LUA_STATSLIBNAME, luaopen_stats},
-  {NULL, NULL}
+  { .name = LUA_BASELIBNAME, .func = luaopen_base },
+  { .name = LUA_BITLIBNAME, .func = luaopen_bit },
+  { .name = LUA_DBLIBNAME, .func = luaopen_debug },
+  { .name = LUA_IOLIBNAME, .func = luaopen_io },
+  { .name = LUA_LOADLIBNAME, .func = luaopen_package },
+  { .name = LUA_MATHLIBNAME, .func = luaopen_math },
+  { .name = LUA_OSLIBNAME, .func = luaopen_os },
+  { .name = LUA_STRLIBNAME, .func = luaopen_string },
+  { .name = LUA_TABLIBNAME, .func = luaopen_table },
+  { .name = LUA_COMPATLIBNAME, .func = luaopen_compat },
+  { .name = NULL, .func = NULL },
 };
 
 
-LUALIB_API void luaL_openlibs (lua_State *L) {
-  const luaL_Reg *lib = lualibs;
+static const luaL_Reg elunelibs[] = {
+  /* { .name = LUA_BASELIBNAME, .func = luaopen_elune_base }, */
+  /* { .name = LUA_BITLIBNAME, .func = luaopen_elune_bit }, */
+  /* { .name = LUA_DBLIBNAME, .func = luaopen_elune_debug }, */
+  /* { .name = LUA_COLIBNAME, .func = luaopen_elune_coroutine }, */
+  /* { .name = LUA_MATHLIBNAME, .func = luaopen_elune_math }, */
+  /* { .name = LUA_OSLIBNAME, .func = luaopen_elune_os }, */
+  /* { .name = LUA_STRLIBNAME, .func = luaopen_elune_string }, */
+  /* { .name = LUA_TABLIBNAME, .func = luaopen_elune_table }, */
+  /* { .name = LUA_COMPATLIBNAME, .func = luaopen_elune_compat }, */
+  { .name = NULL, .func = NULL },
+};
+
+
+static void openlibs (lua_State *L, const luaL_Reg *lib) {
   for (; lib->func; lib++) {
-    lua_pushcfunction(L, lib->func);
+    lua_pushcclosure(L, lib->func, 0);
     lua_pushstring(L, lib->name);
     lua_call(L, 1, 0);
   }
 }
 
+
+LUALIB_API void luaL_openlibs (lua_State *L) {
+  openlibs(L, lualibs);
+}
+
+
+LUALIB_API void luaL_openelunelibs (lua_State *L) {
+  openlibs(L, elunelibs);
+}
