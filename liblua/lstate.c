@@ -32,8 +32,7 @@ typedef struct LG {
   global_State g;
 } LG;
 
-static void stack_init (lua_State *L1, lua_State *L)
-{
+static void stack_init (lua_State *L1, lua_State *L) {
   /* initialize CallInfo array */
   L1->base_ci = luaM_newvector(L, BASIC_CI_SIZE, CallInfo);
   L1->ci = L1->base_ci;
@@ -52,8 +51,7 @@ static void stack_init (lua_State *L1, lua_State *L)
   L1->ci->savedtaint = NULL;
 }
 
-static void freestack (lua_State *L, lua_State *L1)
-{
+static void freestack (lua_State *L, lua_State *L1) {
   luaM_freearray(L, L1->base_ci, L1->size_ci, CallInfo);
   luaM_freearray(L, L1->stack, L1->stacksize, TValue);
 }
@@ -61,8 +59,7 @@ static void freestack (lua_State *L, lua_State *L1)
 /*
 ** Create registry table and its predefined values
 */
-static void init_registry (lua_State *L, global_State *g)
-{
+static void init_registry (lua_State *L, global_State *g) {
   Table *registry = luaH_new(L, LUA_RIDX_LAST, 0);
   sethvalue(L, &g->l_registry, registry);
   setthvalue(L, luaH_setnum(L, registry, LUA_RIDX_MAINTHREAD), L);
@@ -71,8 +68,7 @@ static void init_registry (lua_State *L, global_State *g)
 /*
 ** open parts that may cause memory-allocation errors
 */
-static void f_luaopen (lua_State *L, void *ud)
-{
+static void f_luaopen (lua_State *L, void *ud) {
   global_State *g = G(L);
   lua_unused(ud);
   stack_init(L, L);                       /* init stack */
@@ -87,8 +83,7 @@ static void f_luaopen (lua_State *L, void *ud)
   g->GCthreshold = 4 * g->totalbytes;
 }
 
-static void preinit_state (lua_State *L, global_State *g)
-{
+static void preinit_state (lua_State *L, global_State *g) {
   G(L) = g;
   L->stack = NULL;
   L->stacksize = 0;
@@ -118,8 +113,7 @@ static void preinit_state (lua_State *L, global_State *g)
   setnilvalue(L, gt(L));
 }
 
-static void freesourcestats (global_State *g)
-{
+static void freesourcestats (global_State *g) {
   SourceStats *st;
 
   for (st = g->sourcestats; st != NULL; st = g->sourcestats) {
@@ -128,8 +122,7 @@ static void freesourcestats (global_State *g)
   }
 }
 
-static void close_state (lua_State *L)
-{
+static void close_state (lua_State *L) {
   global_State *g = G(L);
   luaF_close(L, L->stack); /* close all upvalues for this thread */
   luaC_freeall(L);         /* collect all objects */
@@ -144,8 +137,7 @@ static void close_state (lua_State *L)
   (*g->frealloc)(g->ud, fromstate(L), state_size(LG), 0);
 }
 
-lua_State *luaE_newthread (lua_State *L)
-{
+lua_State *luaE_newthread (lua_State *L) {
   lua_State *L1 = tostate(luaM_malloc(L, state_size(lua_State)));
   luaC_link(L, obj2gco(L1), LUA_TTHREAD);
   preinit_state(L1, G(L));
@@ -163,8 +155,7 @@ lua_State *luaE_newthread (lua_State *L)
   return L1;
 }
 
-void luaE_freethread (lua_State *L, lua_State *L1)
-{
+void luaE_freethread (lua_State *L, lua_State *L1) {
   luaF_close(L1, L1->stack); /* close all upvalues for this thread */
   lua_assert(L1->openupval == NULL);
   luai_userstatefree(L1);
@@ -172,8 +163,7 @@ void luaE_freethread (lua_State *L, lua_State *L1)
   luaM_freemem(L, fromstate(L1), state_size(lua_State));
 }
 
-LUA_API lua_State *lua_newstate (lua_Alloc f, void *ud)
-{
+LUA_API lua_State *lua_newstate (lua_Alloc f, void *ud) {
   int i;
   lua_State *L;
   global_State *g;
@@ -232,14 +222,12 @@ LUA_API lua_State *lua_newstate (lua_Alloc f, void *ud)
   return L;
 }
 
-static void callallgcTM (lua_State *L, void *ud)
-{
+static void callallgcTM (lua_State *L, void *ud) {
   lua_unused(ud);
   luaC_callGCTM(L); /* call GC metamethods for all udata */
 }
 
-LUA_API void lua_close (lua_State *L)
-{
+LUA_API void lua_close (lua_State *L) {
   L = G(L)->mainthread; /* only the main thread can be closed */
   lua_lock(L);
   luaF_close(L, L->stack);  /* close all upvalues for this thread */

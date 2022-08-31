@@ -187,20 +187,17 @@ union GCObject {
 LUAI_FUNC lua_State *luaE_newthread (lua_State *L);
 LUAI_FUNC void luaE_freethread (lua_State *L, lua_State *L1);
 
-static inline TString *luaE_maskreadtaint (lua_State *L, TString *taint)
-{
+static inline TString *luaE_maskreadtaint (lua_State *L, TString *taint) {
   return cast(TString *,
               (cast(uintptr_t, taint) & (L->ts.readmask | L->ts.vmexecmask)));
 }
 
-static inline TString *luaE_maskwritetaint (lua_State *L)
-{
+static inline TString *luaE_maskwritetaint (lua_State *L) {
   return cast(TString *,
               (cast(uintptr_t, L->ts.stacktaint) & (L->ts.writemask)));
 }
 
-static inline TString *luaE_maskalloctaint (lua_State *L, int tt)
-{
+static inline TString *luaE_maskalloctaint (lua_State *L, int tt) {
   TString *taint = NULL;
 
   if (L->ts.newgctaint != NULL) {
@@ -214,13 +211,11 @@ static inline TString *luaE_maskalloctaint (lua_State *L, int tt)
   return cast(TString *, (cast(uintptr_t, taint) & (L->ts.writemask)));
 }
 
-static inline int luaE_istaintexpected (lua_State *L)
-{
+static inline int luaE_istaintexpected (lua_State *L) {
   return ((L->ts.readmask | L->ts.vmexecmask) == 0);
 }
 
-static inline void luaE_taintstack (lua_State *L, TString *taint)
-{
+static inline void luaE_taintstack (lua_State *L, TString *taint) {
   taint = luaE_maskreadtaint(L, taint);
 
   if (taint != NULL) {
@@ -228,8 +223,7 @@ static inline void luaE_taintstack (lua_State *L, TString *taint)
   }
 }
 
-static inline void luaE_taintvalue (lua_State *L, TValue *o)
-{
+static inline void luaE_taintvalue (lua_State *L, TValue *o) {
   TString *taint = luaE_maskwritetaint(L);
 
   if (taint != NULL) {
@@ -237,8 +231,7 @@ static inline void luaE_taintvalue (lua_State *L, TValue *o)
   }
 }
 
-static inline void luaE_taintobject (lua_State *L, GCObject *o)
-{
+static inline void luaE_taintobject (lua_State *L, GCObject *o) {
   TString *taint = luaE_maskwritetaint(L);
 
   if (taint != NULL) {
@@ -246,8 +239,7 @@ static inline void luaE_taintobject (lua_State *L, GCObject *o)
   }
 }
 
-static inline void luaE_taintthread (lua_State *L, const lua_State *from)
-{
+static inline void luaE_taintthread (lua_State *L, const lua_State *from) {
   lua_assert(from->ts.vmexecmask == LUA_TAINTALLOWED);
   L->ts = from->ts;
 }

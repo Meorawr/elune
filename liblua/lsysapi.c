@@ -16,8 +16,7 @@
 #else
 #endif
 
-LUAI_FUNC lua_Clock luaI_clocktime (lua_State *L)
-{
+LUAI_FUNC lua_Clock luaI_clocktime (lua_State *L) {
   lua_unused(L);
 
 #if defined(LUA_USE_CLOCK_GETTIME)
@@ -38,8 +37,7 @@ LUAI_FUNC lua_Clock luaI_clocktime (lua_State *L)
 #endif
 }
 
-LUAI_FUNC lua_Clock luaI_clockrate (lua_State *L)
-{
+LUAI_FUNC lua_Clock luaI_clockrate (lua_State *L) {
   lua_unused(L);
 
 #if defined(LUA_USE_CLOCK_GETTIME)
@@ -68,8 +66,7 @@ LUAI_FUNC lua_Clock luaI_clockrate (lua_State *L)
 #include <windows.h>
 #endif
 
-LUALIB_API lua_Number luaL_securerandom (lua_State *L)
-{
+LUALIB_API lua_Number luaL_securerandom (lua_State *L) {
   lua_unused(L);
 
 #if defined(LUA_USE_GETRANDOM)
@@ -112,8 +109,7 @@ LUALIB_API lua_Number luaL_securerandom (lua_State *L)
 #include <windows.h>
 #endif
 
-LUALIB_API int luaL_stdinistty (lua_State *L)
-{
+LUALIB_API int luaL_stdinistty (lua_State *L) {
   lua_unused(L);
 
 #if defined(LUA_USE_POSIX_ISATTY)
@@ -132,8 +128,7 @@ LUALIB_API int luaL_stdinistty (lua_State *L)
 #include <unistd.h>
 #endif
 
-LUALIB_API int luaL_tmpname (lua_State *L)
-{
+LUALIB_API int luaL_tmpname (lua_State *L) {
 #if defined(LUA_USE_MKSTEMP)
   /* POSIX implementation */
   char buf[32];
@@ -161,13 +156,11 @@ LUALIB_API int luaL_tmpname (lua_State *L)
 #endif
 }
 
-LUALIB_API void luaL_writestring (const char *s, size_t sz)
-{
+LUALIB_API void luaL_writestring (const char *s, size_t sz) {
   fwrite(s, sizeof(char), sz, stdout);
 }
 
-LUALIB_API void luaL_writestringerror (const char *s, ...)
-{
+LUALIB_API void luaL_writestringerror (const char *s, ...) {
   va_list args;
   va_start(args, s);
   vfprintf(stderr, s, args);
@@ -175,14 +168,12 @@ LUALIB_API void luaL_writestringerror (const char *s, ...)
   fflush(stderr);
 }
 
-LUALIB_API void luaL_writeline (void)
-{
+LUALIB_API void luaL_writeline (void) {
   luaL_writestring("\n", 1);
   fflush(stdout);
 }
 
-LUALIB_API FILE *luaL_popen (lua_State *L, const char *cmd, const char *mode)
-{
+LUALIB_API FILE *luaL_popen (lua_State *L, const char *cmd, const char *mode) {
   lua_unused(L);
 #if defined(LUA_USE_POSIX_POPEN)
   /* POSIX implementation */
@@ -200,8 +191,7 @@ LUALIB_API FILE *luaL_popen (lua_State *L, const char *cmd, const char *mode)
 #endif
 }
 
-LUALIB_API int luaL_pclose (lua_State *L, FILE *p)
-{
+LUALIB_API int luaL_pclose (lua_State *L, FILE *p) {
   lua_unused(L);
 
 #if defined(LUA_USE_POSIX_POPEN)
@@ -217,8 +207,7 @@ LUALIB_API int luaL_pclose (lua_State *L, FILE *p)
 #endif
 }
 
-LUALIB_API int luaL_checkpopenmode (lua_State *L, const char *mode)
-{
+LUALIB_API int luaL_checkpopenmode (lua_State *L, const char *mode) {
   lua_unused(L);
 
 #if defined(LUA_USE_WINDOWS_POPEN)
@@ -237,8 +226,7 @@ LUALIB_API int luaL_checkpopenmode (lua_State *L, const char *mode)
 #include <readline/readline.h>
 #endif
 
-LUALIB_API int luaL_readline (lua_State *L, const char *prompt)
-{
+LUALIB_API int luaL_readline (lua_State *L, const char *prompt) {
 #if defined(LUA_USE_READLINE)
   /* libreadline implementation */
   char *str = readline(prompt);
@@ -273,8 +261,7 @@ LUALIB_API int luaL_readline (lua_State *L, const char *prompt)
 #endif
 }
 
-LUALIB_API void luaL_saveline (lua_State *L, const char *line)
-{
+LUALIB_API void luaL_saveline (lua_State *L, const char *line) {
   lua_unused(L);
 
 #if defined(LUA_USE_READLINE)

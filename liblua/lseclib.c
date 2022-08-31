@@ -8,8 +8,7 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
-static lua_State *optthread (lua_State *L, int *arg)
-{
+static lua_State *optthread (lua_State *L, int *arg) {
   int idx = *arg;
 
   if (lua_isthread(L, idx)) {
@@ -22,64 +21,55 @@ static lua_State *optthread (lua_State *L, int *arg)
 
 static const char *seclib_taintmodes[] = { "disabled", "r", "w", "rw" };
 
-static int seclib_gettaintmode (lua_State *L)
-{
+static int seclib_gettaintmode (lua_State *L) {
   int mode = lua_gettaintmode(L);
   lua_pushstring(L, seclib_taintmodes[mode]);
   return 1;
 }
 
-static int seclib_settaintmode (lua_State *L)
-{
+static int seclib_settaintmode (lua_State *L) {
   int mode = luaL_checkoption(L, 1, NULL, seclib_taintmodes);
   lua_settaintmode(L, mode);
   return 0;
 }
 
-static int seclib_istaintexpected (lua_State *L)
-{
+static int seclib_istaintexpected (lua_State *L) {
   lua_pushboolean(L, lua_istaintexpected(L));
   return 1;
 }
 
-static int seclib_getstacktaint (lua_State *L)
-{
+static int seclib_getstacktaint (lua_State *L) {
   lua_State *L1 = luaL_optthread(L, 1, L);
   lua_pushstring(L, lua_getstacktaint(L1));
   return 1;
 }
 
-static int seclib_getvaluetaint (lua_State *L)
-{
+static int seclib_getvaluetaint (lua_State *L) {
   luaL_checkany(L, 1);
   lua_pushstring(L, lua_getvaluetaint(L, 1));
   return 1;
 }
 
-static int seclib_getobjecttaint (lua_State *L)
-{
+static int seclib_getobjecttaint (lua_State *L) {
   luaL_argcheck(L, (lua_type(L, 1) >= LUA_TSTRING), 1,
                 "expected function, string, table, thread, or userdata");
   lua_pushstring(L, lua_getvaluetaint(L, 1));
   return 1;
 }
 
-static int seclib_getnewobjecttaint (lua_State *L)
-{
+static int seclib_getnewobjecttaint (lua_State *L) {
   lua_State *L1 = luaL_optthread(L, 1, L);
   lua_pushstring(L, lua_getnewobjecttaint(L1));
   return 1;
 }
 
-static int seclib_getnewclosuretaint (lua_State *L)
-{
+static int seclib_getnewclosuretaint (lua_State *L) {
   lua_State *L1 = luaL_optthread(L, 1, L);
   lua_pushstring(L, lua_getnewclosuretaint(L1));
   return 1;
 }
 
-static int seclib_getcalltaint (lua_State *L)
-{
+static int seclib_getcalltaint (lua_State *L) {
   int arg = 1;
   lua_State *L1 = optthread(L, &arg);
   lua_Debug ar;
@@ -92,8 +82,7 @@ static int seclib_getcalltaint (lua_State *L)
   return 1;
 }
 
-static int seclib_gettabletaint (lua_State *L)
-{
+static int seclib_gettabletaint (lua_State *L) {
   luaL_checktype(L, 1, LUA_TTABLE);
   luaL_checkany(L, 1);
   lua_settop(L, 2);
@@ -101,8 +90,7 @@ static int seclib_gettabletaint (lua_State *L)
   return 1;
 }
 
-static int seclib_getupvaluetaint (lua_State *L)
-{
+static int seclib_getupvaluetaint (lua_State *L) {
   luaL_checktype(L, 1, LUA_TFUNCTION);
   luaL_checkint(L, 2);
 
@@ -110,8 +98,7 @@ static int seclib_getupvaluetaint (lua_State *L)
   return 1;
 }
 
-static int seclib_getlocaltaint (lua_State *L)
-{
+static int seclib_getlocaltaint (lua_State *L) {
   int arg = 1;
   lua_State *L1 = optthread(L, &arg);
   int level = luaL_checkint(L, arg + 1);
@@ -126,8 +113,7 @@ static int seclib_getlocaltaint (lua_State *L)
   return 1;
 }
 
-static int seclib_setstacktaint (lua_State *L)
-{
+static int seclib_setstacktaint (lua_State *L) {
   int arg = 1;
   lua_State *L1 = optthread(L, &arg);
   luaL_checkany(L, arg + 1);
@@ -135,8 +121,7 @@ static int seclib_setstacktaint (lua_State *L)
   return 0;
 }
 
-static int seclib_setvaluetaint (lua_State *L)
-{
+static int seclib_setvaluetaint (lua_State *L) {
   luaL_checkany(L, 1);
   luaL_checkany(L, 2);
   lua_settop(L, 2);
@@ -145,8 +130,7 @@ static int seclib_setvaluetaint (lua_State *L)
   return 1;
 }
 
-static int seclib_setobjecttaint (lua_State *L)
-{
+static int seclib_setobjecttaint (lua_State *L) {
   luaL_argcheck(L, (lua_type(L, 1) >= LUA_TSTRING), 1,
                 "expected function, string, table, thread, or userdata");
   luaL_checkany(L, 2);
@@ -154,8 +138,7 @@ static int seclib_setobjecttaint (lua_State *L)
   return 0;
 }
 
-static int seclib_setnewobjecttaint (lua_State *L)
-{
+static int seclib_setnewobjecttaint (lua_State *L) {
   int arg = 1;
   lua_State *L1 = optthread(L, &arg);
   luaL_checkany(L, arg + 1);
@@ -163,8 +146,7 @@ static int seclib_setnewobjecttaint (lua_State *L)
   return 0;
 }
 
-static int seclib_setnewclosuretaint (lua_State *L)
-{
+static int seclib_setnewclosuretaint (lua_State *L) {
   int arg = 1;
   lua_State *L1 = optthread(L, &arg);
   luaL_checkany(L, arg + 1);
@@ -172,8 +154,7 @@ static int seclib_setnewclosuretaint (lua_State *L)
   return 0;
 }
 
-static int seclib_settabletaint (lua_State *L)
-{
+static int seclib_settabletaint (lua_State *L) {
   luaL_checktype(L, 1, LUA_TTABLE);
   luaL_checkany(L, 2);
   luaL_checkany(L, 3);
@@ -184,8 +165,7 @@ static int seclib_settabletaint (lua_State *L)
   return 0;
 }
 
-static int seclib_setupvaluetaint (lua_State *L)
-{
+static int seclib_setupvaluetaint (lua_State *L) {
   luaL_checktype(L, 1, LUA_TFUNCTION);
   luaL_checkint(L, 2);
   luaL_checkany(L, 3);
@@ -194,8 +174,7 @@ static int seclib_setupvaluetaint (lua_State *L)
   return 0;
 }
 
-static int seclib_setlocaltaint (lua_State *L)
-{
+static int seclib_setlocaltaint (lua_State *L) {
   int arg = 1;
   lua_State *L1 = optthread(L, &arg);
   int level = luaL_checkint(L, arg + 1);
@@ -211,20 +190,17 @@ static int seclib_setlocaltaint (lua_State *L)
   return 0;
 }
 
-static int seclib_cleartaint (lua_State *L)
-{
+static int seclib_cleartaint (lua_State *L) {
   lua_cleartaint(L);
   return 0;
 }
 
-static int seclib_resettaint (lua_State *L)
-{
+static int seclib_resettaint (lua_State *L) {
   lua_resettaint(L);
   return 0;
 }
 
-static int seclib_newsecurefunction (lua_State *L)
-{
+static int seclib_newsecurefunction (lua_State *L) {
   luaL_createsecuredelegate(L);
   return 1;
 }
@@ -256,8 +232,7 @@ const luaL_Reg seclib_funcs[] = {
   { .name = NULL, .func = NULL },
 };
 
-LUALIB_API int luaopen_security (lua_State *L)
-{
+LUALIB_API int luaopen_security (lua_State *L) {
   luaL_register(L, LUA_DBLIBNAME, seclib_funcs);
   return 1;
 }

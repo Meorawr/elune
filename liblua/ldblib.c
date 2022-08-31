@@ -12,14 +12,12 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
-static int db_getregistry (lua_State *L)
-{
+static int db_getregistry (lua_State *L) {
   lua_pushvalue(L, LUA_REGISTRYINDEX);
   return 1;
 }
 
-static int db_getmetatable (lua_State *L)
-{
+static int db_getmetatable (lua_State *L) {
   luaL_checkany(L, 1);
   if (!lua_getmetatable(L, 1)) {
     lua_pushnil(L); /* no metatable */
@@ -27,8 +25,7 @@ static int db_getmetatable (lua_State *L)
   return 1;
 }
 
-static int db_setmetatable (lua_State *L)
-{
+static int db_setmetatable (lua_State *L) {
   int t = lua_type(L, 2);
   luaL_argcheck(L, t == LUA_TNIL || t == LUA_TTABLE, 2,
                 "nil or table expected");
@@ -37,15 +34,13 @@ static int db_setmetatable (lua_State *L)
   return 1;
 }
 
-static int db_getfenv (lua_State *L)
-{
+static int db_getfenv (lua_State *L) {
   luaL_checkany(L, 1);
   lua_getfenv(L, 1);
   return 1;
 }
 
-static int db_setfenv (lua_State *L)
-{
+static int db_setfenv (lua_State *L) {
   luaL_checktype(L, 2, LUA_TTABLE);
   lua_settop(L, 2);
   if (lua_setfenv(L, 1) == 0) {
@@ -54,20 +49,17 @@ static int db_setfenv (lua_State *L)
   return 1;
 }
 
-static void settabss (lua_State *L, const char *i, const char *v)
-{
+static void settabss (lua_State *L, const char *i, const char *v) {
   lua_pushstring(L, v);
   lua_setfield(L, -2, i);
 }
 
-static void settabsi (lua_State *L, const char *i, int v)
-{
+static void settabsi (lua_State *L, const char *i, int v) {
   lua_pushinteger(L, v);
   lua_setfield(L, -2, i);
 }
 
-static lua_State *getthread (lua_State *L, int *arg)
-{
+static lua_State *getthread (lua_State *L, int *arg) {
   if (lua_isthread(L, 1)) {
     *arg = 1;
     return lua_tothread(L, 1);
@@ -77,8 +69,7 @@ static lua_State *getthread (lua_State *L, int *arg)
   }
 }
 
-static void treatstackoption (lua_State *L, lua_State *L1, const char *fname)
-{
+static void treatstackoption (lua_State *L, lua_State *L1, const char *fname) {
   if (L == L1) {
     lua_pushvalue(L, -2);
     lua_remove(L, -3);
@@ -88,8 +79,7 @@ static void treatstackoption (lua_State *L, lua_State *L1, const char *fname)
   lua_setfield(L, -2, fname);
 }
 
-static int db_getinfo (lua_State *L)
-{
+static int db_getinfo (lua_State *L) {
   lua_Debug ar;
   int arg;
   lua_State *L1 = getthread(L, &arg);
@@ -137,8 +127,7 @@ static int db_getinfo (lua_State *L)
   return 1; /* return table */
 }
 
-static int db_getlocal (lua_State *L)
-{
+static int db_getlocal (lua_State *L) {
   int arg;
   lua_State *L1 = getthread(L, &arg);
   lua_Debug ar;
@@ -158,8 +147,7 @@ static int db_getlocal (lua_State *L)
   }
 }
 
-static int db_setlocal (lua_State *L)
-{
+static int db_setlocal (lua_State *L) {
   int arg;
   lua_State *L1 = getthread(L, &arg);
   lua_Debug ar;
@@ -173,8 +161,7 @@ static int db_setlocal (lua_State *L)
   return 1;
 }
 
-static int auxupvalue (lua_State *L, int get)
-{
+static int auxupvalue (lua_State *L, int get) {
   const char *name;
   int n = luaL_checkint(L, 2);
   luaL_checktype(L, 1, LUA_TFUNCTION);
@@ -190,21 +177,18 @@ static int auxupvalue (lua_State *L, int get)
   return get + 1;
 }
 
-static int db_getupvalue (lua_State *L)
-{
+static int db_getupvalue (lua_State *L) {
   return auxupvalue(L, 1);
 }
 
-static int db_setupvalue (lua_State *L)
-{
+static int db_setupvalue (lua_State *L) {
   luaL_checkany(L, 3);
   return auxupvalue(L, 0);
 }
 
 static const char KEY_HOOK = 'h';
 
-static void hookf (lua_State *L, lua_Debug *ar)
-{
+static void hookf (lua_State *L, lua_Debug *ar) {
   static const char *const hooknames[] = {
     "call", "return", "line", "count", "tail return",
   };
@@ -225,8 +209,7 @@ static void hookf (lua_State *L, lua_Debug *ar)
   }
 }
 
-static int makemask (const char *smask, int count)
-{
+static int makemask (const char *smask, int count) {
   int mask = 0;
   if (strchr(smask, 'c')) {
     mask |= LUA_MASKCALL;
@@ -243,8 +226,7 @@ static int makemask (const char *smask, int count)
   return mask;
 }
 
-static char *unmakemask (int mask, char *smask)
-{
+static char *unmakemask (int mask, char *smask) {
   int i = 0;
   if (mask & LUA_MASKCALL) {
     smask[i++] = 'c';
@@ -259,8 +241,7 @@ static char *unmakemask (int mask, char *smask)
   return smask;
 }
 
-static void gethooktable (lua_State *L)
-{
+static void gethooktable (lua_State *L) {
   lua_pushlightuserdata(L, (void *) &KEY_HOOK);
   lua_rawget(L, LUA_REGISTRYINDEX);
   if (!lua_istable(L, -1)) {
@@ -272,8 +253,7 @@ static void gethooktable (lua_State *L)
   }
 }
 
-static int db_sethook (lua_State *L)
-{
+static int db_sethook (lua_State *L) {
   int arg;
   int mask;
   int count;
@@ -300,8 +280,7 @@ static int db_sethook (lua_State *L)
   return 0;
 }
 
-static int db_gethook (lua_State *L)
-{
+static int db_gethook (lua_State *L) {
   int arg;
   lua_State *L1 = getthread(L, &arg);
   char buff[4];
@@ -320,8 +299,7 @@ static int db_gethook (lua_State *L)
   return 3;
 }
 
-static int db_debug (lua_State *L)
-{
+static int db_debug (lua_State *L) {
   for (;;) {
     const char *line;
     size_t len;
@@ -349,8 +327,7 @@ static int db_debug (lua_State *L)
   }
 }
 
-static int db_traceback (lua_State *L)
-{
+static int db_traceback (lua_State *L) {
   int arg;
   lua_State *L1 = getthread(L, &arg);
   const char *msg = lua_tostring(L, arg + 1);
@@ -363,56 +340,48 @@ static int db_traceback (lua_State *L)
   return 1;
 }
 
-static int db_geterrorhandler (lua_State *L)
-{
+static int db_geterrorhandler (lua_State *L) {
   lua_pushvalue(L, LUA_ERRORHANDLERINDEX);
   return 1;
 }
 
-static int db_seterrorhandler (lua_State *L)
-{
+static int db_seterrorhandler (lua_State *L) {
   luaL_checkany(L, 1);
   lua_replace(L, LUA_ERRORHANDLERINDEX);
   return 0;
 }
 
-static int db_getobjectsize (lua_State *L)
-{
+static int db_getobjectsize (lua_State *L) {
   luaL_checkany(L, 1);
   lua_pushinteger(L, lua_objsize(L, 1));
   return 1;
 }
 
-static int db_iscfunction (lua_State *L)
-{
+static int db_iscfunction (lua_State *L) {
   lua_pushboolean(L, lua_iscfunction(L, 1));
   return 1;
 }
 
-static int db_newcfunction (lua_State *L)
-{
+static int db_newcfunction (lua_State *L) {
   luaL_checkany(L, 1);
   luaL_createdelegate(L);
   return 1;
 }
 
-static int db_ref (lua_State *L)
-{
+static int db_ref (lua_State *L) {
   luaL_checktype(L, 1, LUA_TTABLE);
   luaL_checkany(L, 2);
   lua_pushinteger(L, luaL_ref(L, 1));
   return 1;
 }
 
-static int db_unref (lua_State *L)
-{
+static int db_unref (lua_State *L) {
   luaL_checktype(L, 1, LUA_TTABLE);
   luaL_unref(L, 1, luaL_checkint(L, 2));
   return 0;
 }
 
-static int db_getexceptmask (lua_State *L)
-{
+static int db_getexceptmask (lua_State *L) {
   lua_State *L1;
   int arg;
   int mask;
@@ -437,8 +406,7 @@ static int db_getexceptmask (lua_State *L)
   return 1;
 }
 
-static int db_setexceptmask (lua_State *L)
-{
+static int db_setexceptmask (lua_State *L) {
   lua_State *L1;
   const char *smask;
   int arg;
@@ -462,8 +430,7 @@ static int db_setexceptmask (lua_State *L)
   return 0;
 }
 
-static int db_getscripttimeout (lua_State *L)
-{
+static int db_getscripttimeout (lua_State *L) {
   lua_ScriptTimeout timeout;
   lua_getscripttimeout(L, &timeout);
 
@@ -472,8 +439,7 @@ static int db_getscripttimeout (lua_State *L)
   return 2;
 }
 
-static int db_setscripttimeout (lua_State *L)
-{
+static int db_setscripttimeout (lua_State *L) {
   lua_ScriptTimeout timeout;
   timeout.ticks = (lua_Clock) (luaL_checknumber(L, 1) * lua_clockrate(L));
   timeout.instructions = luaL_checkint(L, 2);
@@ -481,15 +447,13 @@ static int db_setscripttimeout (lua_State *L)
   return 0;
 }
 
-static int db_debugprofilestart (lua_State *L)
-{
+static int db_debugprofilestart (lua_State *L) {
   lua_Clock *start = lua_touserdata(L, lua_upvalueindex(1));
   *start = lua_clocktime(L);
   return 0;
 }
 
-static int db_debugprofilestop (lua_State *L)
-{
+static int db_debugprofilestop (lua_State *L) {
   lua_Clock stop = lua_clocktime(L);
   lua_Clock start = *((lua_Clock *) lua_touserdata(L, lua_upvalueindex(1)));
   lua_Clock rate = lua_clockrate(L);
@@ -537,8 +501,7 @@ static const luaL_Reg dblib_global[] = {
   { .name = NULL, .func = NULL },
 };
 
-static void dblib_opendebugprofile (lua_State *L)
-{
+static void dblib_opendebugprofile (lua_State *L) {
   /**
    * The debugprofilestart and debugprofilestop functions act as paired calls
    * and need to share a "start" time as state between the two. We store this
@@ -559,16 +522,14 @@ static void dblib_opendebugprofile (lua_State *L)
   lua_setfield(L, -2, "debugprofilestop");
 }
 
-LUALIB_API int luaopen_debug (lua_State *L)
-{
+LUALIB_API int luaopen_debug (lua_State *L) {
   luaL_register(L, "_G", dblib_global);
   dblib_opendebugprofile(L);
   luaL_register(L, LUA_DBLIBNAME, dblib_lua);
   return 1;
 }
 
-LUALIB_API int luaopen_wow_debug (lua_State *L)
-{
+LUALIB_API int luaopen_wow_debug (lua_State *L) {
   lua_pushvalue(L, LUA_ENVIRONINDEX);
   luaL_setfuncs(L, dblib_global, 0);
   dblib_opendebugprofile(L);

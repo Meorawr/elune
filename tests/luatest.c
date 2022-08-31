@@ -12,8 +12,7 @@
 
 #include <acutest.h>
 
-static int luatest_panichandler (lua_State *L)
-{
+static int luatest_panichandler (lua_State *L) {
   acutest_check_(0, __FILE__, __LINE__, "lua panic");
   acutest_message_("%s", luaL_optstring(L, -1, "<unknown error>"));
   lua_close(L);
@@ -21,8 +20,7 @@ static int luatest_panichandler (lua_State *L)
   return 0; /* unreachable */
 }
 
-static lua_State *luatest_newstate (void)
-{
+static lua_State *luatest_newstate (void) {
   lua_State *L = luaL_newstate();
   lua_setprofilingenabled(L, 1);
   lua_settaintmode(L, LUA_TAINTRDRW);
@@ -34,14 +32,12 @@ static lua_State *luatest_newstate (void)
 ** C API Test Cases
 */
 
-static void f_protecttaint_normal (lua_State *L, void *ud)
-{
+static void f_protecttaint_normal (lua_State *L, void *ud) {
   lua_setstacktaint(L, ud);
   lua_pushliteral(L, "test");
 }
 
-static void test_protecttaint_secure_normal (void)
-{
+static void test_protecttaint_secure_normal (void) {
   lua_State *L = luatest_newstate();
   lua_protecttaint(L, &f_protecttaint_normal, NULL);
   TEST_CHECK((luaL_issecure(L)));
@@ -49,8 +45,7 @@ static void test_protecttaint_secure_normal (void)
   lua_close(L);
 }
 
-static void test_protecttaint_tainted_normal (void)
-{
+static void test_protecttaint_tainted_normal (void) {
   lua_State *L = luatest_newstate();
   lua_protecttaint(L, &f_protecttaint_normal, LUA_FORCEINSECURE_TAINT);
   TEST_CHECK((!luaL_issecure(L)));
@@ -58,21 +53,18 @@ static void test_protecttaint_tainted_normal (void)
   lua_close(L);
 }
 
-static void f_protecttaint_error (lua_State *L, void *ud)
-{
+static void f_protecttaint_error (lua_State *L, void *ud) {
   lua_setstacktaint(L, ud);
   lua_pushliteral(L, "error");
   lua_error(L);
 }
 
-static int f_protecttaint_inner (lua_State *L)
-{
+static int f_protecttaint_inner (lua_State *L) {
   lua_protecttaint(L, &f_protecttaint_error, lua_touserdata(L, 1));
   return 0;
 }
 
-static void test_protecttaint_secure_error (void)
-{
+static void test_protecttaint_secure_error (void) {
   int status;
 
   lua_State *L = luatest_newstate(); /* start secure */
@@ -82,8 +74,7 @@ static void test_protecttaint_secure_error (void)
   lua_close(L);
 }
 
-static void test_protecttaint_tainted_error (void)
-{
+static void test_protecttaint_tainted_error (void) {
   int status;
 
   lua_State *L = luatest_newstate();
@@ -98,16 +89,14 @@ static void test_protecttaint_tainted_error (void)
 ** Scripted Test Cases
 */
 
-static int luatest_errorhandler (lua_State *L)
-{
+static int luatest_errorhandler (lua_State *L) {
   acutest_check_(0, __FILE__, __LINE__, "error handler");
   luaL_traceback(L, L, lua_tostring(L, 1), 2);
   acutest_message_("%s", lua_tostring(L, -1));
   return 0;
 }
 
-static int luatest_case (lua_State *L)
-{
+static int luatest_case (lua_State *L) {
   acutest_case_("%s", luaL_checkstring(L, 1));
   lua_pushcclosure(L, &luatest_errorhandler, 0);
   lua_replace(L, LUA_ERRORHANDLERINDEX);
@@ -115,8 +104,7 @@ static int luatest_case (lua_State *L)
   return 0;
 }
 
-static void test_scriptcases (void)
-{
+static void test_scriptcases (void) {
   lua_State *L = luatest_newstate();
   luaL_openwowlibs(L);
 
@@ -131,8 +119,7 @@ static void test_scriptcases (void)
   lua_close(L);
 }
 
-static void test_coroutinescriptcases (void)
-{
+static void test_coroutinescriptcases (void) {
   lua_State *L = luatest_newstate();
   luaL_openlibs(L);
 
@@ -147,8 +134,7 @@ static void test_coroutinescriptcases (void)
   lua_close(L);
 }
 
-static void test_profilingscriptcases (void)
-{
+static void test_profilingscriptcases (void) {
   lua_State *L = luatest_newstate();
   luaL_openlibs(L);
 

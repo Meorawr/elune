@@ -36,8 +36,7 @@ static const luaL_Reg wowlibs[] = {
   { .name = NULL, .func = NULL },
 };
 
-static void openlibs (lua_State *L, const luaL_Reg *lib)
-{
+static void openlibs (lua_State *L, const luaL_Reg *lib) {
   for (; lib->func; lib++) {
     lua_pushcclosure(L, lib->func, 0);
     lua_pushstring(L, lib->name);
@@ -45,12 +44,10 @@ static void openlibs (lua_State *L, const luaL_Reg *lib)
   }
 }
 
-LUALIB_API void luaL_openlibs (lua_State *L)
-{
+LUALIB_API void luaL_openlibs (lua_State *L) {
   openlibs(L, lualibs);
 }
 
-LUALIB_API void luaL_openwowlibs (lua_State *L)
-{
+LUALIB_API void luaL_openwowlibs (lua_State *L) {
   openlibs(L, wowlibs);
 }

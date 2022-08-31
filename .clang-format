@@ -10,7 +10,6 @@ UseTab: Never
 AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: Never
 AlwaysBreakBeforeMultilineStrings: true
-BreakBeforeBraces: Linux
 Cpp11BracedListStyle: false
 IncludeBlocks: Regroup
 IncludeCategories:

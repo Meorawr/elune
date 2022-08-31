@@ -13,8 +13,7 @@
 #include "lstate.h"
 #include "lstring.h"
 
-void luaS_resize (lua_State *L, int newsize)
-{
+void luaS_resize (lua_State *L, int newsize) {
   GCObject **newhash;
   stringtable *tb;
   int i;
@@ -45,8 +44,7 @@ void luaS_resize (lua_State *L, int newsize)
 }
 
 static TString *newlstr (lua_State *L, const char *str, size_t l,
-                         unsigned int h)
-{
+                         unsigned int h) {
   TString *ts;
   stringtable *tb;
   if (l + 1 > (LUA_SIZE_MAX - sizeof(TString)) / sizeof(char)) {
@@ -74,8 +72,7 @@ static TString *newlstr (lua_State *L, const char *str, size_t l,
   return ts;
 }
 
-TString *luaS_newlstr (lua_State *L, const char *str, size_t l)
-{
+TString *luaS_newlstr (lua_State *L, const char *str, size_t l) {
   GCObject *o;
   unsigned int h = cast(unsigned int, l); /* seed */
   size_t step =
@@ -98,8 +95,7 @@ TString *luaS_newlstr (lua_State *L, const char *str, size_t l)
   return newlstr(L, str, l, h); /* not found */
 }
 
-Udata *luaS_newudata (lua_State *L, size_t s, Table *e)
-{
+Udata *luaS_newudata (lua_State *L, size_t s, Table *e) {
   Udata *u;
   if (s > LUA_SIZE_MAX - sizeof(Udata)) {
     luaM_toobig(L);

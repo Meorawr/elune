@@ -33,8 +33,7 @@ typedef struct {
   if (c)                                                                       \
   error(S, s)
 
-static void error (LoadState *S, const char *why)
-{
+static void error (LoadState *S, const char *why) {
   luaO_pushfstring(S->L, "%s: %s in precompiled chunk", S->name, why);
   luaD_throw(S->L, LUA_ERRSYNTAX);
 }
@@ -45,36 +44,31 @@ static void error (LoadState *S, const char *why)
 #define LoadVar(S, x) LoadMem(S, &x, 1, sizeof(x))
 #define LoadVector(S, b, n, size) LoadMem(S, b, n, size)
 
-static void LoadBlock (LoadState *S, void *b, size_t size)
-{
+static void LoadBlock (LoadState *S, void *b, size_t size) {
   size_t r = luaZ_read(S->Z, b, size);
   IF(r != 0, "unexpected end");
 }
 
-static int LoadChar (LoadState *S)
-{
+static int LoadChar (LoadState *S) {
   char x;
   LoadVar(S, x);
   return x;
 }
 
-static int LoadInt (LoadState *S)
-{
+static int LoadInt (LoadState *S) {
   int x;
   LoadVar(S, x);
   IF(x < 0, "bad integer");
   return x;
 }
 
-static lua_Number LoadNumber (LoadState *S)
-{
+static lua_Number LoadNumber (LoadState *S) {
   lua_Number x;
   LoadVar(S, x);
   return x;
 }
 
-static TString *LoadString (LoadState *S)
-{
+static TString *LoadString (LoadState *S) {
   size_t size;
   LoadVar(S, size);
   if (size == 0) {
@@ -86,8 +80,7 @@ static TString *LoadString (LoadState *S)
   }
 }
 
-static void LoadCode (LoadState *S, Proto *f)
-{
+static void LoadCode (LoadState *S, Proto *f) {
   int n = LoadInt(S);
   f->code = luaM_newvector(S->L, n, Instruction);
   f->sizecode = n;
@@ -96,8 +89,7 @@ static void LoadCode (LoadState *S, Proto *f)
 
 static Proto *LoadFunction (LoadState *S, TString *p);
 
-static void LoadConstants (LoadState *S, Proto *f)
-{
+static void LoadConstants (LoadState *S, Proto *f) {
   int i;
   int n;
   n = LoadInt(S);
@@ -138,8 +130,7 @@ static void LoadConstants (LoadState *S, Proto *f)
   }
 }
 
-static void LoadDebug (LoadState *S, Proto *f)
-{
+static void LoadDebug (LoadState *S, Proto *f) {
   int i;
   int n;
   n = LoadInt(S);
@@ -168,8 +159,7 @@ static void LoadDebug (LoadState *S, Proto *f)
   }
 }
 
-static Proto *LoadFunction (LoadState *S, TString *p)
-{
+static Proto *LoadFunction (LoadState *S, TString *p) {
   Proto *f;
   if (++S->L->nCcalls > LUAI_MAXCCALLS) {
     error(S, "code too deep");
@@ -196,8 +186,7 @@ static Proto *LoadFunction (LoadState *S, TString *p)
   return f;
 }
 
-static void LoadHeader (LoadState *S)
-{
+static void LoadHeader (LoadState *S) {
   char h[LUAC_HEADERSIZE];
   char s[LUAC_HEADERSIZE];
   luaU_header(h);
@@ -208,8 +197,7 @@ static void LoadHeader (LoadState *S)
 /*
 ** load precompiled chunk
 */
-Proto *luaU_undump (lua_State *L, ZIO *Z, Mbuffer *buff, const char *name)
-{
+Proto *luaU_undump (lua_State *L, ZIO *Z, Mbuffer *buff, const char *name) {
   LoadState S;
   if (*name == '@' || *name == '=') {
     S.name = name + 1;
@@ -228,8 +216,7 @@ Proto *luaU_undump (lua_State *L, ZIO *Z, Mbuffer *buff, const char *name)
 /*
  * make header
  */
-void luaU_header (char *h)
-{
+void luaU_header (char *h) {
   int x = 1;
   memcpy(h, LUA_SIGNATURE, sizeof(LUA_SIGNATURE) - 1);
   h += sizeof(LUA_SIGNATURE) - 1;

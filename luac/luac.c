@@ -36,21 +36,18 @@ static const char *progname = PROGNAME; /* actual program name */
 
 static void printfunction (const Proto *f, int full);
 
-static void fatal (const char *message)
-{
+static void fatal (const char *message) {
   fprintf(stderr, "%s: %s\n", progname, message);
   exit(EXIT_FAILURE);
 }
 
-static void cannot (const char *what)
-{
+static void cannot (const char *what) {
   fprintf(stderr, "%s: cannot %s %s: %s\n", progname, what, output,
           strerror(errno));
   exit(EXIT_FAILURE);
 }
 
-static void usage (const char *message)
-{
+static void usage (const char *message) {
   if (*message == '-') {
     fprintf(stderr, "%s: unrecognized option '%s'\n", progname, message);
   } else {
@@ -74,8 +71,7 @@ static void usage (const char *message)
 
 #define IS(s) (strcmp(argv[i], s) == 0)
 
-static int doargs (int argc, char *argv[])
-{
+static int doargs (int argc, char *argv[]) {
   int i;
   int version = 0;
 
@@ -137,8 +133,7 @@ static int doargs (int argc, char *argv[])
 
 #define toproto(L, i) (clvalue(L->top + (i))->l.p)
 
-static const Proto *combine (lua_State *L, int n)
-{
+static const Proto *combine (lua_State *L, int n) {
   if (n == 1) {
     return toproto(L, -1);
   } else {
@@ -168,8 +163,7 @@ static const Proto *combine (lua_State *L, int n)
   }
 }
 
-static int writer (lua_State *L, const void *p, size_t size, void *u)
-{
+static int writer (lua_State *L, const void *p, size_t size, void *u) {
   lua_unused(L);
   return (fwrite(p, size, 1, (FILE *) u) != 1) && (size != 0);
 }
@@ -179,8 +173,7 @@ struct Smain {
   char **argv;
 };
 
-static int pmain (lua_State *L)
-{
+static int pmain (lua_State *L) {
   struct Smain *s = (struct Smain *) lua_touserdata(L, 1);
   int argc = s->argc;
   char **argv = s->argv;
@@ -225,8 +218,7 @@ static int pmain (lua_State *L)
   return 0;
 }
 
-extern int main (int argc, char *argv[])
-{
+extern int main (int argc, char *argv[]) {
   lua_State *L;
   struct Smain s;
   int i = doargs(argc, argv);
@@ -262,8 +254,7 @@ extern int main (int argc, char *argv[])
 #define Sizeof(x) ((int) sizeof(x))
 #define VOID(p) ((const void *) (p))
 
-static void printstring (const TString *ts)
-{
+static void printstring (const TString *ts) {
   const char *s = getstr(ts);
   size_t n = ts->tsv.len;
   size_t i;
@@ -313,8 +304,7 @@ static void printstring (const TString *ts)
   putchar('"');
 }
 
-static void printconstant (const Proto *f, int i)
-{
+static void printconstant (const Proto *f, int i) {
   const TValue *o = &f->k[i];
   switch (ttype(o)) {
   case LUA_TNIL:
@@ -335,8 +325,7 @@ static void printconstant (const Proto *f, int i)
   }
 }
 
-static void printcode (const Proto *f)
-{
+static void printcode (const Proto *f) {
   const Instruction *code = f->code;
   int n = f->sizecode;
   int pc;
@@ -463,8 +452,7 @@ static void printcode (const Proto *f)
 #define SS(x) (x == 1) ? "" : "s"
 #define S(x) x, SS(x)
 
-static void printheader (const Proto *f)
-{
+static void printheader (const Proto *f) {
   const char *s = getstr(f->source);
 
   if (*s == '@' || *s == '=') {
@@ -493,8 +481,7 @@ static void printheader (const Proto *f)
   );
 }
 
-static void printconstants (const Proto *f)
-{
+static void printconstants (const Proto *f) {
   int n = f->sizek;
   int i;
 
@@ -507,8 +494,7 @@ static void printconstants (const Proto *f)
   }
 }
 
-static void printlocals (const Proto *f)
-{
+static void printlocals (const Proto *f) {
   int n = f->sizelocvars;
   int i;
 
@@ -523,8 +509,7 @@ static void printlocals (const Proto *f)
   }
 }
 
-static void printupvalues (const Proto *f)
-{
+static void printupvalues (const Proto *f) {
   int n = f->sizeupvalues;
   int i;
 
@@ -539,8 +524,7 @@ static void printupvalues (const Proto *f)
   }
 }
 
-static void printfunction (const Proto *f, int full)
-{
+static void printfunction (const Proto *f, int full) {
   int n = f->sizep;
   int i;
 
