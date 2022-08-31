@@ -137,11 +137,6 @@
 /* Default search path for C libraries. */
 #define LUA_CPATH_DEFAULT "@LUA_CPATH_ESCAPED@"
 
-/* Program element quoting */
-
-#define LUA_QL(x) "'" x "'"
-#define LUA_QS LUA_QL("%s")
-
 /* Numeric scanning and formatting */
 
 #define LUA_NUMBER_SCAN "%lf"
@@ -253,6 +248,45 @@
 #define LUA_FALLTHROUGH __attribute__((fallthrough))
 #else
 #define LUA_FALLTHROUGH lua_nop()
+#endif
+
+/* Source-compatibility definitions; these are not used internally. */
+
+#define LUAI_UINT32 uint_least32_t
+#define LUAI_INT32 int_least32_t
+#define LUAI_MAXINT32 INT_LEAST32_MAX
+#define LUAI_UMEM size_t
+#define LUAI_MEM ptrdiff_t
+
+#define LUA_QL(x) "'" x "'"
+#define LUA_QS LUA_QL("%s")
+
+#if defined(LUA_USE_DLOPEN)
+#define LUA_DL_DLOPEN
+#endif
+
+#if defined(LUA_USE_LONGLONG)
+#define LUA_USELONGLONG
+#endif
+
+#if defined(LUA_USE_MACOS)
+#define LUA_USE_MACOSX
+#endif
+
+#if defined(LUA_USE_POSIX)
+#define LUA_USE_MKSTEMP
+#define LUA_USE_ISATTY
+#define LUA_USE_POPEN
+#define LUA_USE_ULONGJMP
+#endif
+
+#if defined(LUA_USE_WINDOWS)
+#define LUA_WIN
+#define LUA_DL_DLL
+#endif
+
+#if defined(LUA_USE_WINDOWS) && defined(LUA_USE_SHARED)
+#define LUA_BUILD_AS_DLL
 #endif
 
 #endif
