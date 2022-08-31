@@ -150,7 +150,7 @@ static int findindex (lua_State *L, Table *t, StkId key) {
       }
       else n = gnext(n);
     } while (n);
-    luaG_runerror(L, "invalid key to " LUA_QL("next"));  /* key not found */
+    luaG_runerror(L, "invalid key to 'next'");  /* key not found */
   }
 }
 

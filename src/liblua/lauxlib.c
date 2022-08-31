@@ -40,12 +40,12 @@ LUALIB_API int luaL_argerror (lua_State *L, int narg, const char *extramsg) {
   if (strcmp(ar.namewhat, "method") == 0) {
     narg--;  /* do not count `self' */
     if (narg == 0)  /* error is in the self argument itself? */
-      return luaL_error(L, "calling " LUA_QS " on bad self (%s)",
+      return luaL_error(L, "calling '%s' on bad self (%s)",
                            ar.name, extramsg);
   }
   if (ar.name == NULL)
     ar.name = "?";
-  return luaL_error(L, "bad argument #%d to " LUA_QS " (%s)",
+  return luaL_error(L, "bad argument #%d to '%s' (%s)",
                         narg, ar.name, extramsg);
 }
 
@@ -94,7 +94,7 @@ LUALIB_API int luaL_checkoption (lua_State *L, int narg, const char *def, const 
   for (i=0; lst[i]; i++)
     if (strcmp(lst[i], name) == 0)
       return i;
-  return luaL_argerror(L, narg, lua_pushfstring(L, "invalid option " LUA_QS, name));
+  return luaL_argerror(L, narg, lua_pushfstring(L, "invalid option '%s'", name));
 }
 
 
@@ -235,7 +235,7 @@ LUALIB_API void luaI_openlib (lua_State *L, const char *libname, const luaL_Reg 
       lua_pop(L, 1);  /* remove previous result */
       /* try global variable (and create one if it does not exist) */
       if (luaL_findtable(L, LUA_GLOBALSINDEX, libname, size) != NULL)
-        luaL_error(L, "name conflict for module " LUA_QS, libname);
+        luaL_error(L, "name conflict for module '%s'", libname);
       lua_pushvalue(L, -1);
       lua_setfield(L, -3, libname);  /* _LOADED[libname] = new table */
     }
@@ -647,7 +647,7 @@ enum { TRACELEVELS2 = 10 };  /* size of the second part of the stack */
 
 static void pushfuncname (lua_State *L, const lua_Debug *ar) {
   if (*ar->namewhat != '\0')  /* is there a name? */
-    lua_pushfstring(L, "function " LUA_QS, ar->name);
+    lua_pushfstring(L, "function '%s'", ar->name);
   else if (*ar->what == 'm')  /* main? */
     lua_pushliteral(L, "main chunk");
   else if (*ar->what == 'C' || *ar->what == 't')

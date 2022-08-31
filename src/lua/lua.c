@@ -87,9 +87,9 @@ static void print_usage (const char *badoption) {
   luaI_writestringerror(
   "usage: %s [options] [script [args]]\n"
   "Available options are:\n"
-  "  -e stat    execute string " LUA_QL("stat") "\n"
-  "  -l name    require library " LUA_QL("name") "\n"
-  "  -i         enter interactive mode after executing " LUA_QL("script") "\n"
+  "  -e stat    execute string 'stat'\n"
+  "  -l name    require library 'name'\n"
+  "  -i         enter interactive mode after executing 'script'\n"
   "  -p         enable profiling and statistics collection\n"
   "  -t         load and execute scripts insecurely\n"
   "  -v         show version information\n"
@@ -430,7 +430,7 @@ static const char *get_prompt (lua_State *L, int firstline) {
 }
 
 /* mark in error messages for incomplete statements */
-#define EOFMARK         LUA_QL("<eof>")
+#define EOFMARK         "'<eof>'"
 #define marklen         (sizeof(EOFMARK)/sizeof(char) - 1)
 
 

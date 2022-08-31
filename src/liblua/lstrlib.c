@@ -201,14 +201,14 @@ static const char *classend (MatchState *ms, const char *p) {
   switch (*p++) {
     case L_ESC: {
       if (*p == '\0')
-        luaL_error(ms->L, "malformed pattern (ends with " LUA_QL("%%") ")");
+        luaL_error(ms->L, "malformed pattern (ends with '%%')");
       return p+1;
     }
     case '[': {
       if (*p == '^') p++;
       do {  /* look for a `]' */
         if (*p == '\0')
-          luaL_error(ms->L, "malformed pattern (missing " LUA_QL("]") ")");
+          luaL_error(ms->L, "malformed pattern (missing ']')");
         if (*(p++) == L_ESC && *p != '\0')
           p++;  /* skip escapes (e.g. `%]') */
       } while (*p != ']');
@@ -383,8 +383,7 @@ static const char *match (MatchState *ms, const char *s, const char *p) {
           const char *ep; char previous;
           p += 2;
           if (*p != '[')
-            luaL_error(ms->L, "missing " LUA_QL("[") " after "
-                               LUA_QL("%%f") " in pattern");
+            luaL_error(ms->L, "missing '[' after '%%f' in pattern");
           ep = classend(ms, p);  /* points to what is next */
           previous = (s == ms->src_init) ? '\0' : *(s-1);
           if (matchbracketclass(uchar(previous), p, ep-1) ||
@@ -580,8 +579,7 @@ static int gmatch (lua_State *L) {
 
 
 static int gfind_nodef (lua_State *L) {
-  return luaL_error(L, LUA_QL("string.gfind") " was renamed to "
-                       LUA_QL("string.gmatch"));
+  return luaL_error(L, "'string.gfind' was renamed to 'string.gmatch'");
 }
 
 

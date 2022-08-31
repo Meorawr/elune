@@ -201,7 +201,7 @@ LUA_API FILE *luaI_popen (lua_State *L, const char *cmd, const char *mode) {
   /* Default implementation */
   lua_unused(cmd);
   lua_unused(mode);
-  luaL_error(L, LUA_QL("popen") " not supported");
+  luaL_error(L, "'popen' not supported");
   return NULL;
 #endif
 }

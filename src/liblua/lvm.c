@@ -731,11 +731,11 @@ void luaV_execute (lua_State *L, int nexeccalls) {
         const TValue *pstep = ra+2;
         L->savedpc = pc;  /* next steps may throw errors */
         if (!tonumber(L, init, ra))
-          luaG_runerror(L, LUA_QL("for") " initial value must be a number");
+          luaG_runerror(L, "'for' initial value must be a number");
         else if (!tonumber(L, plimit, ra+1))
-          luaG_runerror(L, LUA_QL("for") " limit must be a number");
+          luaG_runerror(L, "'for' limit must be a number");
         else if (!tonumber(L, pstep, ra+2))
-          luaG_runerror(L, LUA_QL("for") " step must be a number");
+          luaG_runerror(L, "'for' step must be a number");
         setnvalue(L, ra, luai_numsub(nvalue(ra), nvalue(pstep)));
         dojump(L, pc, GETARG_sBx(i));
         continue;

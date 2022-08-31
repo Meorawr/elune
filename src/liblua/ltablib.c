@@ -73,7 +73,7 @@ static int getn (lua_State *L) {
 
 static int setn (lua_State *L) {
   luaL_checktype(L, 1, LUA_TTABLE);
-  return luaL_error(L, LUA_QL("setn") " is obsolete");
+  return luaL_error(L, "'setn' is obsolete");
 }
 
 
@@ -96,7 +96,7 @@ static int tinsert (lua_State *L) {
       break;
     }
     default: {
-      return luaL_error(L, "wrong number of arguments to " LUA_QL("insert"));
+      return luaL_error(L, "wrong number of arguments to 'insert'");
     }
   }
   lua_rawseti(L, 1, pos);  /* t[pos] = v */
@@ -123,8 +123,7 @@ static int tremove (lua_State *L) {
 static void addfield (lua_State *L, luaL_Buffer *b, int i) {
   lua_rawgeti(L, 1, i);
   if (!lua_isstring(L, -1)) {
-    luaL_error(L, "invalid value (%s) at index %d in table for "
-                  LUA_QL("concat"), luaL_typename(L, -1), i);
+    luaL_error(L, "invalid value (%s) at index %d in table for 'concat'", luaL_typename(L, -1), i);
   }
   luaL_addvalue(b);
 }

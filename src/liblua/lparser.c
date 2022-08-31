@@ -61,7 +61,7 @@ static void anchor_token (LexState *ls) {
 
 static void error_expected (LexState *ls, int token) {
   luaX_syntaxerror(ls,
-      luaO_pushfstring(ls->L, LUA_QS " expected", luaX_token2str(ls, token)));
+      luaO_pushfstring(ls->L, "'%s' expected", luaX_token2str(ls, token)));
 }
 
 
@@ -104,7 +104,7 @@ static void check_match (LexState *ls, int what, int who, int where) {
       error_expected(ls, what);
     else {
       luaX_syntaxerror(ls, luaO_pushfstring(ls->L,
-             LUA_QS " expected (to close " LUA_QS " at line %d)",
+             "'%s' expected (to close '%s' at line %d)",
               luaX_token2str(ls, what), luaX_token2str(ls, who), where));
     }
   }
@@ -555,7 +555,7 @@ static void parlist (LexState *ls) {
           f->is_vararg |= VARARG_ISVARARG;
           break;
         }
-        default: luaX_syntaxerror(ls, "<name> or " LUA_QL("...") " expected");
+        default: luaX_syntaxerror(ls, "<name> or '...' expected");
       }
     } while (!f->is_vararg && testnext(ls, ','));
   }
@@ -744,7 +744,7 @@ static void simpleexp (LexState *ls, expdesc *v) {
     case TK_DOTS: {  /* vararg */
       FuncState *fs = ls->fs;
       check_condition(ls, fs->f->is_vararg,
-                      "cannot use " LUA_QL("...") " outside a vararg function");
+                      "cannot use '...' outside a vararg function");
       fs->f->is_vararg &= ~VARARG_NEEDSARG;  /* don't need 'arg' */
       init_exp(v, VVARARG, luaK_codeABC(fs, OP_VARARG, 0, 1, 0));
       break;
@@ -1112,7 +1112,7 @@ static void forstat (LexState *ls, int line) {
   switch (ls->t.token) {
     case '=': fornum(ls, varname, line); break;
     case ',': case TK_IN: forlist(ls, varname); break;
-    default: luaX_syntaxerror(ls, LUA_QL("=") " or " LUA_QL("in") " expected");
+    default: luaX_syntaxerror(ls, "'=' or 'in' expected");
   }
   check_match(ls, TK_END, TK_FOR, line);
   leaveblock(fs);  /* loop scope (`break' jumps to this point) */
