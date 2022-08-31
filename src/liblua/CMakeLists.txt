@@ -64,7 +64,7 @@ elune_target_headers(
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/lua5.1/lua.hpp>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/lua5.1/lualib.h>
   PRIVATE
-    ${PROJECT_SOURCE_DIR}/include/lua5.1/loslib.h
+    ${PROJECT_SOURCE_DIR}/include/lua5.1/lsys.h
 )
 
 target_sources(

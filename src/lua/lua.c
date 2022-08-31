@@ -14,7 +14,7 @@
 
 #include "lauxlib.h"
 #include "lualib.h"
-#include "loslib.h"
+#include "lsys.h"
 
 
 static lua_State *globalL = NULL;

@@ -14,7 +14,7 @@
 
 #include "lauxlib.h"
 #include "lualib.h"
-#include "loslib.h"
+#include "lsys.h"
 
 
 static int os_pushresult (lua_State *L, int i, const char *filename) {

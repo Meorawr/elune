@@ -25,7 +25,7 @@
 #include "ltm.h"
 #include "lvm.h"
 
-#include "loslib.h"
+#include "lsys.h"
 
 
 static const char *getfuncname (lua_State *L, CallInfo *ci, const char **name);

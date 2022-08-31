@@ -1,8 +1,8 @@
 /* Licensed under the terms of the MIT License; see full copyright information
  * in the "LICENSE" file or at <http://www.lua.org/license.html> */
 
-#ifndef loslib_h
-#define loslib_h
+#ifndef lsys_h
+#define lsys_h
 
 
 /*
