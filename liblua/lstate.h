@@ -40,8 +40,7 @@ typedef struct CallInfo {
     StkId top; /* top for this function */
     const Instruction *savedpc;
     TString *savedtaint; /* saved taint for this call; informational only */
-    lua_Clock entryticks; /* tick count on first initial entry or resumption of
-                             this call */
+    lua_Clock entryticks; /* tick count on first initial entry or resumption of this call */
     lua_Clock startticks; /* tick count on last reentry of this function */
     int nresults; /* expected number of results from this function */
     int tailcalls; /* number of tail calls lost under this entry */
@@ -104,8 +103,7 @@ typedef struct global_State {
 */
 typedef struct TaintState {
     uintptr_t readmask; /* user-controlled mask applied to taint on reads */
-    uintptr_t vmexecmask; /* read-mask enabled only when executing an insecure
-                             Lua closure */
+    uintptr_t vmexecmask; /* read-mask enabled only when executing an insecure Lua closure */
     uintptr_t writemask; /* user-controlled mask applied to taint on writes */
     TString *stacktaint; /* current stack taint */
     TString *newgctaint; /* taint applied to newly allocated objects */

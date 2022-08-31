@@ -330,8 +330,7 @@ static int collectargs (char **argv, int *first) {
                 if (argv[i][2] == '\0') { /* no concatenated argument? */
                     i++; /* try next 'argv' */
                     if (argv[i] == NULL || argv[i][0] == '-') {
-                        return has_error; /* no next argument or it is another
-                                             option */
+                        return has_error; /* no next argument or it is another option */
                     }
                 }
                 break;

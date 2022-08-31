@@ -354,8 +354,7 @@ static Instruction symbexec (const Proto *pt, int lastpc, int reg) {
                                 break;
                             }
                         }
-                        /* if 'j' is even, previous value is not a setlist (even
-                           if it looks like one) */
+                        /* if 'j' is even, previous value is not a setlist (even if it looks like one) */
                         check((j & 1) == 0);
                     }
                 }

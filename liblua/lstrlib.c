@@ -878,8 +878,7 @@ static int str_format (lua_State *L) {
                     size_t l;
                     const char *s = luaL_checklstring(L, arg, &l);
                     if (!strchr(form, '.') && l >= 100) {
-                        /* no precision and string is too long to be formatted;
-                           keep original string */
+                        /* no precision and string is too long to be formatted; keep original string */
                         lua_pushvalue(L, arg);
                         luaL_addvalue(&b);
                         continue; /* skip the `addsize' at the end */

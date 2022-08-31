@@ -80,8 +80,7 @@
 
 /* Garbage collector tuning */
 
-/* Speed at which garbage collection works relative to allocations as a
- * percentage. */
+/* Speed at which garbage collection works relative to allocations as a percentage. */
 #define LUAI_GCMUL 200
 /* Pause between cycles as a percentage of memory growth. */
 #define LUAI_GCPAUSE 200
@@ -121,11 +120,9 @@
 #define LUA_PATHSEP ";"
 /* Character used for substitution points in a path template. */
 #define LUA_PATH_MARK "?"
-/* Character used on Windows as a substitution marker for the executable
- * directory. */
+/* Character used on Windows as a substitution marker for the executable directory. */
 #define LUA_EXECDIR "!"
-/* Character before which all other characters are ignored when building
- * 'lua_open*' function names. */
+/* Character before which all other characters are ignored when building 'lua_open*' function names. */
 #define LUA_IGMARK "-"
 /* Directory separator for this platform. */
 #define LUA_DIRSEP "@LUA_DIRSEP_ESCAPED@"

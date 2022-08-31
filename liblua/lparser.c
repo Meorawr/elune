@@ -626,8 +626,7 @@ static void funcargs (LexState *ls, expdesc *f) {
     }
     init_exp(f, VCALL, luaK_codeABC(fs, OP_CALL, base, nparams + 1, 2));
     luaK_fixline(fs, line);
-    fs->freereg = base + 1; /* call remove function and arguments and leaves
-                               (unless changed) one result */
+    fs->freereg = base + 1; /* call remove function and arguments and leaves (unless changed) one result */
 }
 
 /*
@@ -659,8 +658,7 @@ static void prefixexp (LexState *ls, expdesc *v) {
 }
 
 static void primaryexp (LexState *ls, expdesc *v) {
-    /* primaryexp ->
-          prefixexp { `.' NAME | `[' exp `]' | `:' NAME funcargs | funcargs } */
+    /* primaryexp -> prefixexp { `.' NAME | `[' exp `]' | `:' NAME funcargs | funcargs } */
     FuncState *fs = ls->fs;
     prefixexp(ls, v);
     for (;;) {
@@ -698,8 +696,7 @@ static void primaryexp (LexState *ls, expdesc *v) {
 }
 
 static void simpleexp (LexState *ls, expdesc *v) {
-    /* simpleexp -> NUMBER | STRING | NIL | true | false | ... |
-                    constructor | FUNCTION body | primaryexp */
+    /* simpleexp -> NUMBER | STRING | NIL | true | false | ... | constructor | FUNCTION body | primaryexp */
     switch (ls->t.token) {
         case TK_NUMBER: {
             init_exp(v, VKNUM, 0);
