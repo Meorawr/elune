@@ -448,7 +448,7 @@ static int db_setscripttimeout (lua_State *L) {
 }
 
 static int db_debugprofilestart (lua_State *L) {
-    lua_Clock *start = lua_touserdata(L, lua_upvalueindex(1));
+    lua_Clock *start = (lua_Clock *) lua_touserdata(L, lua_upvalueindex(1));
     *start = lua_clocktime(L);
     return 0;
 }
@@ -512,7 +512,7 @@ static void dblib_opendebugprofile (lua_State *L) {
      * call to debugprofilestart is made.
      */
 
-    lua_Clock *start = lua_newuserdata(L, sizeof(lua_Clock));
+    lua_Clock *start = (lua_Clock *) lua_newuserdata(L, sizeof(lua_Clock));
     *start = 0;
 
     lua_pushvalue(L, -1);

@@ -33,7 +33,7 @@ static lua_State *luatest_newstate (void) {
 */
 
 static void f_protecttaint_normal (lua_State *L, void *ud) {
-    lua_setstacktaint(L, ud);
+    lua_setstacktaint(L, (const char *) ud);
     lua_pushliteral(L, "test");
 }
 
@@ -54,7 +54,7 @@ static void test_protecttaint_tainted_normal (void) {
 }
 
 static void f_protecttaint_error (lua_State *L, void *ud) {
-    lua_setstacktaint(L, ud);
+    lua_setstacktaint(L, (const char *) ud);
     lua_pushliteral(L, "error");
     lua_error(L);
 }
