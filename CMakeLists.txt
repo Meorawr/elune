@@ -61,6 +61,7 @@ option(BUILD_SHARED_LIBS ON "Build components as shared libraries?")
 option(BUILD_TESTING "Build test executables?" ${PROJECT_IS_TOP_LEVEL})
 option(BUILD_INSTALL "Enable the generation of installation targets?" ${PROJECT_IS_TOP_LEVEL})
 option(BUILD_PACKAGE "Enable the generation of packaging targets?" ${PROJECT_IS_TOP_LEVEL})
+option(BUILD_SUMMARY "Print a summary of configuration details?" ${PROJECT_IS_TOP_LEVEL})
 
 option(BUILD_LUA "Build the Lua interpreter target?" ON)
 option(BUILD_LUAC "Build the Lua compiler target?" ON)
@@ -253,4 +254,29 @@ if(BUILD_INSTALL AND BUILD_PACKAGE)
   set(CPACK_STRIP_FILES ON)
 
   include(CPack)
+endif()
+
+if(BUILD_SUMMARY)
+  message(STATUS "")
+  message(STATUS "Elune has been configured with the following options:")
+  message(STATUS "")
+  message(STATUS "Platform:           ${CMAKE_SYSTEM_NAME}")
+  message(STATUS "Architecture:       ${CMAKE_SYSTEM_PROCESSOR}")
+  message(STATUS "Compiler:           ${CMAKE_C_COMPILER}")
+  message(STATUS "Lua library path:   ${LUA_PATH_DEFAULT}")
+  message(STATUS "Lua C library path: ${LUA_CPATH_DEFAULT}")
+
+  message(STATUS "")
+  message(STATUS "Configured Features:")
+
+  get_property(_variable_names DIRECTORY PROPERTY CACHE_VARIABLES)
+  list(SORT _variable_names)
+
+  foreach(_name IN LISTS _variable_names)
+    if(_name MATCHES "^LUA_USE_")
+      message(STATUS " * ${_name}")
+    endif()
+  endforeach()
+
+  message(STATUS "")
 endif()
