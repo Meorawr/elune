@@ -14,6 +14,7 @@
 
 #include "lauxlib.h"
 #include "lualib.h"
+#include "lreadline.h"
 
 
 #if !defined(LUA_PROGNAME)
@@ -408,16 +409,6 @@ static int handle_luainit (lua_State *L) {
 ** ===================================================================
 */
 
-#if !defined(LUA_PROMPT)
-#define LUA_PROMPT              "> "
-#define LUA_PROMPT2             ">> "
-#endif
-
-#if !defined(LUA_MAXINPUT)
-#define LUA_MAXINPUT            512
-#endif
-
-
 /*
 ** lua_stdin_is_tty detects whether the standard input is a 'tty' (that
 ** is, whether we're running lua interactively).
@@ -440,37 +431,6 @@ static int handle_luainit (lua_State *L) {
 
 /* ISO C definition */
 #define lua_stdin_is_tty()      1  /* assume stdin is a tty */
-
-#endif                          /* } */
-
-#endif                          /* } */
-
-
-/*
-** lua_readline defines how to show a prompt and then read a line from
-** the standard input.
-** lua_saveline defines how to "save" a read line in a "history".
-** lua_freeline defines how to free a line read by lua_readline.
-*/
-#if !defined(lua_readline)      /* { */
-
-#if defined(LUA_USE_READLINE)   /* { */
-
-#include <readline/readline.h>
-#include <readline/history.h>
-#define lua_initreadline(L)     ((void)L, rl_readline_name="lua")
-#define lua_readline(L,b,p)     ((void)L, ((b)=readline(p)) != NULL)
-#define lua_saveline(L,line)    ((void)L, add_history(line))
-#define lua_freeline(L,b)       ((void)L, free(b))
-
-#else                           /* }{ */
-
-#define lua_initreadline(L)  ((void)L)
-#define lua_readline(L,b,p) \
-        ((void)L, fputs(p, stdout), fflush(stdout),  /* show prompt */ \
-        fgets(b, LUA_MAXINPUT, stdin) != NULL)  /* get line */
-#define lua_saveline(L,line)    { (void)L; (void)line; }
-#define lua_freeline(L,b)       { (void)L; (void)b; }
 
 #endif                          /* } */
 

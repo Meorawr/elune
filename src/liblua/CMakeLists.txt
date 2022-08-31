@@ -51,6 +51,7 @@ target_link_libraries(
     $<$<PLATFORM_ID:Darwin,Linux>:m>
     $<$<BOOL:${LUA_USE_BCRYPTGENRANDOM}>:bcrypt>
     $<$<BOOL:${LUA_USE_DL}>:dl>
+    $<$<BOOL:${LUA_USE_READLINE}>:readline>
 )
 
 elune_target_headers(
@@ -61,6 +62,8 @@ elune_target_headers(
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/lua5.1/lua.h>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/lua5.1/lua.hpp>
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/lua5.1/lualib.h>
+  PRIVATE
+    ${PROJECT_SOURCE_DIR}/include/lua5.1/lreadline.h
 )
 
 target_sources(

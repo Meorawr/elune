@@ -195,7 +195,7 @@ check_library_exists(dl dlopen "" LUA_HAVE_DL)
 check_library_exists(readline readline "" LUA_HAVE_READLINE)
 
 cmake_dependent_option(LUA_USE_DL "Link against the 'dl' library for dynamic module loading?" ON "LUA_HAVE_DL" OFF)
-cmake_dependent_option(LUA_USE_READLINE "Link against the 'readline' library for the standalone interpreter?" ON "BUILD_LUA AND LUA_HAVE_READLINE" OFF)
+cmake_dependent_option(LUA_USE_READLINE "Link against the 'readline' library for the standalone interpreter?" ON "LUA_HAVE_READLINE" OFF)
 
 
 # Generate the luaconf.h header file from all of the above. This header is used
