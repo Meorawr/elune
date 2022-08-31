@@ -159,6 +159,12 @@ LUALIB_API int (luaL_optint) (lua_State *L, int narg, int def);
 LUALIB_API lua_State *(luaL_checkthread) (lua_State *L, int narg);
 LUALIB_API lua_State *(luaL_optthread) (lua_State *L, int narg, lua_State *def);
 
+#define luaL_newlib(L, l) (luaL_newlibtable(L, funcs), luaL_setfuncs(L, funcs, 0))
+#define luaL_newlibtable(L, l) lua_createtable((L), 0, (sizeof((funcs)) / sizeof((funcs)[0])) - 1)
+
+LUALIB_API int (luaL_getsubtable) (lua_State *L, int idx, const char *fname);
+LUALIB_API void (luaL_setfuncs) (lua_State *L, const luaL_Reg *l, int nup);
+
 
 /**
  * Security APIs

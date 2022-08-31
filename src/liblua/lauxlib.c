@@ -676,6 +676,40 @@ LUALIB_API lua_State *luaL_optthread (lua_State *L, int narg, lua_State *def) {
 }
 
 
+LUALIB_API int luaL_getsubtable (lua_State *L, int idx, const char *fname) {
+  lua_getfield(L, idx, fname);
+
+  if (lua_istable(L, -1)) {
+    return 1;  /* table already there */
+  } else {
+    lua_pop(L, 1);  /* remove previous result */
+    idx = lua_absindex(L, idx);
+    lua_newtable(L);
+    lua_pushvalue(L, -1);  /* copy to be left at top */
+    lua_setfield(L, idx, fname);  /* assign new table to field */
+    return 0;  /* false, because did not find table there */
+  }
+}
+
+
+LUALIB_API void luaL_setfuncs (lua_State *L, const luaL_Reg *l, int nup) {
+  luaL_checkstack(L, nup, "too many upvalues");
+
+  for (; l->name != NULL; l++) {
+    int i;
+
+    for (i = 0; i < nup; i++) {  /* copy upvalues to top of stack */
+      lua_pushvalue(L, -nup);
+    }
+
+    lua_pushcclosure(L, l->func, nup);
+    lua_setfield(L, -(nup + 2), l->name);
+  }
+
+  lua_pop(L, nup);
+}
+
+
 /**
  * Security APIs
  */
