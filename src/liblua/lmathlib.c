@@ -277,7 +277,6 @@ static const luaL_Reg mathlib[] = {
 
 static const luaL_Reg globalmathlib[] = {
   { .name = "fastrandom", .func = math_random },
-  { .name = "securerandom", .func = math_securerandom },
   { .name = NULL, .func = NULL },
 };
 
