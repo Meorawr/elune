@@ -32,14 +32,12 @@ set(LIBLUA_OUTPUT_NAME ${LIBLUA_OUTPUT_NAME_INIT} CACHE STRING "Output name of t
 set(LUA_OUTPUT_NAME ${LUA_OUTPUT_NAME_INIT} CACHE STRING "Output name of the Lua interpreter target, without any prefixes or extensions")
 set(LUAC_OUTPUT_NAME ${LUAC_OUTPUT_NAME_INIT} CACHE STRING "Output name of the Lua compiler target, without any prefixes or extensions")
 
-add_subdirectory(ports/utf8)
 add_subdirectory(src/liblua)
 add_subdirectory(src/lua)
 add_subdirectory(src/luac)
 
 if(BUILD_TESTING)
-  add_subdirectory(ports/acutest)
-  add_subdirectory(tests)
+    add_subdirectory(tests)
 endif()
 
 if(BUILD_INSTALL)
