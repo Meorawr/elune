@@ -19,7 +19,7 @@ add_library(meorawr::tainted-liblua ALIAS tainted-liblua)
 set_target_properties(
   tainted-liblua
   PROPERTIES
-    OUTPUT_NAME ${TL_LIBLUA_OUTPUT_NAME}
+    OUTPUT_NAME ${LIBLUA_OUTPUT_NAME}
     C_EXTENSIONS OFF
     C_STANDARD 11
     C_STANDARD_REQUIRED ON
@@ -127,7 +127,7 @@ add_executable(meorawr::tainted-lua ALIAS tainted-lua)
 set_target_properties(
   tainted-lua
   PROPERTIES
-    OUTPUT_NAME ${TL_LUA_OUTPUT_NAME}
+    OUTPUT_NAME ${LUA_OUTPUT_NAME}
     C_EXTENSIONS OFF
     C_STANDARD 11
     C_STANDARD_REQUIRED ON
@@ -158,7 +158,7 @@ add_executable(meorawr::tainted-luac ALIAS tainted-luac)
 set_target_properties(
   tainted-luac
   PROPERTIES
-    OUTPUT_NAME ${TL_LUAC_OUTPUT_NAME}
+    OUTPUT_NAME ${LUAC_OUTPUT_NAME}
     C_EXTENSIONS OFF
     C_STANDARD 11
     C_STANDARD_REQUIRED ON
