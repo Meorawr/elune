@@ -25,7 +25,6 @@ static const luaL_Reg lualibs[] = {
   { .name = LUA_OSLIBNAME, .func = luaopen_os },
   { .name = LUA_STRLIBNAME, .func = luaopen_string },
   { .name = LUA_TABLIBNAME, .func = luaopen_table },
-  { .name = LUA_COMPATLIBNAME, .func = luaopen_compat },
   { .name = NULL, .func = NULL },
 };
 
@@ -39,7 +38,6 @@ static const luaL_Reg elunelibs[] = {
   /* { .name = LUA_OSLIBNAME, .func = luaopen_elune_os }, */
   /* { .name = LUA_STRLIBNAME, .func = luaopen_elune_string }, */
   /* { .name = LUA_TABLIBNAME, .func = luaopen_elune_table }, */
-  /* { .name = LUA_COMPATLIBNAME, .func = luaopen_elune_compat }, */
   { .name = NULL, .func = NULL },
 };
 

@@ -14,7 +14,6 @@
 #define LUA_BASELIBNAME "_G"
 #define LUA_BITLIBNAME "bit"
 #define LUA_COLIBNAME "coroutine"
-#define LUA_COMPATLIBNAME "compat"
 #define LUA_DBLIBNAME "debug"
 #define LUA_ELUNELIBNAME "elune"
 #define LUA_IOLIBNAME "io"
@@ -27,7 +26,6 @@
 
 LUALIB_API int (luaopen_base) (lua_State *L);
 LUALIB_API int (luaopen_bit) (lua_State *L);
-LUALIB_API int (luaopen_compat) (lua_State *L);
 LUALIB_API int (luaopen_coroutine) (lua_State *L);
 LUALIB_API int (luaopen_debug) (lua_State *L);
 LUALIB_API int (luaopen_io) (lua_State *L);
@@ -49,7 +47,6 @@ LUALIB_API void (luaL_openlibs) (lua_State *L);
 LUALIB_API int (luaopen_elune_base) (lua_State *L);
 LUALIB_API int (luaopen_elune_bit) (lua_State *L);
 LUALIB_API int (luaopen_elune_debug) (lua_State *L);
-LUALIB_API int (luaopen_elune_compat) (lua_State *L);
 LUALIB_API int (luaopen_elune_coroutine) (lua_State *L);
 LUALIB_API int (luaopen_elune_os) (lua_State *L);
 LUALIB_API int (luaopen_elune_math) (lua_State *L);
