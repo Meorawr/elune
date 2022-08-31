@@ -55,14 +55,15 @@ static void print_usage (void) {
   fprintf(stderr,
   "usage: %s [options] [script [args]].\n"
   "Available options are:\n"
-  "  -e stat  execute string " LUA_QL("stat") "\n"
-  "  -l name  require library " LUA_QL("name") "\n"
-  "  -i       enter interactive mode after executing " LUA_QL("script") "\n"
-  "  -p       enable performance accounting\n"
-  "  -t       load and execute scripts insecurely\n"
-  "  -v       show version information\n"
-  "  --       stop handling options\n"
-  "  -        execute stdin and stop handling options\n"
+  "  -e stat    execute string " LUA_QL("stat") "\n"
+  "  -l name    require library " LUA_QL("name") "\n"
+  "  -L lua|wow require base libraries for Lua 5.1 or WoW; defaults to 'lua'\n"
+  "  -i         enter interactive mode after executing " LUA_QL("script") "\n"
+  "  -p         enable performance accounting\n"
+  "  -t         load and execute scripts insecurely\n"
+  "  -v         show version information\n"
+  "  --         stop handling options\n"
+  "  -          execute stdin and stop handling options\n"
   ,
   progname);
   fflush(stderr);
@@ -335,7 +336,7 @@ static int collectargs (char **argv, int *pi, int *pv, int *pe) {
       case 'e':
         *pe = 1;  /* go through */
         LUA_FALLTHROUGH;
-      case 'l':
+      case 'l': case 'L':
         if (argv[i][2] == '\0') {
           i++;
           if (argv[i] == NULL) return -1;
@@ -369,6 +370,11 @@ static int runargs (lua_State *L, char **argv, int n) {
         if (dolibrary(L, filename))
           return 1;  /* stop if file fails */
         break;
+      }
+      case 'L': {  /* handled by openlibs */
+        if (argv[i][2] == '\0') {
+          ++i;
+        }
       }
       case 't': {
         luaL_forceinsecure(L);
@@ -413,6 +419,46 @@ static int stdin_is_tty (void) {
 }
 
 
+static int openlibs (lua_State *L, char **argv) {
+  int i;
+  void (*openfunc) (lua_State *L) = luaL_openlibs;
+
+  for (i = 1; argv[i] != NULL; i++) {
+    const char *lib;
+
+    if (argv[i][0] != '-') {
+      goto exit_success;  /* not an option */
+    } else if (argv[i][1] != 'L') {
+      continue;  /* not an '-L' option */
+    } else if (argv[i][2] == '\0') {
+      i++;  /* expecting '-L <lib>' as two arguments */
+
+      if (argv[i] == NULL) {
+        goto exit_failure;
+      } else {
+        lib = argv[i];
+      }
+    } else {
+      lib = argv[i] + 2;  /* got '-L<lib>' as a single argument */
+    }
+
+    if (strcmp(lib, "lua") == 0) {
+      openfunc = luaL_openlibs;
+    } else if ((strcmp(lib, "elune") == 0) || (strcmp(lib, "wow") == 0)) {
+      openfunc = luaL_openelunelibs;
+    } else {
+      goto exit_failure;  /* invalid lib name */
+    }
+  }
+
+exit_success:
+  openfunc(L);
+  return 0;
+exit_failure:
+  return -1;
+}
+
+
 static int pmain (lua_State *L) {
   struct Smain *s = (struct Smain *)lua_touserdata(L, 1);
   char **argv = s->argv;
@@ -421,7 +467,12 @@ static int pmain (lua_State *L) {
   globalL = L;
   if (argv[0] && argv[0][0]) progname = argv[0];
   lua_gc(L, LUA_GCSTOP, 0);  /* stop collector during initialization */
-  luaL_openlibs(L);  /* open libraries */
+  script = openlibs(L, argv);
+  if (script < 0) {  /* invalid args? */
+    print_usage();
+    s->status = 1;
+    return 0;
+  }
   lua_pushcfunction(L, traceback);  /* push traceback function */
   lua_replace(L, LUA_ERRORHANDLERINDEX);  /* install it as global error handler */
   lua_settaintmode(L, LUA_TAINTRDRW);  /* enable taint propagation */
