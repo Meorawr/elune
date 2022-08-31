@@ -1,8 +1,8 @@
-# elune_target_public_headers(TARGET [PUBLIC|INTERFACE|PRIVATE <files...>]...)
+# elune_target_headers(TARGET [PUBLIC|INTERFACE|PRIVATE <files...>]...)
 #
 # Adds the supplied source files to TARGET and configures them for installation
 # as public header files.
-function(elune_target_public_headers TARGET)
+function(elune_target_headers TARGET)
   cmake_parse_arguments(PARSE_ARGV 0 "ARG" "" "" "PUBLIC;INTERFACE;PRIVATE")
 
   target_sources(
@@ -31,6 +31,6 @@ function(elune_target_public_headers TARGET)
     set(_public_headers)
   endif()
 
-  list(APPEND _public_headers ${ARG_PUBLIC} ${ARG_INTERFACE} ${ARG_PRIVATE})
+  list(APPEND _public_headers ${ARG_PUBLIC} ${ARG_INTERFACE})
   set_target_properties(${TARGET} PROPERTIES PUBLIC_HEADER "${_public_headers}")
 endfunction()

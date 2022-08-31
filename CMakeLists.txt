@@ -19,7 +19,7 @@ include(GNUInstallDirs)
 
 include(elune-configure-target)
 include(elune-target-copy-file)
-include(elune-target-public-headers)
+include(elune-target-headers)
 
 #
 # Platform Detection

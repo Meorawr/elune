@@ -53,14 +53,14 @@ target_link_libraries(
     $<$<BOOL:${LUA_USE_DL}>:dl>
 )
 
-elune_target_public_headers(
+elune_target_headers(
   liblua
-  PRIVATE
-    ${PROJECT_BINARY_DIR}/include/lua5.1/luaconf.h
-    ${PROJECT_SOURCE_DIR}/include/lua5.1/lauxlib.h
-    ${PROJECT_SOURCE_DIR}/include/lua5.1/lua.h
-    ${PROJECT_SOURCE_DIR}/include/lua5.1/lua.hpp
-    ${PROJECT_SOURCE_DIR}/include/lua5.1/lualib.h
+  PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include/lua5.1/luaconf.h>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/lua5.1/lauxlib.h>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/lua5.1/lua.h>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/lua5.1/lua.hpp>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include/lua5.1/lualib.h>
 )
 
 target_sources(
