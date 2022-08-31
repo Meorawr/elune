@@ -152,7 +152,7 @@ static int docall (lua_State *L, int narg, int nres) {
 
 static void print_version (void) {
     static const char lua_version[] = LUA_RELEASE "  " LUA_COPYRIGHT;
-    static const char elune_version[] = ELUNE_RELEASE "    " ELUNE_COPYRIGHT;
+    static const char elune_version[] = ELUNE_RELEASE "  " ELUNE_COPYRIGHT;
 
     luaL_writestring(lua_version, strlen(lua_version));
     luaL_writeline();

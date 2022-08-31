@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.22)
 
 project(
-  Elune
-  VERSION 2
+  elune
+  VERSION 2.0
   DESCRIPTION "Customized Lua 5.1 distribution aimed at replicating the World of Warcraft addon environment"
   HOMEPAGE_URL "https://github.com/Meorawr/elune"
   LANGUAGES C

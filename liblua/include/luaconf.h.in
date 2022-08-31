@@ -27,7 +27,7 @@
 #define ELUNE_AUTHORS "Daniel 'Meorawr' Yates"
 #define ELUNE_COPYRIGHT "Copyright (C) 2021-2022 " ELUNE_AUTHORS "."
 #define ELUNE_RELEASE ELUNE_VERSION
-#define ELUNE_VERSION "@PROJECT_NAME@ @PROJECT_VERSION@"
+#define ELUNE_VERSION "Elune @PROJECT_VERSION@"
 /* clang-format off */
 #define ELUNE_VERSION_NUM @PROJECT_VERSION@
 /* clang-format on */
