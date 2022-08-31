@@ -20,3 +20,19 @@ target_sources(
   PRIVATE
     lua.c
 )
+
+if(BUILD_INSTALL)
+  install(
+    TARGETS lua
+    EXPORT elune-lua-targets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Runtime
+  )
+
+  install(
+    EXPORT elune-lua-targets
+    FILE elune-lua-targets.cmake
+    NAMESPACE elune::
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/elune"
+    COMPONENT Development
+  )
+endif()

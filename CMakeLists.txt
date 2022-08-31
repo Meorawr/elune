@@ -1,13 +1,15 @@
 cmake_minimum_required(VERSION 3.21)
 
 project(
-  elune
+  Elune
+  VERSION 2
   DESCRIPTION "Customized Lua 5.1 distribution aimed at replicating the World of Warcraft addon environment"
   HOMEPAGE_URL "https://github.com/Meorawr/elune"
   LANGUAGES C
 )
 
 list(PREPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 
 include(elune-configure-target)
@@ -42,22 +44,30 @@ if(BUILD_TESTING)
 endif()
 
 if(BUILD_INSTALL)
+  write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/elune-config-version.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY ExactVersion
+  )
+
+  configure_package_config_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/elune-config.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/elune-config.cmake"
+    INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/elune"
+    NO_CHECK_REQUIRED_COMPONENTS_MACRO
+  )
+
   install(
-    TARGETS
-      liblua
-      lua
-      luac
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    OPTIONAL
+    FILES
+      "${CMAKE_CURRENT_BINARY_DIR}/elune-config-version.cmake"
+      "${CMAKE_CURRENT_BINARY_DIR}/elune-config.cmake"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/elune"
+    COMPONENT Development
   )
 endif()
 
 if(BUILD_INSTALL AND BUILD_PACKAGE)
   set(CPACK_PACKAGE_VENDOR "Meorawr")
-  set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${PROJECT_DESCRIPTION})
   string(TOLOWER "${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}" CPACK_SYSTEM_NAME)
   set(CPACK_GENERATOR "TXZ;ZIP")
   set(CPACK_STRIP_FILES ON)

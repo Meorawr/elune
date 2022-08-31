@@ -123,3 +123,31 @@ target_sources(
     ltablib.c
     linit.c
 )
+
+if(BUILD_INSTALL)
+  install(
+    TARGETS liblua
+    EXPORT elune-liblua-targets
+    RUNTIME
+      DESTINATION ${CMAKE_INSTALL_BINDIR}
+      COMPONENT Runtime
+    LIBRARY
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      COMPONENT Runtime
+    ARCHIVE
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      COMPONENT Development
+    PUBLIC_HEADER
+      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+      COMPONENT Development
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  )
+
+  install(
+    EXPORT elune-liblua-targets
+    FILE elune-liblua-targets.cmake
+    NAMESPACE elune::
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/elune"
+    COMPONENT Development
+  )
+endif()

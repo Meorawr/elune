@@ -27,3 +27,19 @@ target_sources(
     print.c
     $<TARGET_OBJECTS:liblua>
 )
+
+if(BUILD_INSTALL)
+  install(
+    TARGETS luac
+    EXPORT elune-luac-targets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT Runtime
+  )
+
+  install(
+    EXPORT elune-luac-targets
+    FILE elune-luac-targets.cmake
+    NAMESPACE elune::
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/elune"
+    COMPONENT Development
+  )
+endif()
