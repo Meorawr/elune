@@ -111,6 +111,12 @@ target_sources(
     linit.c
 )
 
+if(BUILD_CXX)
+  get_property(_liblua_sources TARGET liblua PROPERTY SOURCES)
+  list(FILTER _liblua_sources INCLUDE REGEX "\\.c$")
+  set_source_files_properties(${_liblua_sources} TARGET_DIRECTORY liblua PROPERTIES LANGUAGE CXX)
+endif()
+
 if(BUILD_INSTALL)
   install(
     TARGETS liblua

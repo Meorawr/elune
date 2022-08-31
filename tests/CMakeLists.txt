@@ -51,3 +51,9 @@ elune_target_copy_file(
   SOURCE luatest_profiling.lua
   OUTPUT luatest_profiling.lua
 )
+
+if(BUILD_CXX)
+  get_property(_luatest_sources TARGET luatest PROPERTY SOURCES)
+  list(FILTER _luatest_sources INCLUDE REGEX "\\.c$")
+  set_source_files_properties(${_luatest_sources} TARGET_DIRECTORY luatest PROPERTIES LANGUAGE CXX)
+endif()

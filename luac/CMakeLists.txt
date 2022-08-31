@@ -27,6 +27,12 @@ target_sources(
     luac.c
 )
 
+if(BUILD_CXX)
+  get_property(_luac_sources TARGET luac PROPERTY SOURCES)
+  list(FILTER _luac_sources INCLUDE REGEX "\\.c$")
+  set_source_files_properties(${_luac_sources} TARGET_DIRECTORY luac PROPERTIES LANGUAGE CXX)
+endif()
+
 if(BUILD_INSTALL)
   install(
     TARGETS luac

@@ -21,6 +21,12 @@ target_sources(
     lua.c
 )
 
+if(BUILD_CXX)
+  get_property(_lua_sources TARGET lua PROPERTY SOURCES)
+  list(FILTER _lua_sources INCLUDE REGEX "\\.c$")
+  set_source_files_properties(${_lua_sources} TARGET_DIRECTORY lua PROPERTIES LANGUAGE CXX)
+endif()
+
 if(BUILD_INSTALL)
   install(
     TARGETS lua
