@@ -9,8 +9,8 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
-
-const char script[] = "\n"
+static const char script[] =
+  "\n"
   "-------------------------------------------------------------------\n"
   "local table = table\n"
   "foreach = table.foreach\n"
@@ -67,8 +67,8 @@ const char script[] = "\n"
   "-------------------------------------------------------------------\n"
   "\n";
 
-
-LUALIB_API int luaopen_compat (lua_State *L) {
+LUALIB_API int luaopen_compat (lua_State *L)
+{
   if (luaL_loadbuffer(L, script, sizeof(script) - 1, "compat.lua") != 0) {
     lua_error(L);
   } else {

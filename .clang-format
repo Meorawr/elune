@@ -1,0 +1,45 @@
+---
+BasedOnStyle: LLVM
+ColumnLimit: 80
+Language: Cpp
+Standard: Cpp03
+ContinuationIndentWidth: 2
+TabWidth: 2
+UseTab: Never
+
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AlwaysBreakBeforeMultilineStrings: true
+BreakBeforeBraces: Linux
+Cpp11BracedListStyle: false
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: '^(<|")(lua|luaconf).h'
+    Priority: 1
+  - Regex: '^(<|")(lauxlib|lsyslib|lualib).h'
+    Priority: 2
+  - Regex: '^"l[[:alnum:]]+.h"$'
+    Priority: 3
+  - Regex: '<[[:alnum:].]+>'
+    Priority: 4
+PointerAlignment: Right
+SortIncludes: true
+SpaceAfterCStyleCast: true
+SpaceBeforeParens: Custom
+SpaceBeforeParensOptions:
+  AfterFunctionDeclarationName: true
+  AfterFunctionDefinitionName: true
+
+AttributeMacros:
+  - LUA_API
+  - LUA_DECL_EXPORT
+  - LUA_DECL_HIDDEN
+  - LUA_DECL_IMPORT
+  - LUA_NORETURN
+  - LUALIB_API
+
+StatementMacros:
+  - LUA_FALLTHROUGH
+
+...
+

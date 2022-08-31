@@ -1,18 +1,11 @@
 /* Licensed under the terms of the MIT License; see full copyright information
  * in the "LICENSE" file or at <http://www.lua.org/license.html> */
 
-
 #define luac_c
 #define LUA_CORE
 
-#include <ctype.h>
-#include <errno.h>
-#include <stdio.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "lua.h"
+
 #include "lauxlib.h"
 
 #include "ldebug.h"
@@ -21,71 +14,77 @@
 #include "lmanip.h"
 #include "lmem.h"
 #include "lobject.h"
-#include "lobject.h"
-#include "lopcodes.h"
 #include "lopcodes.h"
 #include "lstring.h"
 #include "lundump.h"
 
-#define PROGNAME "luac"  /* default program name */
-#define	OUTPUT PROGNAME ".out"  /* default output file */
+#include <ctype.h>
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-static int listing = 0;  /* list bytecodes? */
-static int dumping = 1;  /* dump bytecodes? */
-static int stripping = 0;  /* strip debug information? */
-static char Output[] = { OUTPUT };  /* default output file name */
-static const char* output = Output;  /* actual output file name */
-static const char* progname = PROGNAME;  /* actual program name */
+#define PROGNAME "luac"        /* default program name */
+#define OUTPUT PROGNAME ".out" /* default output file */
 
-static void printfunction (const Proto* f, int full);
+static int listing = 0;                 /* list bytecodes? */
+static int dumping = 1;                 /* dump bytecodes? */
+static int stripping = 0;               /* strip debug information? */
+static char Output[] = { OUTPUT };      /* default output file name */
+static const char *output = Output;     /* actual output file name */
+static const char *progname = PROGNAME; /* actual program name */
 
-static void fatal (const char* message) {
+static void printfunction (const Proto *f, int full);
+
+static void fatal (const char *message)
+{
   fprintf(stderr, "%s: %s\n", progname, message);
   exit(EXIT_FAILURE);
 }
 
-static void cannot (const char* what) {
-  fprintf(stderr, "%s: cannot %s %s: %s\n", progname, what, output, strerror(errno));
+static void cannot (const char *what)
+{
+  fprintf(stderr, "%s: cannot %s %s: %s\n", progname, what, output,
+          strerror(errno));
   exit(EXIT_FAILURE);
 }
 
-static void usage (const char* message) {
+static void usage (const char *message)
+{
   if (*message == '-') {
     fprintf(stderr, "%s: unrecognized option '%s'\n", progname, message);
   } else {
     fprintf(stderr, "%s: %s\n", progname, message);
   }
 
-  fprintf(
-    stderr,
-    "usage: %s [options] [filenames].\n"
-    "Available options are:\n"
-    "  -        process stdin\n"
-    "  -l       list\n"
-    "  -o name  output to file 'name' (default is \"%s\")\n"
-    "  -p       parse only\n"
-    "  -s       strip debug information\n"
-    "  -v       show version information\n"
-    "  --       stop handling options\n",
-    progname,
-    Output
-  );
+  fprintf(stderr,
+          "usage: %s [options] [filenames].\n"
+          "Available options are:\n"
+          "  -        process stdin\n"
+          "  -l       list\n"
+          "  -o name  output to file 'name' (default is \"%s\")\n"
+          "  -p       parse only\n"
+          "  -s       strip debug information\n"
+          "  -v       show version information\n"
+          "  --       stop handling options\n",
+          progname, Output);
 
   exit(EXIT_FAILURE);
 }
 
-#define	IS(s) (strcmp(argv[i], s) == 0)
+#define IS(s) (strcmp(argv[i], s) == 0)
 
-static int doargs (int argc, char* argv[]) {
+static int doargs (int argc, char *argv[])
+{
   int i;
   int version = 0;
 
   if (argv[0] != NULL && *argv[0] != 0) {
-    progname=argv[0];
+    progname = argv[0];
   }
 
   for (i = 1; i < argc; i++) {
-    if (*argv[i] != '-') {  /* end of options; keep it */
+    if (*argv[i] != '-') { /* end of options; keep it */
       break;
     } else if (IS("--")) { /* end of options; skip it */
       ++i;
@@ -94,11 +93,11 @@ static int doargs (int argc, char* argv[]) {
     if (version) {
       ++version;
       break;
-    } else if (IS("-")) {  /* end of options; use stdin */
+    } else if (IS("-")) { /* end of options; use stdin */
       break;
-    } else if (IS("-l")) {  /* list */
+    } else if (IS("-l")) { /* list */
       ++listing;
-    } else if (IS("-o")) {  /* output file */
+    } else if (IS("-o")) { /* output file */
       output = argv[++i];
 
       if (output == NULL || *output == 0) {
@@ -106,15 +105,15 @@ static int doargs (int argc, char* argv[]) {
       }
 
       if (IS("-")) {
-        output=NULL;
+        output = NULL;
       }
-    } else if (IS("-p")) {  /* parse only */
+    } else if (IS("-p")) { /* parse only */
       dumping = 0;
-    } else if (IS("-s")) {  /* strip debug information */
+    } else if (IS("-s")) { /* strip debug information */
       stripping = 1;
-    } else if (IS("-v")) {  /* show version */
+    } else if (IS("-v")) { /* show version */
       ++version;
-    } else {  /* unknown option */
+    } else { /* unknown option */
       usage(argv[i]);
     }
 
@@ -136,15 +135,16 @@ static int doargs (int argc, char* argv[]) {
   return i;
 }
 
-#define toproto(L, i) (clvalue(L->top+(i))->l.p)
+#define toproto(L, i) (clvalue(L->top + (i))->l.p)
 
-static const Proto* combine (lua_State* L, int n) {
+static const Proto *combine (lua_State *L, int n)
+{
   if (n == 1) {
     return toproto(L, -1);
   } else {
     int i;
     int pc;
-    Proto* f = luaF_newproto(L);
+    Proto *f = luaF_newproto(L);
     setptvalue2s(L, L->top, f);
     incr_top(L);
 
@@ -153,7 +153,7 @@ static const Proto* combine (lua_State* L, int n) {
     pc = 2 * n + 1;
     f->code = luaM_newvector(L, pc, Instruction);
     f->sizecode = pc;
-    f->p = luaM_newvector(L, n, Proto*);
+    f->p = luaM_newvector(L, n, Proto *);
     f->sizep = n;
     pc = 0;
 
@@ -168,21 +168,23 @@ static const Proto* combine (lua_State* L, int n) {
   }
 }
 
-static int writer (lua_State* L, const void* p, size_t size, void* u) {
+static int writer (lua_State *L, const void *p, size_t size, void *u)
+{
   lua_unused(L);
   return (fwrite(p, size, 1, (FILE *) u) != 1) && (size != 0);
 }
 
 struct Smain {
   int argc;
-  char** argv;
+  char **argv;
 };
 
-static int pmain (lua_State* L) {
-  struct Smain* s = (struct Smain*) lua_touserdata(L, 1);
+static int pmain (lua_State *L)
+{
+  struct Smain *s = (struct Smain *) lua_touserdata(L, 1);
   int argc = s->argc;
-  char** argv = s->argv;
-  const Proto* f;
+  char **argv = s->argv;
+  const Proto *f;
   int i;
 
   if (!lua_checkstack(L, argc)) {
@@ -190,7 +192,7 @@ static int pmain (lua_State* L) {
   }
 
   for (i = 0; i < argc; i++) {
-    const char* filename = IS("-") ? NULL : argv[i];
+    const char *filename = IS("-") ? NULL : argv[i];
     if (luaL_loadfile(L, filename) != 0) {
       fatal(lua_tostring(L, -1));
     }
@@ -202,7 +204,7 @@ static int pmain (lua_State* L) {
   }
 
   if (dumping) {
-    FILE* D = (output == NULL) ? stdout : fopen(output, "wb");
+    FILE *D = (output == NULL) ? stdout : fopen(output, "wb");
 
     if (D == NULL) {
       cannot("open");
@@ -223,8 +225,9 @@ static int pmain (lua_State* L) {
   return 0;
 }
 
-extern int main (int argc, char* argv[]) {
-  lua_State* L;
+extern int main (int argc, char *argv[])
+{
+  lua_State *L;
   struct Smain s;
   int i = doargs(argc, argv);
 
@@ -252,16 +255,16 @@ extern int main (int argc, char* argv[]) {
   return EXIT_SUCCESS;
 }
 
-
 /**
  * Print infrastructure
  */
 
 #define Sizeof(x) ((int) sizeof(x))
-#define VOID(p) ((const void *)(p))
+#define VOID(p) ((const void *) (p))
 
-static void printstring (const TString* ts) {
-  const char* s = getstr(ts);
+static void printstring (const TString *ts)
+{
+  const char *s = getstr(ts);
   size_t n = ts->tsv.len;
   size_t i;
 
@@ -271,15 +274,33 @@ static void printstring (const TString* ts) {
     int c = s[i];
 
     switch (c) {
-    case '"': printf("\\\""); break;
-    case '\\': printf("\\\\"); break;
-    case '\a': printf("\\a"); break;
-    case '\b': printf("\\b"); break;
-    case '\f': printf("\\f"); break;
-    case '\n': printf("\\n"); break;
-    case '\r': printf("\\r"); break;
-    case '\t': printf("\\t"); break;
-    case '\v': printf("\\v"); break;
+    case '"':
+      printf("\\\"");
+      break;
+    case '\\':
+      printf("\\\\");
+      break;
+    case '\a':
+      printf("\\a");
+      break;
+    case '\b':
+      printf("\\b");
+      break;
+    case '\f':
+      printf("\\f");
+      break;
+    case '\n':
+      printf("\\n");
+      break;
+    case '\r':
+      printf("\\r");
+      break;
+    case '\t':
+      printf("\\t");
+      break;
+    case '\v':
+      printf("\\v");
+      break;
     default:
       if (isprint((unsigned char) c)) {
         putchar(c);
@@ -292,8 +313,9 @@ static void printstring (const TString* ts) {
   putchar('"');
 }
 
-static void printconstant (const Proto* f, int i) {
-  const TValue* o = &f->k[i];
+static void printconstant (const Proto *f, int i)
+{
+  const TValue *o = &f->k[i];
   switch (ttype(o)) {
   case LUA_TNIL:
     printf("nil");
@@ -307,14 +329,15 @@ static void printconstant (const Proto* f, int i) {
   case LUA_TSTRING:
     printstring(rawtsvalue(o));
     break;
-  default:  /* cannot happen */
+  default: /* cannot happen */
     printf("? type=%d", ttype(o));
     break;
   }
 }
 
-static void printcode (const Proto* f) {
-  const Instruction* code = f->code;
+static void printcode (const Proto *f)
+{
+  const Instruction *code = f->code;
   int n = f->sizecode;
   int pc;
 
@@ -437,11 +460,12 @@ static void printcode (const Proto* f) {
   }
 }
 
-#define SS(x)	(x == 1) ? "" : "s"
-#define S(x)	x, SS(x)
+#define SS(x) (x == 1) ? "" : "s"
+#define S(x) x, SS(x)
 
-static void printheader (const Proto* f) {
-  const char* s = getstr(f->source);
+static void printheader (const Proto *f)
+{
+  const char *s = getstr(f->source);
 
   if (*s == '@' || *s == '=') {
     s++;
@@ -451,35 +475,26 @@ static void printheader (const Proto* f) {
     s = "(string)";
   }
 
-  printf(
-    "\n%s <%s:%d,%d> (%d instruction%s, %d bytes at %p)\n",
-    (f->linedefined == 0) ? "main" : "function",
-    s,
-    f->linedefined,
-    f->lastlinedefined,
-    S(f->sizecode),  /* expands to two args */
-    f->sizecode * Sizeof(Instruction),
-    VOID(f)
+  printf("\n%s <%s:%d,%d> (%d instruction%s, %d bytes at %p)\n",
+         (f->linedefined == 0) ? "main" : "function", s, f->linedefined,
+         f->lastlinedefined, S(f->sizecode), /* expands to two args */
+         f->sizecode * Sizeof(Instruction), VOID(f));
+
+  printf("%d%s param%s, %d slot%s, %d upvalue%s, ", f->numparams,
+         f->is_vararg ? "+" : "", SS(f->numparams),
+         S(f->maxstacksize), /* expands to two args */
+         S(f->nups)          /* expands to two args */
   );
 
-  printf(
-    "%d%s param%s, %d slot%s, %d upvalue%s, ",
-    f->numparams,
-    f->is_vararg ? "+" : "",
-    SS(f->numparams),
-    S(f->maxstacksize),  /* expands to two args */
-    S(f->nups)  /* expands to two args */
-  );
-
-  printf(
-    "%d local%s, %d constant%s, %d function%s\n",
-    S(f->sizelocvars),  /* expands to two args */
-    S(f->sizek),   /* expands to two args */
-    S(f->sizep)   /* expands to two args */
+  printf("%d local%s, %d constant%s, %d function%s\n",
+         S(f->sizelocvars), /* expands to two args */
+         S(f->sizek),       /* expands to two args */
+         S(f->sizep)        /* expands to two args */
   );
 }
 
-static void printconstants (const Proto* f) {
+static void printconstants (const Proto *f)
+{
   int n = f->sizek;
   int i;
 
@@ -492,7 +507,8 @@ static void printconstants (const Proto* f) {
   }
 }
 
-static void printlocals (const Proto* f) {
+static void printlocals (const Proto *f)
+{
   int n = f->sizelocvars;
   int i;
 
@@ -507,20 +523,23 @@ static void printlocals (const Proto* f) {
   }
 }
 
-static void printupvalues (const Proto* f) {
+static void printupvalues (const Proto *f)
+{
   int n = f->sizeupvalues;
   int i;
 
   printf("upvalues (%d) for %p:\n", n, VOID(f));
 
-  if (f->upvalues == NULL) return;
+  if (f->upvalues == NULL)
+    return;
 
   for (i = 0; i < n; i++) {
     printf("\t%d\t%s\n", i, getstr(f->upvalues[i]));
   }
 }
 
-static void printfunction (const Proto* f, int full) {
+static void printfunction (const Proto *f, int full)
+{
   int n = f->sizep;
   int i;
 

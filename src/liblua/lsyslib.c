@@ -1,14 +1,15 @@
 #define lsyslib_c
 #define LUA_CORE
 
-#include "lua.h"
-#include "lauxlib.h"
 #include "lsyslib.h"
+
+#include "lua.h"
+
+#include "lauxlib.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 
 #if defined(LUA_USE_CLOCK_GETTIME)
 #include <time.h>
@@ -17,8 +18,8 @@
 #else
 #endif
 
-
-LUA_API lua_Clock luaI_clocktime (lua_State *L) {
+LUA_API lua_Clock luaI_clocktime (lua_State *L)
+{
   lua_unused(L);
 
 #if defined(LUA_USE_CLOCK_GETTIME)
@@ -39,8 +40,8 @@ LUA_API lua_Clock luaI_clocktime (lua_State *L) {
 #endif
 }
 
-
-LUA_API lua_Clock luaI_clockrate (lua_State *L) {
+LUA_API lua_Clock luaI_clockrate (lua_State *L)
+{
   lua_unused(L);
 
 #if defined(LUA_USE_CLOCK_GETTIME)
@@ -57,20 +58,20 @@ LUA_API lua_Clock luaI_clockrate (lua_State *L) {
 #endif
 }
 
-
 #if defined(LUA_USE_GETRANDOM)
 #include <errno.h>
 #include <string.h>
+
 #include <sys/random.h>
 #elif defined(LUA_USE_ARC4RANDOM)
 #include <stdlib.h>
 #elif defined(LUA_USE_BCRYPTGENRANDOM)
-#include <windows.h>
 #include <bcrypt.h>
+#include <windows.h>
 #endif
 
-
-LUA_API lua_Number luaI_securerandom (lua_State *L) {
+LUA_API lua_Number luaI_securerandom (lua_State *L)
+{
   lua_unused(L);
 
 #if defined(LUA_USE_GETRANDOM)
@@ -96,7 +97,8 @@ LUA_API lua_Number luaI_securerandom (lua_State *L) {
 #elif defined(LUA_USE_BCRYPTGENRANDOM)
   /* Windows implementation */
   uint32_t i;
-  BCryptGenRandom(NULL, (PUCHAR) &i, sizeof(i), BCRYPT_USE_SYSTEM_PREFERRED_RNG);
+  BCryptGenRandom(NULL, (PUCHAR) &i, sizeof(i),
+                  BCRYPT_USE_SYSTEM_PREFERRED_RNG);
   return ((lua_Number) i / UINT32_MAX);
 #else
   /* Default implementation */
@@ -105,7 +107,6 @@ LUA_API lua_Number luaI_securerandom (lua_State *L) {
 #endif
 }
 
-
 #if defined(LUA_USE_POSIX_ISATTY)
 #include <unistd.h>
 #elif defined(LUA_USE_WINDOWS_ISATTY)
@@ -113,8 +114,8 @@ LUA_API lua_Number luaI_securerandom (lua_State *L) {
 #include <windows.h>
 #endif
 
-
-LUA_API int luaI_stdin_is_tty (lua_State *L) {
+LUA_API int luaI_stdin_is_tty (lua_State *L)
+{
   lua_unused(L);
 
 #if defined(LUA_USE_POSIX_ISATTY)
@@ -125,17 +126,16 @@ LUA_API int luaI_stdin_is_tty (lua_State *L) {
   return _isatty(_fileno(stdin));
 #else
   /* Default implementation */
-  return 1;  /* assume stdin is a tty */
+  return 1; /* assume stdin is a tty */
 #endif
 }
-
 
 #if defined(LUA_USE_MKSTEMP)
 #include <unistd.h>
 #endif
 
-
-LUA_API int luaI_tmpname (lua_State *L) {
+LUA_API int luaI_tmpname (lua_State *L)
+{
 #if defined(LUA_USE_MKSTEMP)
   /* POSIX implementation */
   char buf[32];
@@ -163,13 +163,13 @@ LUA_API int luaI_tmpname (lua_State *L) {
 #endif
 }
 
-
-LUA_API void luaI_writestring (const char *s, size_t sz) {
+LUA_API void luaI_writestring (const char *s, size_t sz)
+{
   fwrite(s, sizeof(char), sz, stdout);
 }
 
-
-LUA_API void luaI_writestringerror (const char *s, ...) {
+LUA_API void luaI_writestringerror (const char *s, ...)
+{
   va_list args;
   va_start(args, s);
   vfprintf(stderr, s, args);
@@ -177,18 +177,18 @@ LUA_API void luaI_writestringerror (const char *s, ...) {
   fflush(stderr);
 }
 
-
-LUA_API void luaI_writeline (void) {
+LUA_API void luaI_writeline (void)
+{
   luaI_writestring("\n", 1);
   fflush(stdout);
 }
-
 
 /**
  * popen abstraction layer
  */
 
-LUA_API FILE *luaI_popen (lua_State *L, const char *cmd, const char *mode) {
+LUA_API FILE *luaI_popen (lua_State *L, const char *cmd, const char *mode)
+{
   lua_unused(L);
 #if defined(LUA_USE_POSIX_POPEN)
   /* POSIX implementation */
@@ -206,8 +206,8 @@ LUA_API FILE *luaI_popen (lua_State *L, const char *cmd, const char *mode) {
 #endif
 }
 
-
-LUA_API int luaI_pclose (lua_State *L, FILE *p) {
+LUA_API int luaI_pclose (lua_State *L, FILE *p)
+{
   lua_unused(L);
 
 #if defined(LUA_USE_POSIX_POPEN)
@@ -223,31 +223,32 @@ LUA_API int luaI_pclose (lua_State *L, FILE *p) {
 #endif
 }
 
-
-LUA_API int luaI_checkpmode (lua_State *L, const char *mode) {
+LUA_API int luaI_checkpmode (lua_State *L, const char *mode)
+{
   lua_unused(L);
 
 #if defined(LUA_USE_WINDOWS_POPEN)
   /* Windows accepts "[rw][bt]?" as valid modes */
-  return ((mode[0] == 'r' || mode[0] == 'w') && (mode[1] == '\0' || ((mode[1] == 'b' || mode[1] == 't') && mode[2] == '\0')));
+  return ((mode[0] == 'r' || mode[0] == 'w') &&
+          (mode[1] == '\0' ||
+           ((mode[1] == 'b' || mode[1] == 't') && mode[2] == '\0')));
 #else
   /* By default, Lua accepts only "r" or "w" as valid modes */
   return ((mode[0] == 'r' || mode[0] == 'w') && mode[1] == '\0');
 #endif
 }
 
-
 /**
  * readline abstraction layer
  */
 
 #if defined(LUA_USE_READLINE)
-#include <readline/readline.h>
 #include <readline/history.h>
+#include <readline/readline.h>
 #endif
 
-
-LUA_API int luaI_readline (lua_State *L, const char *prompt) {
+LUA_API int luaI_readline (lua_State *L, const char *prompt)
+{
 #if defined(LUA_USE_READLINE)
   /* libreadline implementation */
   char *str = readline(prompt);
@@ -270,8 +271,8 @@ LUA_API int luaI_readline (lua_State *L, const char *prompt) {
   if (fgets(buf, (int) len, stdin) != NULL) {
     len = strlen(buf);
 
-    if (len > 0 && buf[len - 1] == '\n') {  /* line ends with newline? */
-      buf[--len] = '\0';  /* remove it */
+    if (len > 0 && buf[len - 1] == '\n') { /* line ends with newline? */
+      buf[--len] = '\0';                   /* remove it */
     }
 
     lua_pushlstring(L, buf, len);
@@ -282,8 +283,8 @@ LUA_API int luaI_readline (lua_State *L, const char *prompt) {
 #endif
 }
 
-
-LUA_API void luaI_saveline (lua_State *L, const char *line) {
+LUA_API void luaI_saveline (lua_State *L, const char *line)
+{
   lua_unused(L);
 
 #if defined(LUA_USE_READLINE)

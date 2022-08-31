@@ -6,14 +6,12 @@
 
 #include "lobject.h"
 
+#define gnode(t, i) (&(t)->node[i])
+#define gkey(n) (&(n)->i_key.nk)
+#define gval(n) (&(n)->i_val)
+#define gnext(n) ((n)->i_key.nk.next)
 
-#define gnode(t,i)	(&(t)->node[i])
-#define gkey(n)		(&(n)->i_key.nk)
-#define gval(n)		(&(n)->i_val)
-#define gnext(n)	((n)->i_key.nk.next)
-
-#define key2tval(n)	(&(n)->i_key.tvk)
-
+#define key2tval(n) (&(n)->i_key.tvk)
 
 LUAI_FUNC const TValue *luaH_getnum (Table *t, int key);
 LUAI_FUNC TValue *luaH_setnum (lua_State *L, Table *t, int key);
@@ -27,11 +25,9 @@ LUAI_FUNC void luaH_free (lua_State *L, Table *t);
 LUAI_FUNC int luaH_next (lua_State *L, Table *t, StkId key);
 LUAI_FUNC int luaH_getn (Table *t);
 
-
 #if defined(LUA_DEBUG)
 LUAI_FUNC Node *luaH_mainposition (const Table *t, const TValue *key);
 LUAI_FUNC int luaH_isdummy (Node *n);
 #endif
-
 
 #endif
