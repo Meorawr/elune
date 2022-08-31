@@ -18,6 +18,7 @@ target_link_libraries(
   luac
   PRIVATE
     $<TARGET_GENEX_EVAL:liblua,$<TARGET_PROPERTY:liblua,LINK_LIBRARIES>>
+    $<TARGET_OBJECTS:liblua>
 )
 
 target_sources(
@@ -25,7 +26,6 @@ target_sources(
   PRIVATE
     luac.c
     print.c
-    $<TARGET_OBJECTS:liblua>
 )
 
 if(BUILD_INSTALL)
