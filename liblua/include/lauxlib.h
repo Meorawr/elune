@@ -16,10 +16,6 @@
 #define luaL_getn(L, i) ((int) lua_objlen(L, i))
 #define luaL_setn(L, i, j) lua_nop() /* no op! */
 
-#if defined(LUA_COMPAT_OPENLIB)
-#define luaI_openlib luaL_openlib
-#endif
-
 /* extra error code for `luaL_load' */
 #define LUA_ERRFILE (LUA_ERRERR + 1)
 
@@ -28,7 +24,7 @@ typedef struct luaL_Reg {
     lua_CFunction func;
 } luaL_Reg;
 
-LUALIB_API void luaI_openlib (lua_State *L, const char *libname,
+LUALIB_API void luaL_openlib (lua_State *L, const char *libname,
                               const luaL_Reg *l, int nup);
 LUALIB_API void luaL_register (lua_State *L, const char *libname,
                                const luaL_Reg *l);
