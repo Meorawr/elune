@@ -11,14 +11,12 @@ set(CMAKE_REQUIRED_LIBRARIES)
 
 add_library(liblua)
 add_library(elune::liblua ALIAS liblua)
+elune_configure_target(liblua)
 
 set_target_properties(
   liblua
   PROPERTIES
     OUTPUT_NAME ${LIBLUA_OUTPUT_NAME}
-    C_EXTENSIONS OFF
-    C_STANDARD 11
-    C_STANDARD_REQUIRED ON
 )
 
 target_compile_definitions(

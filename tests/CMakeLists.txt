@@ -1,14 +1,6 @@
 add_executable(luatest)
 add_executable(elune::luatest ALIAS luatest)
-
-set_target_properties(
-  luatest
-  PROPERTIES
-    OUTPUT_NAME "luatest"
-    C_EXTENSIONS OFF
-    C_STANDARD 11
-    C_STANDARD_REQUIRED ON
-)
+elune_configure_target(luatest)
 
 target_link_libraries(
   luatest

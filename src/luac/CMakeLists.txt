@@ -1,13 +1,11 @@
 add_executable(luac)
 add_executable(elune::luac ALIAS luac)
+elune_configure_target(luac)
 
 set_target_properties(
   luac
   PROPERTIES
     OUTPUT_NAME ${LUAC_OUTPUT_NAME}
-    C_EXTENSIONS OFF
-    C_STANDARD 11
-    C_STANDARD_REQUIRED ON
 )
 
 target_include_directories(
