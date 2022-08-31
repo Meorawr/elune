@@ -31,8 +31,8 @@
 #define ELUNE_VERSION "@PROJECT_NAME@ @PROJECT_VERSION@"
 #define ELUNE_VERSION_NUM @PROJECT_VERSION@
 
-#cmakedefine LUA_USE_CXX
 #cmakedefine LUA_USE_CXX_EXCEPTIONS
+#cmakedefine LUA_USE_CXX_LINKAGE
 #cmakedefine LUA_USE_LONGLONG
 #cmakedefine LUA_USE_SHARED
 
@@ -191,7 +191,7 @@
 
 /* Export declarations */
 
-#if defined(__cplusplus) && !defined(LUA_USE_CXX)
+#if defined(__cplusplus) && !defined(LUA_USE_CXX_LINKAGE)
 #define LUA_DECL_EXTERN extern "C"
 #else
 #define LUA_DECL_EXTERN extern
