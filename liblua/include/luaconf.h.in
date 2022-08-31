@@ -108,8 +108,6 @@
 
 /* Controls compatibility with the old long-string nesting facility. */
 #define LUA_COMPAT_LSTR 1
-/* Controls compatibility with the old 'luaL_openlib' behavior. */
-#define LUA_COMPAT_OPENLIB
 
 /* Library loading configuration */
 
