@@ -351,7 +351,7 @@ static int libargs (lua_State *L, char **argv, int n) {
 
     for (i = 1; i < n; i++) {
         int option = argv[i][1];
-        char *extra;
+        char *extra = NULL;
 
         lua_assert(argv[i][0] == '-'); /* already checked */
 
@@ -361,11 +361,11 @@ static int libargs (lua_State *L, char **argv, int n) {
             if (*extra == '\0') {
                 extra = argv[++i];
             }
-
-            lua_assert(extra != NULL);
         }
 
         if (option == 'L') {
+            lua_assert(extra != NULL);
+
             if (strcmp(extra, "lua") == 0) {
                 luaL_openlibsx(L, LUALIB_STANDARD);
                 loaded = 1;
