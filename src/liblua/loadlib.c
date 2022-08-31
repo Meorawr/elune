@@ -538,6 +538,12 @@ static const luaL_Reg ll_funcs[] = {
 };
 
 
+static const luaL_Reg ll_preload[] = {
+  {"elune", luaopen_elune},
+  {NULL, NULL}
+};
+
+
 static const lua_CFunction loaders[] =
   {loader_preload, loader_Lua, loader_C, loader_Croot, NULL};
 
@@ -575,6 +581,7 @@ LUALIB_API int luaopen_package (lua_State *L) {
   lua_setfield(L, -2, "loaded");
   /* set field `preload' */
   lua_newtable(L);
+  luaL_setfuncs(L, ll_preload, 0);
   lua_setfield(L, -2, "preload");
   lua_pushvalue(L, LUA_GLOBALSINDEX);
   luaL_register(L, NULL, ll_funcs);  /* open lib into global table */
