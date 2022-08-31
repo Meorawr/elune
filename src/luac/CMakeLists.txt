@@ -25,7 +25,6 @@ target_sources(
   luac
   PRIVATE
     luac.c
-    print.c
 )
 
 if(BUILD_INSTALL)
