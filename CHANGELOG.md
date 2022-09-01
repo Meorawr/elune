@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [v2.2]
 ### Added
 - Added `debuglocals([level])` library API.
 - Added `debugstack([thread, ][level, ntop, nbase, ...])` library API.
@@ -62,7 +62,8 @@
 - Added all math library extensions present in the in-game environment as well as their global aliases.
 - Added all global aliases to the OS libary functions as present in the in-game environment.
 
-[Unreleased]: https://github.com/Meorawr/elune/compare/v2.1...HEAD
+[Unreleased]: https://github.com/Meorawr/elune/compare/v2.2...HEAD
+[v2.2]: https://github.com/Meorawr/elune/compare/v2.1...v2.2
 [v2.1]: https://github.com/Meorawr/elune/compare/v2.0...v2.0
 [v2.0]: https://github.com/Meorawr/elune/compare/v1...v2.0
 [v1]: https://github.com/Meorawr/elune/releases/tag/v1
