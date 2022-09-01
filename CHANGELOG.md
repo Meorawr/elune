@@ -9,6 +9,7 @@
 ### Changed
 - Fixed an issue where `secureexecuterange()` would not pass through additional arguments to the supplied function.
 - Fixed an issue where `strsplit()` would ignore the value supplied to the `limit` parameter.
+- Fixed various correctness issues with `strsplit()` and processing of parameters with embedded null characters.
 
 ## [v2.1]
 ### Changed
