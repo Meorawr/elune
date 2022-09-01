@@ -1376,6 +1376,48 @@ case("seterrorhandler: converts non-string errors", function()
     assert(lasterror == "UNKNOWN ERROR")
 end)
 
+case("seterrorhandler: replaces '*' source with object names", function()
+    local origerrorhandler = geterrorhandler()
+    local lasterror
+
+    local fakeframe = { [0] = newproxy(true) }
+    getmetatable(fakeframe[0]).__name = function() return "FakeFrame" end
+
+    seterrorhandler(function(err) lasterror = err; end)
+    securecall(loadstring("local _ = ...; ImmediateError = ImmediateError + 1", "*:OnBanana"), fakeframe)
+    seterrorhandler(origerrorhandler)
+
+    assert(lasterror == [=[[string "FakeFrame:OnBanana"]:1: attempt to perform arithmetic on global 'ImmediateError' (a nil value)]=])
+end)
+
+case("seterrorhandler: replaces '*' source with defaulted object names", function()
+    local origerrorhandler = geterrorhandler()
+    local lasterror
+
+    local fakeframe = { [0] = newproxy(true) }
+    getmetatable(fakeframe[0]).__name = function() return nil end
+
+    seterrorhandler(function(err) lasterror = err; end)
+    securecall(loadstring("local _ = ...; ImmediateError = ImmediateError + 1", "*:OnBanana"), fakeframe)
+    seterrorhandler(origerrorhandler)
+
+    assert(lasterror == [=[[string "<unnamed>:OnBanana"]:1: attempt to perform arithmetic on global 'ImmediateError' (a nil value)]=])
+end)
+
+case("seterrorhandler: ignores '*' source if first local is not a named object", function()
+    local origerrorhandler = geterrorhandler()
+    local lasterror
+
+    local fakeframe = { [0] = newproxy(true) }
+    getmetatable(fakeframe[0]).__name = nil
+
+    seterrorhandler(function(err) lasterror = err; end)
+    securecall(loadstring("local _ = ...; ImmediateError = ImmediateError + 1", "*:OnBanana"), fakeframe)
+    seterrorhandler(origerrorhandler)
+
+    assert(lasterror == [=[[string "*:OnBanana"]:1: attempt to perform arithmetic on global 'ImmediateError' (a nil value)]=])
+end)
+
 case("strsplit: splits strings", function()
     local a, b, c, d, e, f = strsplit(" ", "a b c d e")
     assert(a == "a")

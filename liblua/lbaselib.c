@@ -511,10 +511,76 @@ static int luaB_geterrorhandler (lua_State *L) {
     return 1;
 }
 
+static const char *f_errorobjname (lua_State *L, int level) {
+    const char *name = NULL;
+    int base = lua_gettop(L);
+    lua_Debug ar;
+
+    if (lua_getstack(L, level, &ar) == 0) {
+        goto exit;
+    } else if (lua_getinfo(L, "S", &ar) == 0 || *ar.source != '*') {
+        goto exit;
+    } else if (lua_getlocal(L, &ar, 1) == NULL) {
+        goto exit;
+    } else if (lua_type(L, -1) != LUA_TTABLE) {
+        goto exit;
+    }
+
+    lua_rawgeti(L, -1, 0);
+
+    if (!lua_isuserdata(L, -1) || !luaL_callmeta(L, -1, "__name")) {
+        goto exit;
+    }
+
+    if (!lua_isstring(L, -1)) {
+        lua_pushliteral(L, "<unnamed>");
+    }
+
+    lua_replace(L, base + 1);
+    name = lua_tostring(L, base + 1);
+
+exit:
+    lua_settop(L, base + (name ? 1 : 0));
+    return name;
+}
+
 static int f_errorhandler (lua_State *L) {
+
     if (!lua_isstring(L, 1)) {
         lua_pushliteral(L, "UNKNOWN ERROR");
         lua_replace(L, 1);
+    }
+
+    {
+        /* The reference error handler has special support for an "*:" token
+         * in error messages that originate from script handlers.
+         *
+         * When printing a stack trace that involves a UI widget script handler
+         * the "source" of the function for the script handler if defined in
+         * XML will be the string "*"; this shows up in the stack trace as
+         * showing calls such as "*:OnMouseDown".
+         *
+         * When an error occurs within the immediate body of the function the
+         * client will replace the asterisk with the name of the frame object
+         * found in the first local value of that stack frame.
+         *
+         * In a pure Lua scenario this can be replicated by making use of
+         * custom chunk names with loadstring; load a chunk with "*:" in its
+         * name and ensure its first local value is a frame and then trigger
+         * an immediate error (without calling the C "error" function). */
+
+        size_t len;
+        const char *err = lua_tolstring(L, -1, &len);
+        const char *match = strstr(err, "*:");
+        const char *name;
+
+        if (match && (name = f_errorobjname(L, 1)) != NULL) {
+            lua_pushlstring(L, err, (match - err)); /* before asterisk */
+            lua_pushstring(L, name);
+            lua_pushstring(L, match + 1); /* after asterisk */
+            lua_concat(L, 3);
+            lua_replace(L, 1);
+        }
     }
 
     lua_pushboolean(L, 1);

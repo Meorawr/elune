@@ -5,6 +5,7 @@
 - Added `debuglocals([level])` library API.
 - Added `debugstack([thread, ][level, ntop, nbase, ...])` library API.
 - Added `strsplittable(delim, str[, limit])` library API.
+- Added support for object name replacements in handled errors.
 ### Changed
 - Fixed an issue where `secureexecuterange()` would not pass through additional arguments to the supplied function.
 - Fixed an issue where `strsplit()` would ignore the value supplied to the `limit` parameter.
