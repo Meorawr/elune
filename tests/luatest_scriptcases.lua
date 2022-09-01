@@ -11,7 +11,7 @@
 -- luacheck: globals forceinsecure hooksecurefunc issecure issecurevariable
 -- luacheck: globals loadstring_untainted securecall securecallfunction
 -- luacheck: globals geterrorhandler seterrorhandler
--- luacheck: globals strsplit strsplittable
+-- luacheck: globals strsplit strsplittable secureexecuterange
 
 local case = _G.case or function(name, func)
     local olderrhandler = geterrorhandler()
@@ -1144,6 +1144,64 @@ end)
 case("securecall: caller taint propagates to callee", function()
     forceinsecure()
     securecall(function() assert(not issecure()) end)
+end)
+
+case("secureexecuterange: calls function for each entry in table", function()
+    local ncalls = 0
+
+    local function exec(k, v)
+        ncalls = ncalls + 1
+        assert(k == ncalls)
+        assert(v == tostring(ncalls))
+    end
+
+    secureexecuterange({ "1", "2", "3", "4", "5" }, exec)
+    assert(ncalls == 5)
+end)
+
+case("secureexecuterange: continues if function errors", function()
+    local ncalls = 0
+    local nerrs = 0
+
+    local oldhandler = geterrorhandler()
+    seterrorhandler(function() nerrs = nerrs + 1; end)
+    secureexecuterange({ 1, 2, 3, 4, 5 }, function() ncalls = ncalls + 1; error("foo") end)
+    seterrorhandler(oldhandler)
+    assert(ncalls == 5)
+    assert(nerrs == ncalls)
+end)
+
+case("secureexecuterange: does not propagate taint from calls", function()
+    local function exec()
+        assert(issecure())
+        forceinsecure()
+        assert(not issecure())
+    end
+
+    assert(issecure())
+    secureexecuterange({ 1, 2, 3, 4, 5 }, exec)
+    assert(issecure())
+end)
+
+case("secureexecuterange: passes through additional arguments", function()
+    local function exec(k, v, ...)
+        assert(type(k) == "number")
+        assert(type(v) == "string")
+        assert(select("#", ...) == 3)
+        assert(select(1, ...) == true)
+        assert(select(2, ...) == false)
+        assert(type(select(3, ...)) == "userdata")
+    end
+
+    secureexecuterange({ "foo", "bar" }, exec, true, false, newproxy(false))
+end)
+
+case("secureexecuterange: cannot return values", function()
+    local function exec()
+        return 1, 2, 3;
+    end
+
+    assert(select("#", secureexecuterange({ 1, 2, 3 }, exec) == 0))
 end)
 
 -- This test verifies that hooksecurefunc calls both functions in the expected

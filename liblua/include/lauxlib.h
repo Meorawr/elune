@@ -158,7 +158,7 @@ LUALIB_API void luaL_setupvaluetaint (lua_State *L, int funcindex, int n, const 
 LUALIB_API int luaL_securecall (lua_State *L, int nargs, int nresults, int errfunc);
 LUALIB_API int luaL_securepcall (lua_State *L, int nargs, int nresults, int errfunc);
 LUALIB_API int luaL_securecpcall (lua_State *L, lua_CFunction func, void *ud);
-LUALIB_API void luaL_secureforeach (lua_State *L, int idx, int errfunc);
+LUALIB_API void luaL_secureforeach (lua_State *L, int idx, int nargs, int errfunc);
 
 LUALIB_API void luaL_createdelegate (lua_State *L);
 LUALIB_API void luaL_createsecuredelegate (lua_State *L);

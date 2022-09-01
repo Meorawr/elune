@@ -849,13 +849,14 @@ LUALIB_API int luaL_securecpcall (lua_State *L, lua_CFunction func, void *ud) {
     return luaL_cpcallas(L, func, ud, &savedts);
 }
 
-LUALIB_API void luaL_secureforeach (lua_State *L, int idx, int errfunc) {
+LUALIB_API void luaL_secureforeach (lua_State *L, int idx, int nargs, int errfunc) {
     lua_TaintState savedts;
+    int minstack = nargs + 5; /* min 5 slots required for all pushed values */
     int funcidx;
 
-    lua_checkstack(L, 5);
+    lua_checkstack(L, minstack);
     lua_savetaint(L, &savedts);
-    funcidx = lua_absindex(L, -1);
+    funcidx = lua_absindex(L, -(nargs + 1));
     idx = lua_absindex(L, idx);
     errfunc = lua_absindex(L, errfunc);
 
@@ -865,8 +866,13 @@ LUALIB_API void luaL_secureforeach (lua_State *L, int idx, int errfunc) {
         lua_pushvalue(L, funcidx);
         lua_pushvalue(L, -3); /* push key */
         lua_pushvalue(L, -3); /* push value */
-        lua_pcall(L, 2, 0, errfunc);
-        lua_settop(L, funcidx + 1); /* retain key for next */
+
+        for (int i = 1; i <= nargs; ++i) { /* push additional arguments */
+            lua_pushvalue(L, funcidx + i);
+        }
+
+        lua_pcall(L, nargs + 2, 0, errfunc);
+        lua_pop(L, 1); /* pop value; retain key for next */
         lua_restoretaint(L, &savedts);
     }
 

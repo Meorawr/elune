@@ -495,10 +495,10 @@ static int luaB_securecallfunction (lua_State *L) {
 }
 
 static int luaB_secureexecuterange (lua_State *L) {
+    int nargs = lua_gettop(L) - 2;
     luaL_checktype(L, 1, LUA_TTABLE);
     luaL_checktype(L, 2, LUA_TFUNCTION);
-    lua_settop(L, 2);
-    luaL_secureforeach(L, 1, LUA_ERRORHANDLERINDEX);
+    luaL_secureforeach(L, 1, nargs, LUA_ERRORHANDLERINDEX);
     return 0;
 }
 
