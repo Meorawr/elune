@@ -551,7 +551,7 @@ static int db_stack (lua_State *L) {
     return 1;
 }
 
-static void aux_dumpvalue (lua_State *L, luaL_Buffer *B, const char *name, int idx, int recurse) {
+static void aux_dumpvalue (lua_State *L, const char *name, int idx, int recurse) {
     const char *indent;
     idx = lua_absindex(L, idx);
 
@@ -566,21 +566,33 @@ static void aux_dumpvalue (lua_State *L, luaL_Buffer *B, const char *name, int i
             LUA_FALLTHROUGH;
         case LUA_TNIL:
             lua_pushfstring(L, "%s%s = nil\n", indent, name);
-            luaL_addvalue(B);
             break;
         case LUA_TBOOLEAN:
             lua_pushfstring(L, "%s%s = %s\n", indent, name, lua_toboolean(L, idx) ? "true" : "false");
-            luaL_addvalue(B);
             break;
         case LUA_TNUMBER:
             lua_pushfstring(L, "%s%s = %s\n", indent, name, lua_tostring(L, idx));
-            luaL_addvalue(B);
             break;
         case LUA_TSTRING:
             lua_pushfstring(L, "%s%s = \"%s\"\n", indent, name, lua_tostring(L, idx));
-            luaL_addvalue(B);
             break;
         case LUA_TTABLE: {
+            /* When using buffer operations we're permitted to use stack space
+             * between calls so long as such usage is balanced; as such all
+             * calls to luaL_addvalue need to ensure that no additional values
+             * are present on the stack.
+             *
+             * For table traversal this requires us to allocate one stack slot
+             * _above_ the buffer to temporarily hold the key while we append
+             * to the buffer. */
+
+            luaL_Buffer B;
+            int kidx;
+
+            lua_pushnil(L); /* initial traversal key */
+            kidx = lua_gettop(L);
+            luaL_buffinit(L, &B);
+
             lua_rawgeti(L, idx, 0); /* push object userdata */
 
             if (lua_isuserdata(L, -1) && luaL_callmeta(L, -1, "__name")) {
@@ -596,26 +608,31 @@ static void aux_dumpvalue (lua_State *L, luaL_Buffer *B, const char *name, int i
             }
 
             lua_replace(L, -2); /* replace object userdata */
-            luaL_addvalue(B);
+            luaL_addvalue(&B); /* open table */
 
             if (recurse--) {
-                lua_pushnil(L); /* push initial key */
+                lua_pushvalue(L, kidx); /* push initial key */
 
                 while (lua_next(L, idx)) {
-                    lua_pushvalue(L, -2); /* copy key as next call may modify it */
-                    const char *key = lua_tostring(L, -1);
+                    const char *kname;
+                    lua_copy(L, -2, kidx); /* copy key to traversal slot */
 
-                    if (!key) {
-                        key = ""; /* don't output '(null)' for weird keys */
+                    if ((kname = lua_tostring(L, -2)) == NULL) {
+                        kname = ""; /* default key name appropriately for reference */
                     }
 
-                    aux_dumpvalue(L, B, key, -2, recurse);
-                    lua_pop(L, 2); /* pop copied key and value */
+                    aux_dumpvalue(L, kname, -1, recurse);
+                    lua_replace(L, -3); /* replace key */
+                    lua_pop(L, 1); /* pop value */
+                    luaL_addvalue(&B); /* append to buffer */
+                    lua_pushvalue(L, kidx); /* push traversal key */
                 }
             }
 
             lua_pushfstring(L, "%s}\n", indent);
-            luaL_addvalue(B);
+            luaL_addvalue(&B); /* close table */
+            luaL_pushresult(&B); /* concat table buffer */
+            lua_remove(L, kidx); /* pop traversal key space */
             break;
         }
         case LUA_TFUNCTION: {
@@ -631,18 +648,15 @@ static void aux_dumpvalue (lua_State *L, luaL_Buffer *B, const char *name, int i
                 lua_pushfstring(L, "%s%s = %s() defined %s:%d\n", indent, name, ar.name, ar.source, ar.linedefined);
             }
 
-            luaL_addvalue(B);
             break;
         }
         case LUA_TLIGHTUSERDATA:
             LUA_FALLTHROUGH;
         case LUA_TUSERDATA:
             lua_pushfstring(L, "%s%s = <userdata>\n", indent, name);
-            luaL_addvalue(B);
             break;
         default:
             lua_pushfstring(L, "%s%s = <%s>\n", indent, name, lua_typename(L, idx));
-            luaL_addvalue(B);
             break;
     }
 }
@@ -672,16 +686,18 @@ static int db_locals (lua_State *L) {
 
         while ((name = lua_getlocal(L, &ar, local++)) != NULL) {
             int recurse = 1;
-            aux_dumpvalue(L, &B, name, -1, recurse);
-            lua_pop(L, 1); /* pop local */
+            aux_dumpvalue(L, name, -1, recurse);
+            lua_replace(L, -2); /* replace local */
+            luaL_addvalue(&B);
         }
 
         lua_getinfo(L, "f", &ar); /* push function */
 
         while ((name = lua_getupvalue(L, -1, upval++)) != NULL) {
             int recurse = 1;
-            aux_dumpvalue(L, &B, name, -1, recurse);
-            lua_pop(L, 1); /* pop upvalue */
+            aux_dumpvalue(L, name, -1, recurse);
+            lua_replace(L, -2); /* replace upvalue */
+            luaL_addvalue(&B);
         }
 
         lua_pop(L, 1); /* pop function */
