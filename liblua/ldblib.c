@@ -656,7 +656,7 @@ static void aux_dumpvalue (lua_State *L, const char *name, int idx, int recurse)
             lua_pushfstring(L, "%s%s = <userdata>\n", indent, name);
             break;
         default:
-            lua_pushfstring(L, "%s%s = <%s>\n", indent, name, lua_typename(L, idx));
+            lua_pushfstring(L, "%s%s = <%s>\n", indent, name, lua_typename(L, lua_type(L, idx)));
             break;
     }
 }
