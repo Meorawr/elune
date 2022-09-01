@@ -545,7 +545,6 @@ exit:
 }
 
 static int f_errorhandler (lua_State *L) {
-
     if (!lua_isstring(L, 1)) {
         lua_pushliteral(L, "UNKNOWN ERROR");
         lua_replace(L, 1);
@@ -569,8 +568,7 @@ static int f_errorhandler (lua_State *L) {
          * name and ensure its first local value is a frame and then trigger
          * an immediate error (without calling the C "error" function). */
 
-        size_t len;
-        const char *err = lua_tolstring(L, -1, &len);
+        const char *err = lua_tolstring(L, -1, NULL);
         const char *match = strstr(err, "*:");
         const char *name;
 
