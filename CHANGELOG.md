@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### Added
+- Added `debuglocals([level])` library API.
 - Added `debugstack([thread, ][level, ntop, nbase, ...])` library API.
 - Added `strsplittable(delim, str[, limit])` library API.
 ### Changed
