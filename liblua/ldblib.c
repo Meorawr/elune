@@ -551,6 +551,148 @@ static int db_stack (lua_State *L) {
     return 1;
 }
 
+static void aux_dumpvalue (lua_State *L, luaL_Buffer *B, const char *name, int idx, int recurse) {
+    const char *indent;
+    idx = lua_absindex(L, idx);
+
+    if (!recurse) {
+        indent = " "; /* only a single level of recursion is really supported */
+    } else {
+        indent = "";
+    }
+
+    switch (lua_type(L, idx)) {
+        case LUA_TNONE:
+            LUA_FALLTHROUGH;
+        case LUA_TNIL:
+            lua_pushfstring(L, "%s%s = nil\n", indent, name);
+            luaL_addvalue(B);
+            break;
+        case LUA_TBOOLEAN:
+            lua_pushfstring(L, "%s%s = %s\n", indent, name, lua_toboolean(L, idx) ? "true" : "false");
+            luaL_addvalue(B);
+            break;
+        case LUA_TNUMBER:
+            lua_pushfstring(L, "%s%s = %s\n", indent, name, lua_tostring(L, idx));
+            luaL_addvalue(B);
+            break;
+        case LUA_TSTRING:
+            lua_pushfstring(L, "%s%s = \"%s\"\n", indent, name, lua_tostring(L, idx));
+            luaL_addvalue(B);
+            break;
+        case LUA_TTABLE: {
+            lua_rawgeti(L, idx, 0); /* push object userdata */
+
+            if (lua_isuserdata(L, -1)) {
+                lua_objname(L, -1);
+
+                if (lua_isstring(L, -1)) {
+                    lua_pushfstring(L, "%s%s = %s {\n", indent, name, lua_tostring(L, -1));
+                } else {
+                    lua_pushfstring(L, "%s%s = <unnamed> {\n", indent, name);
+                }
+
+                lua_replace(L, -2); /* replace object name */
+            } else {
+                lua_pushfstring(L, "%s%s = <table> {\n", indent, name);
+            }
+
+            lua_replace(L, -2); /* replace object userdata */
+            luaL_addvalue(B);
+
+            if (recurse--) {
+                lua_pushnil(L); /* push initial key */
+
+                while (lua_next(L, idx)) {
+                    lua_pushvalue(L, -2); /* copy key as next call may modify it */
+                    const char *key = lua_tostring(L, -1);
+
+                    if (!key) {
+                        key = ""; /* don't output '(null)' for weird keys */
+                    }
+
+                    aux_dumpvalue(L, B, key, -2, recurse);
+                    lua_pop(L, 2); /* pop copied key and value */
+                }
+            }
+
+            lua_pushfstring(L, "%s}\n", indent);
+            luaL_addvalue(B);
+            break;
+        }
+        case LUA_TFUNCTION: {
+            lua_Debug ar;
+            lua_pushvalue(L, idx);
+            lua_getinfo(L, ">nS", &ar);
+
+            if (!ar.name && !ar.source) {
+                lua_pushfstring(L, "%s%s = <function> defined %d\n", indent, name, ar.linedefined);
+            } else if (!ar.name) {
+                lua_pushfstring(L, "%s%s = <function> defined %s:%d\n", indent, name, ar.source, ar.linedefined);
+            } else {
+                lua_pushfstring(L, "%s%s = %s() defined %s:%d\n", indent, name, ar.name, ar.source, ar.linedefined);
+            }
+
+            luaL_addvalue(B);
+            break;
+        }
+        case LUA_TLIGHTUSERDATA:
+            LUA_FALLTHROUGH;
+        case LUA_TUSERDATA:
+            lua_pushfstring(L, "%s%s = <userdata>\n", indent, name);
+            luaL_addvalue(B);
+            break;
+        default:
+            lua_pushfstring(L, "%s%s = <%s>\n", indent, name, lua_typename(L, idx));
+            luaL_addvalue(B);
+            break;
+    }
+}
+
+static int db_locals (lua_State *L) {
+    int level = (int) luaL_optnumber(L, 1, 1);
+    int enabled;
+    luaL_Buffer B;
+    lua_Debug ar;
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, LUA_RIDX_INERRORHANDLER);
+    enabled = lua_toboolean(L, -1);
+    lua_pop(L, 1);
+
+    if (!enabled) {
+        return 0;
+    } else if (level < 1) {
+        level = 1;
+    }
+
+    luaL_buffinit(L, &B);
+
+    if (lua_getstack(L, level, &ar) != 0) {
+        const char *name = NULL;
+        int local = 1;
+        int upval = 1;
+
+        while ((name = lua_getlocal(L, &ar, local++)) != NULL) {
+            int recurse = 1;
+            aux_dumpvalue(L, &B, name, -1, recurse);
+            lua_pop(L, 1); /* pop local */
+        }
+
+        lua_getinfo(L, "f", &ar); /* push function */
+
+        while ((name = lua_getupvalue(L, -1, upval++)) != NULL) {
+            int recurse = 1;
+            aux_dumpvalue(L, &B, name, -1, recurse);
+            lua_pop(L, 1); /* pop upvalue */
+        }
+
+        lua_pop(L, 1); /* pop function */
+    }
+
+    luaL_pushresult(&B);
+    return 1;
+}
+
 /**
  * Debug library registration
  */
@@ -588,7 +730,7 @@ static const luaL_Reg dblib_lua[] = {
 
 static const luaL_Reg dblib_global[] = {
     { "debugstack", db_stack },
-    { "debuglocals", NULL }, /* TODO: Implement me! */
+    { "debuglocals", db_locals },
     /* clang-format off */
     { NULL, NULL },
     /* clang-format on */
