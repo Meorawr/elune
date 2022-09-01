@@ -583,9 +583,7 @@ static void aux_dumpvalue (lua_State *L, luaL_Buffer *B, const char *name, int i
         case LUA_TTABLE: {
             lua_rawgeti(L, idx, 0); /* push object userdata */
 
-            if (lua_isuserdata(L, -1)) {
-                lua_objname(L, -1);
-
+            if (lua_isuserdata(L, -1) && luaL_callmeta(L, -1, "__name")) {
                 if (lua_isstring(L, -1)) {
                     lua_pushfstring(L, "%s%s = %s {\n", indent, name, lua_tostring(L, -1));
                 } else {

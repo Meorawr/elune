@@ -1050,29 +1050,6 @@ LUA_API void lua_copy (lua_State *L, int fromidx, int toidx) {
     lua_unlock(L);
 }
 
-LUA_API void lua_objname (lua_State *L, int idx) {
-    StkId obj;
-    const TValue *func;
-
-    lua_lock(L);
-    obj = index2adr(L, idx);
-    api_checkvalidindex(L, obj);
-    func = luaT_gettmbyobj(L, obj, TM_NAME);
-
-    if (func != luaO_nilobject) {
-        setobj2s(L, L->top, func); /* push function */
-        api_incr_top(L);
-        setobj2s(L, L->top, obj); /* push object */
-        api_incr_top(L);
-        luaD_call(L, L->top - 2, 1);
-    } else {
-        setnilvalue(L, L->top);
-        api_incr_top(L);
-    }
-
-    lua_unlock(L);
-}
-
 LUA_API size_t lua_objsize (lua_State *L, int idx) {
     StkId o;
     size_t s;
