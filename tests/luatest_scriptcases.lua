@@ -1183,6 +1183,17 @@ case("secureexecuterange: does not propagate taint from calls", function()
     assert(issecure())
 end)
 
+case("secureexecuterange: does not clear taint if called insecurely", function()
+    local function exec()
+        assert(not issecure())
+    end
+
+    forceinsecure()
+    assert(not issecure())
+    secureexecuterange({ 1, 2, 3, 4, 5 }, exec)
+    assert(not issecure())
+end)
+
 case("secureexecuterange: passes through additional arguments", function()
     local function exec(k, v, ...)
         assert(type(k) == "number")
