@@ -63,6 +63,7 @@ static void init_registry (lua_State *L, global_State *g) {
     Table *registry = luaH_new(L, LUA_RIDX_LAST, 0);
     sethvalue(L, &g->l_registry, registry);
     setthvalue(L, luaH_setnum(L, registry, LUA_RIDX_MAINTHREAD), L);
+    setbvalue(L, luaH_setnum(L, registry, LUA_RIDX_INERRORHANDLER), 0);
 }
 
 /*

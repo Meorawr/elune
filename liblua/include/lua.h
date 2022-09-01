@@ -74,6 +74,7 @@ enum lua_RegistryIndex {
     LUA_NOREF = -2,
     LUA_REFNIL = -1,
     LUA_RIDX_MAINTHREAD = 1,
+    LUA_RIDX_INERRORHANDLER = 2,
     LUA_RIDX_LAST = LUA_RIDX_MAINTHREAD,
 };
 
