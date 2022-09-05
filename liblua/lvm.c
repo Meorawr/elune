@@ -472,6 +472,9 @@ reentry: /* entry point */
             }
         }
 
+        /* update savedpc for per-op taint logging */
+        L->savedpc = pc;
+
         /* warning!! several calls may realloc the stack and invalidate `ra' */
         ra = RA(i);
         lua_assert(base == L->base && L->base == L->ci->base);
@@ -653,7 +656,6 @@ reentry: /* entry point */
                 if (b != 0) {
                     L->top = ra + b; /* else previous instruction set top */
                 }
-                L->savedpc = pc;
                 luaG_profileleave(L);
                 switch (luaD_precall(L, ra, nresults)) {
                     case PCRLUA: {
@@ -680,7 +682,6 @@ reentry: /* entry point */
                 if (b != 0) {
                     L->top = ra + b; /* else previous instruction set top */
                 }
-                L->savedpc = pc;
                 lua_assert(GETARG_C(i) - 1 == LUA_MULTRET);
                 luaG_profileleave(L);
                 switch (luaD_precall(L, ra, LUA_MULTRET)) {
@@ -726,7 +727,6 @@ reentry: /* entry point */
                     luaF_close(L, base);
                 }
                 luaG_profileleave(L);
-                L->savedpc = pc;
                 b = luaD_poscall(L, ra);
                 if (--nexeccalls == 0) { /* was previous function running `here'? */
                     return; /* no: return */
@@ -754,7 +754,6 @@ reentry: /* entry point */
                 const TValue *init = ra;
                 const TValue *plimit = ra + 1;
                 const TValue *pstep = ra + 2;
-                L->savedpc = pc; /* next steps may throw errors */
                 if (!tonumber(L, init, ra)) {
                     luaG_runerror(L, "'for' initial value must be a number");
                 } else if (!tonumber(L, plimit, ra + 1)) {
