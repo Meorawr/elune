@@ -358,16 +358,14 @@ static void Arith (lua_State *L, StkId ra, const TValue *rb, const TValue *rc, T
             case TM_MUL:
                 setnvalue(L, ra, luai_nummul(nb, nc));
                 break;
-            case TM_DIV: {
+            case TM_DIV:
                 checkfp(L, LUA_EXCEPTFPECOERCE, nb, nc);
                 setnvalue(L, ra, luai_numdiv(nb, nc));
                 break;
-            }
-            case TM_MOD: {
+            case TM_MOD:
                 checkfp(L, LUA_EXCEPTFPECOERCE, nb, nc);
                 setnvalue(L, ra, luai_nummod(nb, nc));
                 break;
-            }
             case TM_POW:
                 setnvalue(L, ra, luai_numpow(nb, nc));
                 break;
