@@ -566,15 +566,28 @@ static const char *getfuncname (lua_State *L, CallInfo *ci, const char **name) {
     }
 }
 
-/* only ANSI way to check whether a pointer points to an array */
-static int isinstack (CallInfo *ci, const TValue *o) {
-    StkId p;
-    for (p = ci->base; p < ci->top; p++) {
-        if (o == p) {
+static int isinarray (const void *needle, const void *begin, const void *end) {
+#if !defined(LUA_ANSI)
+    /* Assume we're building on an architecture with a flat memory model. */
+    uintptr_t uneedle = cast(uintptr_t, needle);
+    uintptr_t ubegin = cast(uintptr_t, begin);
+    uintptr_t uend = cast(uintptr_t, end);
+
+    return uneedle >= ubegin && uneedle < uend;
+#else
+    /* ANSI way to check whether a pointer is contained within an array. */
+    for (void *p = begin; p < end; ++p) {
+        if (p == needle) {
             return 1;
         }
     }
+
     return 0;
+#endif
+}
+
+static int isinstack (CallInfo *ci, const TValue *o) {
+    return isinarray(o, ci->base, ci->top);
 }
 
 void luaG_typeerror (lua_State *L, const TValue *o, const char *op) {
