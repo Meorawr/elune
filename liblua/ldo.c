@@ -563,8 +563,7 @@ static void f_parser (lua_State *L, void *ud) {
     struct SParser *p = cast(struct SParser *, ud);
     luaC_checkGC(L);
     tf = luaY_parser(L, p->z, &p->buff, p->name);
-    cl = luaF_newLclosure(L, tf->nups, hvalue(gt(L)));
-    cl->l.p = tf;
+    cl = luaF_newLclosure(L, tf, hvalue(gt(L)));
     for (i = 0; i < tf->nups; i++) { /* initialize eventual upvalues */
         cl->l.upvals[i] = luaF_newupval(L);
     }

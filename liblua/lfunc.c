@@ -34,11 +34,13 @@ Closure *luaF_newCclosure (lua_State *L, int nelems, Table *e) {
     return c;
 }
 
-Closure *luaF_newLclosure (lua_State *L, int nelems, Table *e) {
+Closure *luaF_newLclosure (lua_State *L, Proto *p, Table *e) {
+    int nelems = p->nups;
     Closure *c = cast(Closure *, luaM_malloc(L, sizeLclosure(nelems)));
     luaC_link(L, obj2gco(c), LUA_TFUNCTION);
     c->l.isC = 0;
     c->l.env = e;
+    c->l.p = p;
     c->l.stats = (G(L)->enablestats ? luaF_newclosurestats(L) : NULL);
     c->l.nupvalues = cast_byte(nelems);
     c->l.nopencalls = 0;

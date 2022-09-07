@@ -814,13 +814,10 @@ reentry: /* entry point */
             case OP_CLOSURE: {
                 Proto *p;
                 Closure *ncl;
-                int nup;
                 int j;
                 p = cl->p->p[GETARG_Bx(i)];
-                nup = p->nups;
-                ncl = luaF_newLclosure(L, nup, cl->env);
-                ncl->l.p = p;
-                for (j = 0; j < nup; j++, pc++) {
+                ncl = luaF_newLclosure(L, p, cl->env);
+                for (j = 0; j < p->nups; j++, pc++) {
                     if (GET_OPCODE(*pc) == OP_GETUPVAL) {
                         ncl->l.upvals[j] = cl->upvals[GETARG_B(*pc)];
                     } else {
