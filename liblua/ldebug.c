@@ -554,7 +554,7 @@ static const char *getobjname (lua_State *L, CallInfo *ci, int stackpos, const c
 
 static const char *getfuncname (lua_State *L, CallInfo *ci, const char **name) {
     Instruction i;
-    if ((isLua(ci) && ci->tailcalls > 0) || !isLua(ci - 1)) {
+    if ((isLua(ci) && ci->tailcalls > 0) || L->ci == L->base_ci || !isLua(ci - 1)) {
         return NULL; /* calling function is not Lua (or is unknown) */
     }
     ci--; /* calling function */
