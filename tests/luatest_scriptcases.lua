@@ -438,12 +438,12 @@ case("OP_ADD: Evaluate in tainted context", function()
         local b = 2                   -- LOADK
         _ENV.b = b                    -- GETUPVAL, SETTABLE
         forceinsecure()               -- GETGLOBAL, CALL
-        -- Stack tainted ! --
+        -- Stack tainted! --
         local c = a + b               -- ADD
         _ENV.c = c                    -- GETUPVAL, SETTABLE
     end)
 
-    assert(issecurevariable(_ENV, "a"), "expected '_ENV.b' to be secure")
+    assert(issecurevariable(_ENV, "a"), "expected '_ENV.a' to be secure")
     assert(issecurevariable(_ENV, "b"), "expected '_ENV.b' to be secure")
     assert(not issecurevariable(_ENV, "c"), "expected '_ENV.c' to be tainted")
 end)
@@ -459,12 +459,12 @@ case("OP_SUB: Evaluate in tainted context", function()
         local b = 2                   -- LOADK
         _ENV.b = b                    -- GETUPVAL, SETTABLE
         forceinsecure()               -- GETGLOBAL, CALL
-        -- Stack tainted ! --
+        -- Stack tainted! --
         local c = a - b               -- SUB
         _ENV.c = c                    -- GETUPVAL, SETTABLE
     end)
 
-    assert(issecurevariable(_ENV, "a"), "expected '_ENV.b' to be secure")
+    assert(issecurevariable(_ENV, "a"), "expected '_ENV.a' to be secure")
     assert(issecurevariable(_ENV, "b"), "expected '_ENV.b' to be secure")
     assert(not issecurevariable(_ENV, "c"), "expected '_ENV.c' to be tainted")
 end)
@@ -480,12 +480,12 @@ case("OP_MUL: Evaluate in tainted context", function()
         local b = 2                   -- LOADK
         _ENV.b = b                    -- GETUPVAL, SETTABLE
         forceinsecure()               -- GETGLOBAL, CALL
-        -- Stack tainted ! --
+        -- Stack tainted! --
         local c = a * b               -- MUL
         _ENV.c = c                    -- GETUPVAL, SETTABLE
     end)
 
-    assert(issecurevariable(_ENV, "a"), "expected '_ENV.b' to be secure")
+    assert(issecurevariable(_ENV, "a"), "expected '_ENV.a' to be secure")
     assert(issecurevariable(_ENV, "b"), "expected '_ENV.b' to be secure")
     assert(not issecurevariable(_ENV, "c"), "expected '_ENV.c' to be tainted")
 end)
@@ -501,12 +501,12 @@ case("OP_DIV: Evaluate in tainted context", function()
         local b = 2                   -- LOADK
         _ENV.b = b                    -- GETUPVAL, SETTABLE
         forceinsecure()               -- GETGLOBAL, CALL
-        -- Stack tainted ! --
+        -- Stack tainted! --
         local c = a / b               -- DIV
         _ENV.c = c                    -- GETUPVAL, SETTABLE
     end)
 
-    assert(issecurevariable(_ENV, "a"), "expected '_ENV.b' to be secure")
+    assert(issecurevariable(_ENV, "a"), "expected '_ENV.a' to be secure")
     assert(issecurevariable(_ENV, "b"), "expected '_ENV.b' to be secure")
     assert(not issecurevariable(_ENV, "c"), "expected '_ENV.c' to be tainted")
 end)
@@ -522,12 +522,12 @@ case("OP_MOD: Evaluate in tainted context", function()
         local b = 2                   -- LOADK
         _ENV.b = b                    -- GETUPVAL, SETTABLE
         forceinsecure()               -- GETGLOBAL, CALL
-        -- Stack tainted ! --
+        -- Stack tainted! --
         local c = a % b               -- MOD
         _ENV.c = c                    -- GETUPVAL, SETTABLE
     end)
 
-    assert(issecurevariable(_ENV, "a"), "expected '_ENV.b' to be secure")
+    assert(issecurevariable(_ENV, "a"), "expected '_ENV.a' to be secure")
     assert(issecurevariable(_ENV, "b"), "expected '_ENV.b' to be secure")
     assert(not issecurevariable(_ENV, "c"), "expected '_ENV.c' to be tainted")
 end)
@@ -543,12 +543,12 @@ case("OP_POW: Evaluate in tainted context", function()
         local b = 2                   -- LOADK
         _ENV.b = b                    -- GETUPVAL, SETTABLE
         forceinsecure()               -- GETGLOBAL, CALL
-        -- Stack tainted ! --
+        -- Stack tainted! --
         local c = a ^ b               -- POW
         _ENV.c = c                    -- GETUPVAL, SETTABLE
     end)
 
-    assert(issecurevariable(_ENV, "a"), "expected '_ENV.b' to be secure")
+    assert(issecurevariable(_ENV, "a"), "expected '_ENV.a' to be secure")
     assert(issecurevariable(_ENV, "b"), "expected '_ENV.b' to be secure")
     assert(not issecurevariable(_ENV, "c"), "expected '_ENV.c' to be tainted")
 end)
@@ -562,12 +562,12 @@ case("OP_UNM: Evaluate in tainted context", function()
         local a = 1                   -- LOADK
         _ENV.a = a                    -- GETUPVAL, SETTABLE
         forceinsecure()               -- GETGLOBAL, CALL
-        -- Stack tainted ! --
+        -- Stack tainted! --
         local b = -a                  -- UNM
         _ENV.b = b                    -- GETUPVAL, SETTABLE
     end)
 
-    assert(issecurevariable(_ENV, "a"), "expected '_ENV.b' to be secure")
+    assert(issecurevariable(_ENV, "a"), "expected '_ENV.a' to be secure")
     assert(not issecurevariable(_ENV, "b"), "expected '_ENV.b' to be tainted")
 end)
 
@@ -684,9 +684,9 @@ case("Coroutines: Create secure coroutine with tainted closure", function()
         forceinsecure()
 
         return function()
-        assert(not issecure(), "expected coroutine thread to start insecurely")
-        coroutine.yield()
-        assert(not issecure(), "expected coroutine thread to resume insecurely")
+            assert(not issecure(), "expected coroutine thread to start insecurely")
+            coroutine.yield()
+            assert(not issecure(), "expected coroutine thread to resume insecurely")
         end
     end)
 
@@ -707,9 +707,9 @@ case("Coroutines: Resume secure coroutine with tainted closure", function()
         forceinsecure()
 
         return function()
-        assert(not issecure(), "expected coroutine thread to start insecurely")
-        coroutine.yield()
-        assert(not issecure(), "expected coroutine thread to resume insecurely")
+            assert(not issecure(), "expected coroutine thread to start insecurely")
+            coroutine.yield()
+            assert(not issecure(), "expected coroutine thread to resume insecurely")
         end
     end)
 
