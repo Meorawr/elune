@@ -596,6 +596,27 @@ LUALIB_API lua_State *luaL_optthread (lua_State *L, int narg, lua_State *def) {
     return luaL_opt(L, luaL_checkthread, narg, def);
 }
 
+LUALIB_API const char *luaL_tolstring (lua_State *L, int idx, size_t *len) {
+    if (!luaL_callmeta(L, idx, "__tostring")) { /* no metafield? */
+        switch (lua_type(L, idx)) {
+            case LUA_TNUMBER:
+            case LUA_TSTRING:
+                lua_pushvalue(L, idx);
+                break;
+            case LUA_TBOOLEAN:
+                lua_pushstring(L, (lua_toboolean(L, idx) ? "true" : "false"));
+                break;
+            case LUA_TNIL:
+                lua_pushliteral(L, "nil");
+                break;
+            default:
+                lua_pushfstring(L, "%s: %p", luaL_typename(L, idx), lua_topointer(L, idx));
+                break;
+        }
+    }
+    return lua_tolstring(L, -1, len);
+}
+
 LUALIB_API int luaL_getsubtable (lua_State *L, int idx, const char *fname) {
     lua_getfield(L, idx, fname);
 

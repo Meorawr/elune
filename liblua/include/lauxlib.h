@@ -125,6 +125,7 @@ LUALIB_API long luaL_checklong (lua_State *L, int narg);
 LUALIB_API long luaL_optlong (lua_State *L, int narg, long def);
 LUALIB_API lua_State *luaL_checkthread (lua_State *L, int narg);
 LUALIB_API lua_State *luaL_optthread (lua_State *L, int narg, lua_State *def);
+LUALIB_API const char *luaL_tolstring (lua_State *L, int idx, size_t *len);
 
 #define luaL_newlib(L, l) (luaL_newlibtable(L, l), luaL_setfuncs(L, l, 0))
 #define luaL_newlibtable(L, l) lua_createtable((L), 0, (sizeof((l)) / sizeof((l)[0])) - 1)
