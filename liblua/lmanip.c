@@ -26,4 +26,4 @@ extern void sethvalue2s (lua_State *L, StkId dst, Table *src);
 extern void setptvalue2s (lua_State *L, StkId dst, Proto *src);
 extern void setsvalue2n (lua_State *L, TValue *dst, TString *src);
 extern void setsvalue2s (lua_State *L, StkId dst, TString *src);
-extern void setnilvalue2t (TValue *dst);
+extern void rawsetnilvalue (TValue *dst);

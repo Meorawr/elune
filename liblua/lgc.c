@@ -389,7 +389,7 @@ static void cleartable (GCObject *l) {
             while (i--) {
                 TValue *o = &h->array[i];
                 if (iscleared(o, 0)) { /* value was collected? */
-                    setnilvalue2t(o); /* remove value */
+                    rawsetnilvalue(o); /* remove value */
                 }
             }
         }
@@ -398,7 +398,7 @@ static void cleartable (GCObject *l) {
             Node *n = gnode(h, i);
             if (!ttisnil(gval(n)) && /* non-empty entry? */
                 (iscleared(key2tval(n), 1) || iscleared(gval(n), 0))) {
-                setnilvalue2t(gval(n)); /* remove value ... */
+                rawsetnilvalue(gval(n)); /* remove value ... */
                 removeentry(n); /* remove entry from table */
             }
         }

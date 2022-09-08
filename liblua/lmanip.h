@@ -134,7 +134,7 @@ inline void setsvalue2s (lua_State *L, StkId dst, TString *src) {
     setsvalue(L, dst, src);
 }
 
-inline void setnilvalue2t (TValue *dst) {
+inline void rawsetnilvalue (TValue *dst) {
     dst->tt = LUA_TNIL;
     dst->taint = NULL;
 }
