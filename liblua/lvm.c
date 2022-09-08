@@ -102,7 +102,7 @@ void luaV_gettable (lua_State *L, const TValue *t, TValue *key, StkId val) {
             const TValue *res = luaH_get(h, key); /* do a primitive get */
             if (!ttisnil(res) || /* result is no nil? */
                 (tm = fasttm(L, h->metatable, TM_INDEX)) == NULL) { /* or no TM? */
-                setobj2s(L, val, res);
+                setobjt2s(L, t, key, val, res);
                 return;
             }
             /* else will try the tag method */
@@ -128,7 +128,7 @@ void luaV_settable (lua_State *L, const TValue *t, TValue *key, StkId val) {
             TValue *oldval = luaH_set(L, h, key); /* do a primitive set */
             if (!ttisnil(oldval) || /* result is no nil? */
                 (tm = fasttm(L, h->metatable, TM_NEWINDEX)) == NULL) { /* or no TM? */
-                setobj2t(L, oldval, val);
+                setobj2t(L, t, key, oldval, val);
                 h->flags = 0;
                 luaC_barriert(L, h, val);
                 return;
@@ -502,7 +502,7 @@ reentry: /* entry point */
             }
             case OP_GETUPVAL: {
                 int b = GETARG_B(i);
-                setobj2s(L, ra, cl->upvals[b]->v);
+                setobjuv2s(L, L->ci->func, ra, cl->upvals[b]->v);
                 continue;
             }
             case OP_GETGLOBAL: {
@@ -526,7 +526,7 @@ reentry: /* entry point */
             }
             case OP_SETUPVAL: {
                 UpVal *uv = cl->upvals[GETARG_B(i)];
-                setobj(L, uv->v, ra);
+                setobj2uv(L, L->ci->func, uv->v, ra);
                 luaC_barrier(L, uv, ra);
                 continue;
             }
@@ -801,8 +801,10 @@ reentry: /* entry point */
                     luaH_resizearray(L, h, last); /* pre-alloc it at once */
                 }
                 for (; n > 0; n--) {
+                    TValue key;
                     TValue *val = ra + n;
-                    setobj2t(L, luaH_setnum(L, h, last--), val);
+                    rawsetnvalue(&key, n);
+                    setobj2t(L, ra, &key, luaH_setnum(L, h, last--), val);
                     luaC_barriert(L, h, val);
                 }
                 continue;

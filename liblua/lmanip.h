@@ -89,6 +89,7 @@ inline void setobj (lua_State *L, TValue *dst, const TValue *src) {
  * Different types of sets according to destination
  */
 
+/* set to stack */
 inline void setobj2s (lua_State *L, StkId dst, const TValue *src) {
     dst->value = src->value;
     dst->tt = src->tt;
@@ -103,40 +104,77 @@ inline void setobj2s (lua_State *L, StkId dst, const TValue *src) {
     checkliveness(G(L), dst);
 }
 
+/* set to new value */
 inline void setobj2n (lua_State *L, TValue *dst, const TValue *src) {
     setobj(L, dst, src);
 }
 
-inline void setobj2t (lua_State *L, TValue *dst, const TValue *src) {
+/* set to table */
+inline void setobj2t (lua_State *L, const TValue *tbl, const TValue *key, TValue *dst, const TValue *src) {
+    lua_unused(tbl);
+    lua_unused(key);
     setobj(L, dst, src);
 }
 
+/* set to upvalue */
+inline void setobj2uv (lua_State *L, const TValue *func, TValue *dst, const TValue *src) {
+    lua_unused(func);
+    setobj(L, dst, src);
+}
+
+/* set from table to stack */
+inline void setobjt2s (lua_State *L, const TValue *tbl, const TValue *key, TValue *dst, const TValue *src) {
+    lua_unused(tbl);
+    lua_unused(key);
+    setobj2s(L, dst, src);
+}
+
+/* set from upvalue to stack */
+inline void setobjuv2s (lua_State *L, const TValue *func, TValue *dst, const TValue *src) {
+    lua_unused(func);
+    setobj2s(L, dst, src);
+}
+
+/* set from stack to (the same) stack */
 inline void setobjs2s (lua_State *L, StkId dst, const TValue *src) {
     setobj2s(L, dst, src);
 }
 
+/* set from table to (the same) table */
 inline void setobjt2t (lua_State *L, TValue *dst, const TValue *src) {
     setobj(L, dst, src);
 }
 
+/* set table to stack */
 inline void sethvalue2s (lua_State *L, StkId dst, Table *src) {
     sethvalue(L, dst, src);
 }
 
+/* set proto to stack */
 inline void setptvalue2s (lua_State *L, StkId dst, Proto *src) {
     setptvalue(L, dst, src);
 }
 
+/* set string to new value */
 inline void setsvalue2n (lua_State *L, TValue *dst, TString *src) {
     setsvalue(L, dst, src);
 }
 
+/* set table to stack */
 inline void setsvalue2s (lua_State *L, StkId dst, TString *src) {
     setsvalue(L, dst, src);
 }
 
+/* set nil value (untainted) */
 inline void rawsetnilvalue (TValue *dst) {
     dst->tt = LUA_TNIL;
+    dst->taint = NULL;
+}
+
+/* set numeric value (untainted) */
+inline void rawsetnvalue (TValue *dst, lua_Number n) {
+    dst->value.n = n;
+    dst->tt = LUA_TNUMBER;
     dst->taint = NULL;
 }
 
