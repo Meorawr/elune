@@ -396,7 +396,7 @@ LUA_API void lua_savetaint (lua_State *L, lua_TaintState *ts);
 LUA_API void lua_restoretaint (lua_State *L, const lua_TaintState *ts);
 LUA_API void lua_exchangetaint (lua_State *L, lua_TaintState *ts);
 LUA_API void lua_protecttaint (lua_State *L, lua_PFunction func, void *ud);
-LUA_API void lua_cleartaint (lua_State *L);
+LUA_API void lua_cleartaint (lua_State *L, int n);
 LUA_API void lua_resettaint (lua_State *L);
 
 /**

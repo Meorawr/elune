@@ -1386,10 +1386,17 @@ LUA_API void lua_protecttaint (lua_State *L, lua_PFunction func, void *ud) {
     lua_unlock(L);
 }
 
-LUA_API void lua_cleartaint (lua_State *L) {
+LUA_API void lua_cleartaint (lua_State *L, int n) {
+    StkId o;
+    api_checknelems(L, n);
+
     L->ts.stacktaint = NULL;
     L->ts.newgctaint = NULL;
     L->ts.newcltaint = NULL;
+
+    for (o = L->top - n; o < L->top; o++) {
+        o->taint = NULL;
+    }
 }
 
 LUA_API void lua_resettaint (lua_State *L) {

@@ -184,7 +184,7 @@ static int seclib_setlocaltaint (lua_State *L) {
 }
 
 static int seclib_cleartaint (lua_State *L) {
-    lua_cleartaint(L);
+    lua_cleartaint(L, 0);
     return 0;
 }
 
