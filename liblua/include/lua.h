@@ -13,6 +13,9 @@
 #include <stdarg.h>
 #include <stddef.h>
 
+/* Lua version number; defined here for luarocks compat. */
+#define LUA_VERSION_NUM 501
+
 /* mark for precompiled code (`<esc>Lua') */
 #define LUA_SIGNATURE "\033Lua"
 

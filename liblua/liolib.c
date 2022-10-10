@@ -41,8 +41,6 @@ static void fileerror (lua_State *L, int arg, const char *filename) {
     luaL_argerror(L, arg, lua_tostring(L, -1));
 }
 
-static const char *LUA_FILEHANDLE = "FILE*";
-
 #define tofilep(L) ((FILE **) luaL_checkudata(L, 1, LUA_FILEHANDLE))
 
 static int io_type (lua_State *L) {

@@ -15,6 +15,8 @@ enum lua_LibrarySet {
     LUALIB_ELUNE, /* WoW-compatible reference libraries */
 };
 
+#define LUA_FILEHANDLE "FILE*"
+
 #define LUA_BASELIBNAME "_G"
 #define LUA_BITLIBNAME "bit"
 #define LUA_COLIBNAME "coroutine"
