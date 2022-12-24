@@ -3,6 +3,7 @@ include(FindPackageHandleStandardArgs)
 find_path(
   utf8h_INCLUDE_DIR
   NAMES "utf8.h"
+  PATH_SUFFIXES "utf8h"
   HINTS ${utf8h_ROOT}
 )
 
