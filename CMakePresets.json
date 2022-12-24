@@ -28,7 +28,7 @@
       "inherits": "base",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "cl.exe",
-        "CMAKE_C_FLAGS": "/D_CRT_SECURE_NO_WARNINGS /fp:fast /W4 /wd4324 /wd4334 /utf-8",
+        "CMAKE_C_FLAGS": "/D_CRT_SECURE_NO_WARNINGS /W4 /wd4324 /wd4334 /utf-8",
         "CMAKE_C_FLAGS_DEBUG": "/Od /Ob1 /ZI",
         "CMAKE_C_FLAGS_RELEASE": "/GL /Gw /O2 /Ob3 /Zi",
         "CMAKE_EXE_LINKER_FLAGS": "/DEBUG:FULL /MANIFEST:NO /PDBALTPATH:%_PDB%",
@@ -44,7 +44,7 @@
       "inherits": "base",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "gcc",
-        "CMAKE_C_FLAGS": "-D_GNU_SOURCE -ffast-math -Wall -Wextra",
+        "CMAKE_C_FLAGS": "-D_GNU_SOURCE -Wall -Wextra",
         "CMAKE_C_FLAGS_RELEASE": "-DNDEBUG -flto -O3"
       }
     },
@@ -53,7 +53,7 @@
       "inherits": "base",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang",
-        "CMAKE_C_FLAGS": "-D_GNU_SOURCE -ffast-math -Wall -Wextra",
+        "CMAKE_C_FLAGS": "-D_GNU_SOURCE -Wall -Wextra",
         "CMAKE_C_FLAGS_RELEASE": "-DNDEBUG -flto -O3"
       }
     }

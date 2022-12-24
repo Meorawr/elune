@@ -10,6 +10,7 @@ project(
 
 list(PREPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
+include(CheckCCompilerFlag)
 include(CheckTypeSize)
 include(CMakeDependentOption)
 include(CMakePackageConfigHelpers)
@@ -38,6 +39,7 @@ option(BUILD_LUAC "Build the Lua compiler target?" ON)
 set(LUA_ASSERT_CONFIGS "Debug" CACHE STRING "List of build configurations where Lua assertions are enabled")
 set(LUA_APICHECK_CONFIGS "Debug" CACHE STRING "List of build configurations where Lua API checks are enabled")
 
+option(LUA_USE_FAST_MATH "Enable fast floating point optimizations?" ON)
 cmake_dependent_option(LUA_USE_CXX_LINKAGE "Build the Lua interface with C++ linkage?" ON "BUILD_CXX" OFF)
 cmake_dependent_option(LUA_USE_CXX_EXCEPTIONS "Allow the use of C++ exceptions for error handling?" ON "BUILD_CXX" OFF)
 cmake_dependent_option(LUA_USE_READLINE "Allow linking to 'libreadline' for the interpreter and debug library?" ON "TARGET readline::readline" OFF)
@@ -105,6 +107,21 @@ endif()
 set(CMAKE_EXTRA_INCLUDE_FILES "limits.h")
 check_type_size("char[sizeof(int) * CHAR_BIT]" LUAI_BITSINT)
 set(CMAKE_EXTRA_INCLUDE_FILES)
+
+# Configure fast math optimizations.
+
+if(LUA_USE_FAST_MATH)
+  check_c_compiler_flag("-ffast-math" LUA_HAS_FFAST_MATH)
+  check_c_compiler_flag("/fp:fast" LUA_HAS_FP_FAST)
+
+  if(LUA_HAS_FFAST_MATH)
+    add_compile_options("-ffast-math")
+  elseif(LUA_HAS_FP_FAST)
+    add_compile_options("/fp:fast")
+  else()
+    message(WARNING "Unable to detect appropriate compiler flag for fast math support (LUA_USE_FAST_MATH).")
+  endif()
+endif()
 
 # Configure library search paths.
 
