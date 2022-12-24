@@ -33,11 +33,6 @@ static int seclib_settaintmode (lua_State *L) {
     return 0;
 }
 
-static int seclib_istaintexpected (lua_State *L) {
-    lua_pushboolean(L, lua_istaintexpected(L));
-    return 1;
-}
-
 static int seclib_getstacktaint (lua_State *L) {
     lua_State *L1 = luaL_optthread(L, 1, L);
     lua_pushstring(L, lua_getstacktaint(L1));
@@ -206,7 +201,6 @@ static int seclib_newsecurefunction (lua_State *L) {
 const luaL_Reg seclib_funcs[] = {
     { "gettaintmode", seclib_gettaintmode },
     { "settaintmode", seclib_settaintmode },
-    { "istaintexpected", seclib_istaintexpected },
     { "getstacktaint", seclib_getstacktaint },
     { "getvaluetaint", seclib_getvaluetaint },
     { "getobjecttaint", seclib_getobjecttaint },

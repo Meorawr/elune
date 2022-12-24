@@ -1174,10 +1174,6 @@ LUA_API void lua_settaintmode (lua_State *L, int mode) {
     settaintmode(L, mode);
 }
 
-LUA_API int lua_istaintexpected (lua_State *L) {
-    return luaE_istaintexpected(L);
-}
-
 LUA_API void lua_taintstack (lua_State *L, const char *name) {
     TString *ts;
 

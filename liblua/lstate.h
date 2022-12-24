@@ -206,10 +206,6 @@ inline TString *luaE_maskalloctaint (lua_State *L, int tt) {
     return cast(TString *, (cast(uintptr_t, taint) & (L->ts.writemask)));
 }
 
-inline int luaE_istaintexpected (lua_State *L) {
-    return ((L->ts.readmask | L->ts.vmexecmask) == 0);
-}
-
 inline void luaE_taintstack (lua_State *L, TString *taint) {
     taint = luaE_maskreadtaint(L, taint);
 

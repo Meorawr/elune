@@ -247,7 +247,6 @@ LUA_API void lua_close (lua_State *L) {
 extern inline TString *luaE_maskreadtaint (lua_State *L, TString *taint);
 extern inline TString *luaE_maskwritetaint (lua_State *L);
 extern inline TString *luaE_maskalloctaint (lua_State *L, int tt);
-extern inline int luaE_istaintexpected (lua_State *L);
 extern inline void luaE_taintstack (lua_State *L, TString *taint);
 extern inline void luaE_taintvalue (lua_State *L, TValue *o);
 extern inline void luaE_taintobject (lua_State *L, GCObject *o);
