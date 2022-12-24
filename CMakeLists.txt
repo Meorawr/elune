@@ -25,7 +25,7 @@ include(elune-target-headers)
 
 find_package(readline)
 
-option(BUILD_SHARED_LIBS ON "Build components as shared libraries?")
+option(BUILD_SHARED_LIBS "Build components as shared libraries?" ON)
 option(BUILD_TESTING "Build test executables?" ${PROJECT_IS_TOP_LEVEL})
 option(BUILD_INSTALL "Enable the generation of installation targets?" ${PROJECT_IS_TOP_LEVEL})
 option(BUILD_PACKAGE "Enable the generation of packaging targets?" ${PROJECT_IS_TOP_LEVEL})
