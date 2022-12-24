@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.24)
 
 project(
   elune
@@ -17,6 +17,7 @@ include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 
 include(elune-configure-target)
+include(elune-fetch-utf8h)
 include(elune-target-copy-file)
 include(elune-target-headers)
 

@@ -31,7 +31,7 @@ if(readline_FOUND AND NOT TARGET readline::readline)
     PROPERTIES
       IMPORTED_LOCATION "${readline_LIBRARY}"
       INTERFACE_INCLUDE_DIRECTORIES "${readline_INCLUDE_DIR}"
-    )
+  )
 endif()
 
 set(readline_INCLUDE_DIRS "${readline_INCLUDE_DIR}")
