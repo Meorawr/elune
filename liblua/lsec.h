@@ -54,14 +54,6 @@ inline void luaR_taintstack (lua_State *L, TString *taint) {
     }
 }
 
-inline void luaR_taintstackfromobject (lua_State *L, const GCObject *o) {
-    luaR_taintstack(L, o->gch.taint);
-}
-
-inline void luaR_taintstackfromvalue (lua_State *L, const TValue *o) {
-    luaR_taintstack(L, o->taint);
-}
-
 inline void luaR_taintvalue (lua_State *L, TValue *o) {
     TString *taint = L->writetaint;
 

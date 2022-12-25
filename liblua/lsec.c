@@ -11,8 +11,6 @@ extern void luaR_setnewgctaint (lua_State *L, TString *taint);
 extern void luaR_setnewcltaint (lua_State *L, TString *taint);
 extern void luaR_setobjecttaint (lua_State *L, GCObject *o, TString *taint);
 extern void luaR_taintstack (lua_State *L, TString *taint);
-extern void luaR_taintstackfromobject (lua_State *L, const GCObject *o);
-extern void luaR_taintstackfromvalue (lua_State *L, const TValue *o);
 extern void luaR_taintvalue (lua_State *L, TValue *o);
 extern void luaR_taintobject (lua_State *L, GCObject *o);
 extern void luaR_taintalloc (lua_State *L, GCObject *o);
