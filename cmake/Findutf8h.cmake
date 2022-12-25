@@ -10,7 +10,7 @@ find_path(
 find_package_handle_standard_args(
   utf8h
   REQUIRED_VARS
-  utf8h_INCLUDE_DIR
+    utf8h_INCLUDE_DIR
 )
 
 mark_as_advanced(utf8h_FOUND)

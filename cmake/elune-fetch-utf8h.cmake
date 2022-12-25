@@ -10,7 +10,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(utf8h)
 
 if(utf8h_SOURCE_DIR AND NOT TARGET sheredom::utf8h)
-    add_library(utf8h INTERFACE IMPORTED GLOBAL)
-    add_library(sheredom::utf8h ALIAS utf8h)
-    target_include_directories(utf8h INTERFACE ${utf8h_SOURCE_DIR})
+  add_library(utf8h INTERFACE IMPORTED GLOBAL)
+  add_library(sheredom::utf8h ALIAS utf8h)
+  target_include_directories(utf8h INTERFACE ${utf8h_SOURCE_DIR})
 endif()
