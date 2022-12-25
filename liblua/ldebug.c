@@ -1,18 +1,15 @@
 /* Licensed under the terms of the MIT License; see full copyright information
  * in the "LICENSE" file or at <http://www.lua.org/license.html> */
 
-#include <stdarg.h>
-#include <stddef.h>
-#include <string.h>
-
 #define ldebug_c
 #define LUA_CORE
+
+#include "ldebug.h"
 
 #include "lua.h"
 
 #include "lapi.h"
 #include "lcode.h"
-#include "ldebug.h"
 #include "ldo.h"
 #include "lfunc.h"
 #include "lmanip.h"
@@ -23,6 +20,18 @@
 #include "ltable.h"
 #include "ltm.h"
 #include "lvm.h"
+
+#include <stdarg.h>
+#include <stddef.h>
+#include <string.h>
+
+#if defined(LUA_USE_WINDOWS)
+#include <windows.h>
+#endif
+
+#if defined(LUA_USE_POSIX)
+#include <unistd.h>
+#endif
 
 static const char *getfuncname (lua_State *L, CallInfo *ci, const char **name);
 
@@ -681,16 +690,49 @@ void luaG_runerror (lua_State *L, const char *fmt, ...) {
     luaG_errormsg(L);
 }
 
-LUAI_FUNC lua_Clock luaI_clocktime (lua_State *L);
-LUAI_FUNC lua_Clock luaI_clockrate (lua_State *L);
+static lua_Clock sys_clocktime (lua_State *L) {
+    lua_unused(L);
+
+#if defined(LUA_USE_POSIX)
+    struct timespec ts;
+    lua_Clock ticks;
+#if defined(CLOCK_MONOTONIC_RAW)
+    clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
+#else
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+#endif
+    ticks = (ts.tv_sec * 1e9) + ts.tv_nsec;
+    return ticks;
+#elif defined(LUA_USE_WINDOWS)
+    LARGE_INTEGER counter;
+    QueryPerformanceCounter(&counter);
+    return counter.QuadPart;
+#else
+    return clock();
+#endif
+}
+
+static lua_Clock sys_clockrate (lua_State *L) {
+    lua_unused(L);
+
+#if defined(LUA_USE_POSIX)
+    return (uint_least64_t) 1e9;
+#elif defined(LUA_USE_WINDOWS)
+    LARGE_INTEGER frequency;
+    QueryPerformanceFrequency(&frequency);
+    return frequency.QuadPart;
+#else
+    return CLOCKS_PER_SEC;
+#endif
+}
 
 void luaG_init (global_State *g) {
-    g->startticks = luaI_clocktime(g->mainthread);
-    g->tickfreq = luaI_clockrate(g->mainthread);
+    g->startticks = sys_clocktime(g->mainthread);
+    g->tickfreq = sys_clockrate(g->mainthread);
 }
 
 lua_Clock luaG_clocktime (const global_State *g) {
-    return (luaI_clocktime(g->mainthread) - g->startticks);
+    return (sys_clocktime(g->mainthread) - g->startticks);
 }
 
 lua_Clock luaG_clockrate (const global_State *g) {

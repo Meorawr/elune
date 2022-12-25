@@ -13,28 +13,45 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if defined(LUA_USE_POSIX)
+#include <unistd.h>
+#endif
+
+#if defined(LUA_USE_WINDOWS)
+#include <io.h>
+#endif
+
 static lua_State *globalL = NULL;
 
 static const char *progname = LUA_PROGNAME;
 
-#if defined(LUA_USE_POSIX)
+LUALIB_API int luaL_readline (lua_State *L, const char *prompt);
+LUALIB_API void luaL_saveline (lua_State *L, const char *line);
+LUALIB_API void luaL_setreadlinename (lua_State *L, const char *name);
 
-/*
-** Use 'sigaction' when available.
-*/
 static void setsignal (int sig, void (*handler)(int)) {
+#if defined(LUA_USE_POSIX)
     struct sigaction sa;
     sa.sa_handler = handler;
     sa.sa_flags = 0;
     sigemptyset(&sa.sa_mask); /* do not mask any signal */
     sigaction(sig, &sa, NULL);
+#else
+    signal(sig, handler);
+#endif
 }
 
+static int stdinistty (lua_State *L) {
+    lua_unused(L);
+
+#if defined(LUA_USE_POSIX)
+    return isatty(0);
+#elif defined(LUA_USE_WINDOWS)
+    return _isatty(_fileno(stdin));
 #else
-
-#define setsignal signal
-
+    return 1; /* assume stdin is a tty */
 #endif
+}
 
 /*
 ** Hook set by signal function to stop the interpreter.
@@ -669,7 +686,7 @@ static int pmain (lua_State *L) {
     if (args & has_i) { /* -i option? */
         doREPL(L); /* do read-eval-print loop */
     } else if (script == argc && !(args & (has_e | has_v))) { /* no arguments? */
-        if (luaL_stdinistty(L)) { /* running in interactive mode? */
+        if (stdinistty(L)) { /* running in interactive mode? */
             print_version();
             doREPL(L); /* do read-eval-print loop */
         } else {

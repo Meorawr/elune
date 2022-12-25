@@ -1,12 +1,6 @@
 /* Licensed under the terms of the MIT License; see full copyright information
  * in the "LICENSE" file or at <http://www.lua.org/license.html> */
 
-#include <errno.h>
-#include <locale.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-
 #define loslib_c
 #define LUA_LIB
 
@@ -14,6 +8,16 @@
 
 #include "lauxlib.h"
 #include "lualib.h"
+
+#include <errno.h>
+#include <locale.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#if defined(LUA_USE_POSIX)
+#include <unistd.h>
+#endif
 
 static int os_pushresult (lua_State *L, int i, const char *filename) {
     int en = errno; /* calls to Lua API may change this value */
@@ -44,8 +48,34 @@ static int os_rename (lua_State *L) {
     return os_pushresult(L, rename(fromname, toname) == 0, fromname);
 }
 
+static int aux_tmpname (lua_State *L) {
+#if defined(LUA_USE_POSIX)
+    char buf[32];
+    int fd;
+
+    strcpy(buf, "/tmp/lua_XXXXXX");
+    fd = mkstemp(buf);
+
+    if (fd != -1) {
+        close(fd);
+        lua_pushstring(L, buf);
+        return 0;
+    } else {
+        return 1;
+    }
+#else
+    char buf[L_tmpnam];
+    if (tmpnam(buf) != NULL) {
+        lua_pushstring(L, buf);
+        return 0;
+    } else {
+        return 1;
+    }
+#endif
+}
+
 static int os_tmpname (lua_State *L) {
-    if (luaL_tmpname(L) != 0) {
+    if (aux_tmpname(L) != 0) {
         return luaL_error(L, "unable to generate a unique filename");
     } else {
         return 1;

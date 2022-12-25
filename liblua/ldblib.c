@@ -9,6 +9,8 @@
 
 #include "lua.h"
 
+#include "lreadline.h"
+
 #include "lauxlib.h"
 #include "lualib.h"
 

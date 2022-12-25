@@ -1,11 +1,5 @@
 /* Licensed under the terms of the MIT License; see full copyright information
  * in the "LICENSE" file or at <http://www.lua.org/license.html> */
-
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #define liolib_c
 #define LUA_LIB
 
@@ -13,6 +7,58 @@
 
 #include "lauxlib.h"
 #include "lualib.h"
+
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#if defined(LUA_USE_POSIX)
+#include <unistd.h>
+#endif
+
+#if defined(LUA_USE_WINDOWS)
+#include <io.h>
+#endif
+
+static int aux_checkpopenmode (const char *mode) {
+#if defined(LUA_USE_WINDOWS)
+    /* Windows accepts "[rw][bt]?" as valid modes */
+    return ((mode[0] == 'r' || mode[0] == 'w') &&
+            (mode[1] == '\0' || ((mode[1] == 'b' || mode[1] == 't') && mode[2] == '\0')));
+#else
+    /* By default, Lua accepts only "r" or "w" as valid modes */
+    return ((mode[0] == 'r' || mode[0] == 'w') && mode[1] == '\0');
+#endif
+}
+
+static FILE *aux_popen (lua_State *L, const char *cmd, const char *mode) {
+    lua_unused(L);
+#if defined(LUA_USE_POSIX)
+    fflush(NULL);
+    return popen(cmd, mode);
+#elif defined(LUA_USE_WINDOWS)
+    return _popen(cmd, mode);
+#else
+    lua_unused(cmd);
+    lua_unused(mode);
+    luaL_error(L, "'popen' not supported");
+    return NULL;
+#endif
+}
+
+static int aux_pclose (lua_State *L, FILE *p) {
+    lua_unused(L);
+
+#if defined(LUA_USE_POSIX)
+    return pclose(p);
+#elif defined(LUA_USE_WINDOWS)
+    return _pclose(p);
+#else
+    lua_unused(p);
+    return -1;
+#endif
+}
 
 #define IO_INPUT 1
 #define IO_OUTPUT 2
@@ -94,7 +140,7 @@ static int io_noclose (lua_State *L) {
 
 static int io_pclose (lua_State *L) {
     FILE **p = tofilep(L);
-    int ok = luaL_pclose(L, *p);
+    int ok = aux_pclose(L, *p);
     *p = NULL;
     return pushresult(L, ok, NULL);
 }
@@ -159,8 +205,8 @@ static int io_popen (lua_State *L) {
     const char *filename = luaL_checkstring(L, 1);
     const char *mode = luaL_optstring(L, 2, "r");
     FILE **pf = newfile(L);
-    luaL_argcheck(L, luaL_checkpopenmode(L, mode), 2, "invalid mode");
-    *pf = luaL_popen(L, filename, mode);
+    luaL_argcheck(L, aux_checkpopenmode(mode), 2, "invalid mode");
+    *pf = aux_popen(L, filename, mode);
     return (*pf == NULL) ? pushresult(L, 0, filename) : 1;
 }
 

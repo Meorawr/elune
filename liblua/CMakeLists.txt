@@ -72,7 +72,6 @@ target_sources(
     lsec.c            lsec.h
     lstate.c          lstate.h
     lstring.c         lstring.h
-    lsysapi.c
     ltable.c          ltable.h
     ltm.c             ltm.h
     lundump.c         lundump.h
@@ -90,6 +89,7 @@ target_sources(
     lmathlib.c
     loadlib.c
     loslib.c
+    lreadline.c       lreadline.h
     lseclib.c
     lstatslib.c
     lstrlib.c

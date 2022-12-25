@@ -178,19 +178,9 @@ LUALIB_API int luaL_loadstringas (lua_State *L, const char *s, lua_TaintState *t
  */
 
 LUALIB_API lua_Number luaL_securerandom (lua_State *L);
-LUALIB_API int luaL_stdinistty (lua_State *L);
-LUALIB_API int luaL_tmpname (lua_State *L);
 LUALIB_API void luaL_writestring (const char *s, size_t sz);
 LUALIB_API void luaL_writestringerror (const char *s, ...);
 LUALIB_API void luaL_writeline (void);
-
-LUALIB_API FILE *luaL_popen (lua_State *L, const char *cmd, const char *mode);
-LUALIB_API int luaL_pclose (lua_State *L, FILE *p);
-LUALIB_API int luaL_checkpopenmode (lua_State *L, const char *mode);
-
-LUALIB_API int luaL_readline (lua_State *L, const char *prompt);
-LUALIB_API void luaL_saveline (lua_State *L, const char *line);
-LUALIB_API void luaL_setreadlinename (lua_State *L, const char *name);
 
 /* }====================================================================== */
 

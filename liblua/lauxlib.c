@@ -1,13 +1,6 @@
 /* Licensed under the terms of the MIT License; see full copyright information
  * in the "LICENSE" file or at <http://www.lua.org/license.html> */
 
-#include <ctype.h>
-#include <errno.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 /* This file uses only the official API of Lua.
 ** Any function declared here could be written as an application function.
 */
@@ -15,9 +8,26 @@
 #define lauxlib_c
 #define LUA_LIB
 
+#include "lauxlib.h"
+
 #include "lua.h"
 
-#include "lauxlib.h"
+#include <ctype.h>
+#include <errno.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#if defined(LUA_USE_WINDOWS)
+#include <windows.h>
+
+#include <bcrypt.h>
+#endif
+
+#if defined(LUA_USE_LINUX)
+#include <sys/random.h>
+#endif
 
 #define FREELIST_REF 0 /* free list of references */
 
@@ -1060,6 +1070,56 @@ LUALIB_API int luaL_loadstringas (lua_State *L, const char *s, lua_TaintState *t
     lua_setvaluetaint(L, -1, lua_getstacktaint(L));
 
     return status;
+}
+
+LUALIB_API lua_Number luaL_securerandom (lua_State *L) {
+    lua_unused(L);
+
+#if defined(LUA_USE_LINUX)
+    /* Linux implementation */
+    uint32_t i;
+    ssize_t read = 0;
+
+    do {
+        ssize_t result = getrandom((&i) + read, sizeof(i) - read, 0);
+
+        if (result < 0) {
+            lua_pushfstring(L, "%s", strerror(errno));
+            return lua_error(L);
+        } else {
+            read += result;
+        }
+    } while (read != sizeof(i));
+
+    return ((lua_Number) i / UINT32_MAX);
+#elif defined(LUA_USE_MACOS)
+    /* macOS implementation */
+    return ((lua_Number) arc4random() / UINT32_MAX);
+#elif defined(LUA_USE_WINDOWS)
+    uint32_t i;
+    BCryptGenRandom(NULL, (PUCHAR) &i, sizeof(i), BCRYPT_USE_SYSTEM_PREFERRED_RNG);
+    return ((lua_Number) i / UINT32_MAX);
+#else
+    luaL_error(L, "secure random generator not available on this platform");
+    return 0;
+#endif
+}
+
+LUALIB_API void luaL_writestring (const char *s, size_t sz) {
+    fwrite(s, sizeof(char), sz, stdout);
+}
+
+LUALIB_API void luaL_writestringerror (const char *s, ...) {
+    va_list args;
+    va_start(args, s);
+    vfprintf(stderr, s, args);
+    va_end(args);
+    fflush(stderr);
+}
+
+LUALIB_API void luaL_writeline (void) {
+    luaL_writestring("\n", 1);
+    fflush(stdout);
 }
 
 /* }====================================================================== */
