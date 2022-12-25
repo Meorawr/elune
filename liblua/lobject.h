@@ -62,7 +62,7 @@ typedef union {
 #define TValuefields                                                                                                   \
     Value value;                                                                                                       \
     TString *taint;                                                                                                    \
-    int tt
+    lu_byte tt
 
 typedef struct lua_TValue {
     TValuefields;
