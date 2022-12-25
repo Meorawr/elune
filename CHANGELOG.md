@@ -3,11 +3,13 @@
 ## [Unreleased]
 ### Added
 - Added a build option (`LUA_USE_FAST_MATH`) to toggle the addition of floating point optimization compiler flags, which have been removed from the presets. This is enabled by default.
+- Added a new `n` parameter to `lua_cleartaint` which will clear the taint off the top `n` stack variables.
+- Added a backport of `luaL_tolstring` from Lua 5.2.
 ### Changed
 - Required CMake version is now 3.24.
 - CMake will now consult a find_package module to search for utf8h library before falling back to acquiring them via FetchContent.
 ### Removed
-- Removed `lua_istaintexpected(void)`. This API was effectively non-functional when called by C due to the internals of taint and would always return 1.
+- Removed `lua_istaintexpected`. This API was effectively non-functional when called by C due to the internals of taint and would always return 1.
 
 ## [v2.2]
 ### Added
