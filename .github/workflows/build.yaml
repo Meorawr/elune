@@ -33,7 +33,7 @@ jobs:
             preset: macos
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - uses: seanmiddleditch/gha-setup-ninja@v3
 
@@ -65,7 +65,7 @@ jobs:
         run: cmake --build --preset ${{ matrix.config.preset }} --target package
 
       - name: Upload
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           path: build/${{ matrix.config.preset }}/install/**/*
           name: ${{ matrix.config.name }}
