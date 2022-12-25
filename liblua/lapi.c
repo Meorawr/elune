@@ -1365,17 +1365,12 @@ LUA_API void lua_protecttaint (lua_State *L, lua_PFunction func, void *ud) {
 
     if (status != 0) {
         /* Note that as we're re-throwing we don't unwind CIs here; whoever
-         * catches this error is expected to unwind them instead.
-         *
-         * The taint for the top stack value is cleared as this is assumed to be
-         * an error value; when the error is caught it'll be re-tainted
-         * appropriately with the correct stack taint by 'luaD_seterrorobj' -or-
-         * the stack top will be replaced with a fixed (and also tainted)
-         * string. */
+         * catches this error is expected to unwind them instead. */
 
         StkId err = L->top - 1;
-        luaR_loadtaint(L, &savedts);
         err->taint = NULL;
+
+        luaR_loadtaint(L, &savedts);
         luaD_throw(L, status);
     }
 
@@ -1404,12 +1399,12 @@ LUA_API void lua_resettaint (lua_State *L) {
     luaR_setnewgctaint(L, NULL);
     luaR_setnewcltaint(L, NULL);
 
-    /* Clear saved taint of all stack frames */
+    /* Clear saved taint of all stack frames. */
     for (ci = L->base_ci; ci <= L->ci; ci++) {
         ci->savedtaint = NULL;
     }
 
-    /* Clear taint of all stack values */
+    /* Clear taint of all stack values for all stack frames. */
     for (o = L->stack; o < L->top; o++) {
         o->taint = NULL;
     }

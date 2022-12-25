@@ -140,7 +140,7 @@ CallInfo *luaD_unwindci (lua_State *L, CallInfo *newci, CallInfo *oldci) {
         lua_assert(newci == citop);
     }
 
-    /* Unwind the ci's from top-to-bottom stopping at one above the base. */
+    /* Unwind the cis from top-to-bottom stopping at one above the base. */
     for (ci = citop; ci != cibase; --ci) {
         Closure *cl = ci_func(ci);
         lua_assert(cl->c.nopencalls > 0);
