@@ -1176,8 +1176,6 @@ LUA_API void lua_settaintmode (lua_State *L, int mode) {
 }
 
 LUA_API void lua_taintstack (lua_State *L, const char *name) {
-    TString *ts;
-
     lua_lock(L);
     luaC_checkGC(L);
     luaE_taintstack(L, newtaint(L, name));
