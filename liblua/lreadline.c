@@ -8,6 +8,7 @@
 #include "lauxlib.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #if defined(LUA_USE_READLINE)
