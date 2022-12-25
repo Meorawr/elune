@@ -19,7 +19,6 @@ include(GNUInstallDirs)
 include(elune-configure-target)
 include(elune-fetch-utf8h)
 include(elune-target-copy-file)
-include(elune-target-headers)
 
 #
 # Project Configuration

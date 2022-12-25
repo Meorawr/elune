@@ -36,14 +36,19 @@ target_link_libraries(
     $<$<BOOL:${LUA_USE_READLINE}>:readline::readline>
 )
 
-elune_target_headers(
+target_sources(
   liblua
-  PRIVATE
-    ${CMAKE_CURRENT_BINARY_DIR}/include/luaconf.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/lauxlib.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/lua.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/lua.hpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/lualib.h
+  PUBLIC
+    FILE_SET HEADERS
+    BASE_DIRS
+      ${CMAKE_CURRENT_BINARY_DIR}/include
+      ${CMAKE_CURRENT_SOURCE_DIR}/include
+    FILES
+      ${CMAKE_CURRENT_BINARY_DIR}/include/luaconf.h
+      ${CMAKE_CURRENT_SOURCE_DIR}/include/lauxlib.h
+      ${CMAKE_CURRENT_SOURCE_DIR}/include/lua.h
+      ${CMAKE_CURRENT_SOURCE_DIR}/include/lua.hpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/include/lualib.h
 )
 
 target_sources(
@@ -110,7 +115,7 @@ if(BUILD_INSTALL)
     ARCHIVE
       DESTINATION ${CMAKE_INSTALL_LIBDIR}
       COMPONENT Development
-    PUBLIC_HEADER
+    FILE_SET HEADERS
       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
       COMPONENT Development
   )
