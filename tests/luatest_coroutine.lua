@@ -29,7 +29,7 @@ case("coroutine.call: can call function on current thread", function()
         whatthread = coroutine.running()
     end
 
-    assert(coroutine.running() == nil)  -- verifies this is the main thread
+    assert(coroutine.running() == nil) -- verifies this is the main thread
     coroutine.call(mainthread, call)
     assert(numcalls == 1)
     assert(whatthread == nil)
@@ -216,7 +216,7 @@ case("coroutine.bind: can call function on current thread", function()
         whatthread = coroutine.running()
     end
 
-    assert(coroutine.running() == nil)  -- verifies this is the main thread
+    assert(coroutine.running() == nil) -- verifies this is the main thread
     coroutine.bind(mainthread, call)()
     assert(numcalls == 1)
     assert(whatthread == nil)

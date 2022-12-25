@@ -7,7 +7,8 @@
 
 case("profiling: call counts and timings work post-call", function()
     local function test()
-        for _ = 1, 2^20 do end
+        for _ = 1, 2 ^ 20 do
+        end
     end
 
     test()
@@ -22,7 +23,8 @@ case("profiling: call counts and tminigs work in-call", function()
     local stats
 
     local function test()
-        for _ = 1, 2^20 do end
+        for _ = 1, 2 ^ 20 do
+        end
         stats = debug.getfunctionstats(test)
     end
 
@@ -38,9 +40,10 @@ case("profiling: subroutine time freezes on recursive call", function()
 
     local function test(n)
         if n > 0 then
-            test(n - 1)  -- Note: OP_CALL
+            test(n - 1) -- Note: OP_CALL
         else
-            for _ = 1, 2^20 do end
+            for _ = 1, 2 ^ 20 do
+            end
             stats = debug.getfunctionstats(test)
         end
     end
@@ -50,7 +53,7 @@ case("profiling: subroutine time freezes on recursive call", function()
     assert(stats.calls == 2)
     assert(stats.ownticks > 0)
     assert(stats.subticks > 0)
-    assert(stats.ownticks > stats.subticks)  -- Subticks will be very small.
+    assert(stats.ownticks > stats.subticks) -- Subticks will be very small.
 end)
 
 case("profiling: subroutine time continues on recursive tailcall", function()
@@ -58,9 +61,10 @@ case("profiling: subroutine time continues on recursive tailcall", function()
 
     local function test(n)
         if n > 0 then
-            return test(n - 1)  -- Note: OP_TAILCALL
+            return test(n - 1) -- Note: OP_TAILCALL
         else
-            for _ = 1, 2^20 do end
+            for _ = 1, 2 ^ 20 do
+            end
             stats = debug.getfunctionstats(test)
         end
     end
@@ -70,14 +74,15 @@ case("profiling: subroutine time continues on recursive tailcall", function()
     assert(stats.calls == 2)
     assert(stats.ownticks > 0)
     assert(stats.subticks > 0)
-    assert(stats.subticks >= stats.ownticks)  -- Subticks will be _slightly_ larger.
+    assert(stats.subticks >= stats.ownticks) -- Subticks will be _slightly_ larger.
 end)
 
 case("profiling: execution time discarded on script errors", function()
     local a
 
     local function test()
-        for _ = 1, 2^20 do end
+        for _ = 1, 2 ^ 20 do
+        end
         a = a + 1
     end
 
@@ -91,7 +96,8 @@ end)
 
 case("profiling: execution time commits on function call", function()
     local function test()
-        for _ = 1, 2^20 do end
+        for _ = 1, 2 ^ 20 do
+        end
         (function() end)()
         a = a + 1
     end
@@ -112,7 +118,8 @@ case("profiling: execution time pauses for direct yields", function()
     local function test2()
         local thread = coroutine.create(test1)
         coroutine.resume(thread)
-        for _ = 1, 2^20 do end
+        for _ = 1, 2 ^ 20 do
+        end
         coroutine.resume(thread)
     end
 
@@ -138,13 +145,16 @@ end)
 case("profiling: execution time does not pause for indirect yields", function()
     local function test1()
         -- Added IIFE to spice things up for an indirect (nested call) yield.
-        (function() coroutine.yield() end)()
+        (function()
+            coroutine.yield()
+        end)()
     end
 
     local function test2()
         local thread = coroutine.create(test1)
         coroutine.resume(thread)
-        for _ = 1, 2^20 do end
+        for _ = 1, 2 ^ 20 do
+        end
         coroutine.resume(thread)
     end
 
@@ -166,7 +176,8 @@ end)
 
 case("profiling: execution time over multiple subroutine calls", function()
     local function test1()
-        for i = 1, 2^16 do end
+        for i = 1, 2 ^ 16 do
+        end
     end
 
     local function test2()
@@ -203,7 +214,7 @@ case("profiling: tailcall unwinding state check", function()
 
     local function test2(n)
         if n > 0 then
-            return test1(n - 1)  -- Note: Calling 'test1'!
+            return test1(n - 1) -- Note: Calling 'test1'!
         end
     end
 

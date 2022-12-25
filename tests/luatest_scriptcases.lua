@@ -13,20 +13,25 @@
 -- luacheck: globals geterrorhandler seterrorhandler
 -- luacheck: globals strsplit strsplittable secureexecuterange
 
-local case = _G.case or function(name, func)
-    local olderrhandler = geterrorhandler()
-    local errors = {}
+local case = _G.case
+    or function(name, func)
+        local olderrhandler = geterrorhandler()
+        local errors = {}
 
-    seterrorhandler(function(err) table.insert(errors, err) end)
-    securecall(func)
-    seterrorhandler(olderrhandler)
+        seterrorhandler(function(err)
+            table.insert(errors, err)
+        end)
+        securecall(func)
+        seterrorhandler(olderrhandler)
 
-    print(string.format("Test %s: [ %s ]", name, (#errors > 0 and "\124cffff0000FAIL\124r" or "\124cff00ff00OK\124r")))
+        print(
+            string.format("Test %s: [ %s ]", name, (#errors > 0 and "\124cffff0000FAIL\124r" or "\124cff00ff00OK\124r"))
+        )
 
-    for _, err in ipairs(errors) do
-        olderrhandler(err)
+        for _, err in ipairs(errors) do
+            olderrhandler(err)
+        end
     end
-end
 
 -- This test verifies that the MOVE operation correctly results in a tainted
 -- assignment if the context is insecure.
@@ -34,12 +39,12 @@ case("OP_MOVE: Copy secure value from tainted context", function()
     local _ENV = {}
 
     securecall(function()
-        local source = "test"         -- LOADK
-        _ENV.source = source          -- GETUPVAL, SETTABLE
-        forceinsecure()               -- GETGLOBAL, CALL
+        local source = "test" -- LOADK
+        _ENV.source = source -- GETUPVAL, SETTABLE
+        forceinsecure() -- GETGLOBAL, CALL
         -- Stack tainted! --
-        local target = source         -- MOVE
-        _ENV.target = target          -- GETUPVAL, SETTABLE
+        local target = source -- MOVE
+        _ENV.target = target -- GETUPVAL, SETTABLE
     end)
 
     assert(issecurevariable(_ENV, "source"), "expected '_ENV.source' to be secure")
@@ -52,10 +57,10 @@ case("OP_LOADK: Load constant into tainted context", function()
     local _ENV = {}
 
     securecall(function()
-        forceinsecure()               -- GETGLOBAL, CALL
+        forceinsecure() -- GETGLOBAL, CALL
         -- Stack tainted! --
-        local value = 123             -- LOADK
-        _ENV.value = value            -- GETUPVAL, SETTABLE
+        local value = 123 -- LOADK
+        _ENV.value = value -- GETUPVAL, SETTABLE
     end)
 
     assert(not issecurevariable(_ENV, "value"), "expected '_ENV.value' to be tainted")
@@ -67,10 +72,10 @@ case("OP_LOADBOOL: Load boolean value into tainted context", function()
     local _ENV = {}
 
     securecall(function()
-        forceinsecure()               -- GETGLOBAL, CALL
+        forceinsecure() -- GETGLOBAL, CALL
         -- Stack tainted! --
-        local value = true            -- LOADBOOL
-        _ENV.value = value            -- GETUPVAL, SETTABLE
+        local value = true -- LOADBOOL
+        _ENV.value = value -- GETUPVAL, SETTABLE
     end)
 
     assert(not issecurevariable(_ENV, "value"), "expected '_ENV.value' to be tainted")
@@ -80,13 +85,13 @@ end)
 -- assignment if the context is insecure.
 case("OP_LOADNIL: Load nil value into tainted context", function()
     local _ENV = {}
-    collectgarbage("stop")          -- GC table traversal can nuke tainted nil values.
+    collectgarbage("stop") -- GC table traversal can nuke tainted nil values.
 
     securecall(function()
-        forceinsecure()               -- GETGLOBAL, CALL
+        forceinsecure() -- GETGLOBAL, CALL
         -- Stack tainted! --
-        local value = nil             -- LOADNIL
-        _ENV.value = value            -- GETUPVAL, SETTABLE
+        local value = nil -- LOADNIL
+        _ENV.value = value -- GETUPVAL, SETTABLE
     end)
 
     assert(not issecurevariable(_ENV, "value"), "expected '_ENV.value' to be tainted")
@@ -98,8 +103,8 @@ case("OP_GETGLOBAL: Read secure value", function()
     local _ENV = {}
 
     securecall(function()
-        variable = "test"             -- LOADK, SETGLOBAL
-        _ENV.value = variable         -- GETGLOBAL, SETTABLE
+        variable = "test" -- LOADK, SETGLOBAL
+        _ENV.value = variable -- GETGLOBAL, SETTABLE
     end)
 
     assert(issecurevariable(_ENV, "value"), "expected '_ENV.value' to be secure")
@@ -111,13 +116,13 @@ case("OP_GETGLOBAL: Read tainted value", function()
     local _ENV = {}
 
     securecall(function()
-        forceinsecure()               -- GETGLOBAL, CALL
+        forceinsecure() -- GETGLOBAL, CALL
         -- Stack tainted! --
-        variable = "test"             -- LOADK, SETGLOBAL
+        variable = "test" -- LOADK, SETGLOBAL
     end)
 
     securecall(function()
-        _ENV.value = variable         -- GETGLOBAL, SETTABLE
+        _ENV.value = variable -- GETGLOBAL, SETTABLE
     end)
 
     assert(not issecurevariable(_ENV, "value"), "expected '_ENV.value' to be tainted")
@@ -129,11 +134,11 @@ case("OP_GETGLOBAL: Read secure value from tainted context", function()
     local _ENV = {}
 
     securecall(function()
-        variable = "test"             -- LOADK, SETGLOBAL
-        forceinsecure()               -- GETGLOBAL, CALL
+        variable = "test" -- LOADK, SETGLOBAL
+        forceinsecure() -- GETGLOBAL, CALL
         -- Stack tainted! --
-        local value = variable        -- GETGLOBAL
-        _ENV.value = value            -- GETUPVAL, SETTABLE
+        local value = variable -- GETGLOBAL
+        _ENV.value = value -- GETUPVAL, SETTABLE
     end)
 
     assert(not issecurevariable(_ENV, "value"), "expected '_ENV.value' to be tainted")
@@ -167,12 +172,12 @@ case("OP_GETTABLE: Read secure field", function()
     local _ENV = {}
 
     securecall(function()
-        local value = "test"          -- LOADK
-        _ENV.source = value           -- SETTABLE
+        local value = "test" -- LOADK
+        _ENV.source = value -- SETTABLE
     end)
 
     securecall(function()
-        _ENV.target = _ENV.source     -- GETTABLE, SETTABLE
+        _ENV.target = _ENV.source -- GETTABLE, SETTABLE
     end)
 
     assert(issecurevariable(_ENV, "target"), "expected '_ENV.target' to be secure")
@@ -184,14 +189,14 @@ case("OP_GETTABLE: Read tainted field", function()
     local _ENV = {}
 
     securecall(function()
-        forceinsecure()               -- GETGLOBAL, CALL
+        forceinsecure() -- GETGLOBAL, CALL
         -- Stack tainted! --
-        local value = "test"          -- LOADK
-        _ENV.source = value           -- SETTABLE
+        local value = "test" -- LOADK
+        _ENV.source = value -- SETTABLE
     end)
 
     securecall(function()
-        _ENV.target = _ENV.source     -- GETTABLE, SETTABLE
+        _ENV.target = _ENV.source -- GETTABLE, SETTABLE
     end)
 
     assert(not issecurevariable(_ENV, "target"), "expected '_ENV.target' to be tainted")
@@ -203,14 +208,14 @@ case("OP_GETTABLE: Read secure field from tainted context", function()
     local _ENV = {}
 
     securecall(function()
-        local value = "test"          -- LOADK
-        _ENV.source = value           -- SETTABLE
+        local value = "test" -- LOADK
+        _ENV.source = value -- SETTABLE
     end)
 
     securecall(function()
-        forceinsecure()               -- GETGLOBAL, CALL
+        forceinsecure() -- GETGLOBAL, CALL
         -- Stack tainted! --
-        _ENV.target = _ENV.source     -- GETTABLE, SETTABLE
+        _ENV.target = _ENV.source -- GETTABLE, SETTABLE
     end)
 
     assert(issecurevariable(_ENV, "source"), "expected '_ENV.source' to be secure")
@@ -224,11 +229,11 @@ case("OP_GETUPVAL: Read secure upvalue", function()
     local upval
 
     securecall(function()
-        upval = "test"                -- LOADK, SETUPVAL
+        upval = "test" -- LOADK, SETUPVAL
     end)
 
     securecall(function()
-        _ENV.value = upval            -- GETUPVAL, SETTABLE
+        _ENV.value = upval -- GETUPVAL, SETTABLE
     end)
 
     assert(issecurevariable(_ENV, "value"), "expected '_ENV.value' to be secure")
@@ -241,13 +246,13 @@ case("OP_GETUPVAL: Read tainted upvalue", function()
     local upval
 
     securecall(function()
-        forceinsecure()               -- GETGLOBAL, CALL
+        forceinsecure() -- GETGLOBAL, CALL
         -- Stack tainted! --
-        upval = "test"                -- LOADK, SETUPVAL
+        upval = "test" -- LOADK, SETUPVAL
     end)
 
     securecall(function()
-        _ENV.value = upval            -- GETUPVAL, SETTABLE
+        _ENV.value = upval -- GETUPVAL, SETTABLE
     end)
 
     assert(not issecurevariable(_ENV, "value"), "expected '_ENV.value' to be insecure")
@@ -260,13 +265,13 @@ case("OP_GETUPVAL: Read secure upvalue from tainted context", function()
     local upval
 
     securecall(function()
-        upval = "test"                -- LOADK, SETUPVAL
+        upval = "test" -- LOADK, SETUPVAL
     end)
 
     securecall(function()
-        forceinsecure()               -- GETGLOBAL, CALL
+        forceinsecure() -- GETGLOBAL, CALL
         -- Stack tainted! --
-        _ENV.value = upval            -- GETUPVAL, SETTABLE
+        _ENV.value = upval -- GETUPVAL, SETTABLE
     end)
 
     assert(not issecurevariable(_ENV, "value"), "expected '_ENV.value' to be insecure")
@@ -276,8 +281,8 @@ end)
 -- writing secure values from a secure context.
 case("OP_SETGLOBAL: Write secure value", function()
     securecall(function()
-        local value = "test"          -- LOADK
-        variable = value              -- SETGLOBAL
+        local value = "test" -- LOADK
+        variable = value -- SETGLOBAL
     end)
 
     assert(issecurevariable("variable"), "expected 'variable' to be secure")
@@ -287,9 +292,9 @@ end)
 -- field when writing a tainted value.
 case("OP_SETGLOBAL: Write tainted value", function()
     securecall(function()
-        forceinsecure()               -- GETGLOBAL, CALL
+        forceinsecure() -- GETGLOBAL, CALL
         -- Stack tainted! --
-        variable = "test"             -- LOADK, SETGLOBAL
+        variable = "test" -- LOADK, SETGLOBAL
     end)
 
     assert(not issecurevariable("variable"), "expected 'variable' to be tainted")
@@ -299,10 +304,10 @@ end)
 -- written from an insecure context.
 case("OP_SETGLOBAL: Write secure value from tainted context", function()
     securecall(function()
-        local value = "test"          -- LOADK
-        forceinsecure()               -- GETGLOBAL, CALL
+        local value = "test" -- LOADK
+        forceinsecure() -- GETGLOBAL, CALL
         -- Stack tainted! --
-        variable = value              -- SETGLOBAL
+        variable = value -- SETGLOBAL
     end)
 
     assert(issecurevariable("variable"), "expected 'variable' to be secure")
@@ -314,8 +319,8 @@ case("OP_SETTABLE: Write secure value", function()
     local _ENV = {}
 
     securecall(function()
-        local value = "test"          -- LOADK
-        _ENV.key = value              -- SETTABLE
+        local value = "test" -- LOADK
+        _ENV.key = value -- SETTABLE
     end)
 
     assert(issecurevariable(_ENV, "key"), "expected '_ENV.key' to be secure")
@@ -327,10 +332,10 @@ case("OP_SETTABLE: Write tainted value", function()
     local _ENV = {}
 
     securecall(function()
-        forceinsecure()               -- GETGLOBAL, CALL
+        forceinsecure() -- GETGLOBAL, CALL
         -- Stack tainted! --
-        local value = "test"          -- LOADK
-        _ENV.key = value              -- SETTABLE
+        local value = "test" -- LOADK
+        _ENV.key = value -- SETTABLE
     end)
 
     assert(not issecurevariable(_ENV, "key"), "expected '_ENV.key' to be tainted")
@@ -345,10 +350,10 @@ case("OP_SETTABLE: Write secure value from tainted context", function()
     local _ENV = {}
 
     securecall(function()
-        local value = "test"          -- LOADK
-        forceinsecure()               -- GETGLOBAL, CALL
+        local value = "test" -- LOADK
+        forceinsecure() -- GETGLOBAL, CALL
         -- Stack tainted! --
-        _ENV.key = value              -- SETTABLE
+        _ENV.key = value -- SETTABLE
     end)
 
     assert(issecurevariable(_ENV, "key"), "expected '_ENV.key' to be secure")
@@ -363,9 +368,9 @@ case("OP_SETTABLE: Write secure constant from tainted context", function()
     local _ENV = {}
 
     securecall(function()
-        forceinsecure()               -- GETGLOBAL, CALL
+        forceinsecure() -- GETGLOBAL, CALL
         -- Stack tainted! --
-        _ENV.key = 123                -- SETTABLE
+        _ENV.key = 123 -- SETTABLE
     end)
 
     assert(issecurevariable(_ENV, "key"), "expected '_ENV.key' to be secure")
@@ -378,11 +383,11 @@ case("OP_SETUPVAL: Write secure value", function()
     local upval
 
     securecall(function()
-        upval = "test"                -- LOADK, SETUPVAL
+        upval = "test" -- LOADK, SETUPVAL
     end)
 
     securecall(function()
-        _ENV.value = upval            -- GETUPVAL, SETTABLE
+        _ENV.value = upval -- GETUPVAL, SETTABLE
     end)
 
     assert(issecurevariable(_ENV, "value"), "expected '_ENV.value' to be secure")
@@ -395,13 +400,13 @@ case("OP_SETUPVAL: Write tainted value", function()
     local upval
 
     securecall(function()
-        forceinsecure()               -- GETGLOBAL, CALL
+        forceinsecure() -- GETGLOBAL, CALL
         -- Stack tainted! --
-        upval = "test"                -- LOADK, SETUPVAL
+        upval = "test" -- LOADK, SETUPVAL
     end)
 
     securecall(function()
-        _ENV.value = upval            -- GETUPVAL, SETTABLE
+        _ENV.value = upval -- GETUPVAL, SETTABLE
     end)
 
     assert(not issecurevariable(_ENV, "value"), "expected '_ENV.value' to be insecure")
@@ -414,14 +419,14 @@ case("OP_SETUPVAL: Write secure value from tainted context", function()
     local upval
 
     securecall(function()
-        local value = "test"          -- LOADK
-        forceinsecure()               -- GETGLOBAL, CALL
+        local value = "test" -- LOADK
+        forceinsecure() -- GETGLOBAL, CALL
         -- Stack tainted! --
-        upval = value                 -- SETUPVAL
+        upval = value -- SETUPVAL
     end)
 
     securecall(function()
-        _ENV.value = upval            -- GETUPVAL, SETTABLE
+        _ENV.value = upval -- GETUPVAL, SETTABLE
     end)
 
     assert(issecurevariable(_ENV, "value"), "expected '_ENV.value' to be secure")
@@ -433,14 +438,14 @@ case("OP_ADD: Evaluate in tainted context", function()
     local _ENV = {}
 
     securecall(function()
-        local a = 1                   -- LOADK
-        _ENV.a = a                    -- GETUPVAL, SETTABLE
-        local b = 2                   -- LOADK
-        _ENV.b = b                    -- GETUPVAL, SETTABLE
-        forceinsecure()               -- GETGLOBAL, CALL
+        local a = 1 -- LOADK
+        _ENV.a = a -- GETUPVAL, SETTABLE
+        local b = 2 -- LOADK
+        _ENV.b = b -- GETUPVAL, SETTABLE
+        forceinsecure() -- GETGLOBAL, CALL
         -- Stack tainted! --
-        local c = a + b               -- ADD
-        _ENV.c = c                    -- GETUPVAL, SETTABLE
+        local c = a + b -- ADD
+        _ENV.c = c -- GETUPVAL, SETTABLE
     end)
 
     assert(issecurevariable(_ENV, "a"), "expected '_ENV.a' to be secure")
@@ -454,14 +459,14 @@ case("OP_SUB: Evaluate in tainted context", function()
     local _ENV = {}
 
     securecall(function()
-        local a = 1                   -- LOADK
-        _ENV.a = a                    -- GETUPVAL, SETTABLE
-        local b = 2                   -- LOADK
-        _ENV.b = b                    -- GETUPVAL, SETTABLE
-        forceinsecure()               -- GETGLOBAL, CALL
+        local a = 1 -- LOADK
+        _ENV.a = a -- GETUPVAL, SETTABLE
+        local b = 2 -- LOADK
+        _ENV.b = b -- GETUPVAL, SETTABLE
+        forceinsecure() -- GETGLOBAL, CALL
         -- Stack tainted! --
-        local c = a - b               -- SUB
-        _ENV.c = c                    -- GETUPVAL, SETTABLE
+        local c = a - b -- SUB
+        _ENV.c = c -- GETUPVAL, SETTABLE
     end)
 
     assert(issecurevariable(_ENV, "a"), "expected '_ENV.a' to be secure")
@@ -475,14 +480,14 @@ case("OP_MUL: Evaluate in tainted context", function()
     local _ENV = {}
 
     securecall(function()
-        local a = 1                   -- LOADK
-        _ENV.a = a                    -- GETUPVAL, SETTABLE
-        local b = 2                   -- LOADK
-        _ENV.b = b                    -- GETUPVAL, SETTABLE
-        forceinsecure()               -- GETGLOBAL, CALL
+        local a = 1 -- LOADK
+        _ENV.a = a -- GETUPVAL, SETTABLE
+        local b = 2 -- LOADK
+        _ENV.b = b -- GETUPVAL, SETTABLE
+        forceinsecure() -- GETGLOBAL, CALL
         -- Stack tainted! --
-        local c = a * b               -- MUL
-        _ENV.c = c                    -- GETUPVAL, SETTABLE
+        local c = a * b -- MUL
+        _ENV.c = c -- GETUPVAL, SETTABLE
     end)
 
     assert(issecurevariable(_ENV, "a"), "expected '_ENV.a' to be secure")
@@ -496,14 +501,14 @@ case("OP_DIV: Evaluate in tainted context", function()
     local _ENV = {}
 
     securecall(function()
-        local a = 1                   -- LOADK
-        _ENV.a = a                    -- GETUPVAL, SETTABLE
-        local b = 2                   -- LOADK
-        _ENV.b = b                    -- GETUPVAL, SETTABLE
-        forceinsecure()               -- GETGLOBAL, CALL
+        local a = 1 -- LOADK
+        _ENV.a = a -- GETUPVAL, SETTABLE
+        local b = 2 -- LOADK
+        _ENV.b = b -- GETUPVAL, SETTABLE
+        forceinsecure() -- GETGLOBAL, CALL
         -- Stack tainted! --
-        local c = a / b               -- DIV
-        _ENV.c = c                    -- GETUPVAL, SETTABLE
+        local c = a / b -- DIV
+        _ENV.c = c -- GETUPVAL, SETTABLE
     end)
 
     assert(issecurevariable(_ENV, "a"), "expected '_ENV.a' to be secure")
@@ -517,14 +522,14 @@ case("OP_MOD: Evaluate in tainted context", function()
     local _ENV = {}
 
     securecall(function()
-        local a = 1                   -- LOADK
-        _ENV.a = a                    -- GETUPVAL, SETTABLE
-        local b = 2                   -- LOADK
-        _ENV.b = b                    -- GETUPVAL, SETTABLE
-        forceinsecure()               -- GETGLOBAL, CALL
+        local a = 1 -- LOADK
+        _ENV.a = a -- GETUPVAL, SETTABLE
+        local b = 2 -- LOADK
+        _ENV.b = b -- GETUPVAL, SETTABLE
+        forceinsecure() -- GETGLOBAL, CALL
         -- Stack tainted! --
-        local c = a % b               -- MOD
-        _ENV.c = c                    -- GETUPVAL, SETTABLE
+        local c = a % b -- MOD
+        _ENV.c = c -- GETUPVAL, SETTABLE
     end)
 
     assert(issecurevariable(_ENV, "a"), "expected '_ENV.a' to be secure")
@@ -538,14 +543,14 @@ case("OP_POW: Evaluate in tainted context", function()
     local _ENV = {}
 
     securecall(function()
-        local a = 1                   -- LOADK
-        _ENV.a = a                    -- GETUPVAL, SETTABLE
-        local b = 2                   -- LOADK
-        _ENV.b = b                    -- GETUPVAL, SETTABLE
-        forceinsecure()               -- GETGLOBAL, CALL
+        local a = 1 -- LOADK
+        _ENV.a = a -- GETUPVAL, SETTABLE
+        local b = 2 -- LOADK
+        _ENV.b = b -- GETUPVAL, SETTABLE
+        forceinsecure() -- GETGLOBAL, CALL
         -- Stack tainted! --
-        local c = a ^ b               -- POW
-        _ENV.c = c                    -- GETUPVAL, SETTABLE
+        local c = a ^ b -- POW
+        _ENV.c = c -- GETUPVAL, SETTABLE
     end)
 
     assert(issecurevariable(_ENV, "a"), "expected '_ENV.a' to be secure")
@@ -559,12 +564,12 @@ case("OP_UNM: Evaluate in tainted context", function()
     local _ENV = {}
 
     securecall(function()
-        local a = 1                   -- LOADK
-        _ENV.a = a                    -- GETUPVAL, SETTABLE
-        forceinsecure()               -- GETGLOBAL, CALL
+        local a = 1 -- LOADK
+        _ENV.a = a -- GETUPVAL, SETTABLE
+        forceinsecure() -- GETGLOBAL, CALL
         -- Stack tainted! --
-        local b = -a                  -- UNM
-        _ENV.b = b                    -- GETUPVAL, SETTABLE
+        local b = -a -- UNM
+        _ENV.b = b -- GETUPVAL, SETTABLE
     end)
 
     assert(issecurevariable(_ENV, "a"), "expected '_ENV.a' to be secure")
@@ -581,7 +586,10 @@ case("Coroutines: Create tainted coroutine with secure closure", function()
         assert(issecure(), "expected coroutine thread to resume securely")
     end
 
-    local thread = securecall(function() forceinsecure(); return coroutine.create(comain); end)
+    local thread = securecall(function()
+        forceinsecure()
+        return coroutine.create(comain)
+    end)
     assert(issecure(), "expected main thread to be initially secure")
     assert(coroutine.resume(thread))
     assert(issecure(), "expected main thread to remain secure after first yield")
@@ -602,7 +610,10 @@ case("Coroutines: Start coroutine from tainted thread", function()
 
     local thread = coroutine.create(comain)
     assert(issecure(), "expected main thread to be initially secure")
-    securecall(function() forceinsecure(); coroutine.resume(thread); end)
+    securecall(function()
+        forceinsecure()
+        coroutine.resume(thread)
+    end)
     assert(issecure(), "expected main thread to remain secure after first yield")
     assert(coroutine.resume(thread))
     assert(issecure(), "expected main thread to remain secure after coroutine finish")
@@ -622,7 +633,10 @@ case("Coroutines: Resume coroutine from tainted thread", function()
     assert(issecure(), "expected main thread to be initially secure")
     assert(coroutine.resume(thread))
     assert(issecure(), "expected main thread to remain secure after first yield")
-    securecall(function() forceinsecure(); coroutine.resume(thread); end)
+    securecall(function()
+        forceinsecure()
+        coroutine.resume(thread)
+    end)
     assert(issecure(), "expected main thread to remain secure after coroutine finish")
     assert(coroutine.status(thread) == "dead", "expected coroutine thread to be dead")
 end)
@@ -860,7 +874,7 @@ case("getfenv: Read tainted environment with secure '__environment' key", functi
         local meta = {}
         forceinsecure()
         setfenv(func, setmetatable(env, meta))
-        meta.__environment = false  -- This is secure; see 'op_settable_constant_tainted_context'.
+        meta.__environment = false -- This is secure; see 'op_settable_constant_tainted_context'.
     end
 
     local func = function() end
@@ -922,8 +936,7 @@ case("setfenv: Taint caller environment with Lua call", function()
         setfenv(3, _G)
     end
 
-    local function lfunc()
-    end
+    local function lfunc() end
 
     local function main()
         securecall(inner)
@@ -1017,14 +1030,23 @@ end)
 
 -- Verifies that return values are passed through to the caller properly.
 case("securecallfunction: returns values to caller", function()
-    local a, b, c = securecallfunction(function() return 1, 2, 3; end)
+    local a, b, c = securecallfunction(function()
+        return 1, 2, 3
+    end)
     assert(a == 1 and b == 2 and c == 3)
-    assert(select("#", securecallfunction(function() return 1, 2, 3; end)) == 3)
+    assert(select(
+        "#",
+        securecallfunction(function()
+            return 1, 2, 3
+        end)
+    ) == 3)
 end)
 
 -- Verifies that arguments are passed through to the callee properly.
 case("securecallfunction: arguments passed to callee", function()
-    assert(securecallfunction(function(...) return select("#", ...) end, "a", "b", "c") == 3)
+    assert(securecallfunction(function(...)
+        return select("#", ...)
+    end, "a", "b", "c") == 3)
 end)
 
 -- Verifies that errors do not bubble back through the securecall boundary and
@@ -1033,7 +1055,10 @@ case("securecallfunction: errors forwarded to error handler", function()
     local oldhandler = geterrorhandler()
     local numerrors = 0
     local lasterror = nil
-    seterrorhandler(function(...) numerrors = numerrors + 1; lasterror = ...; end)
+    seterrorhandler(function(...)
+        numerrors = numerrors + 1
+        lasterror = ...
+    end)
 
     local numreturns = select("#", securecallfunction(error, "error message"))
     seterrorhandler(oldhandler)
@@ -1045,13 +1070,19 @@ end)
 
 -- Verifies that taint does not propagate back to the caller.
 case("securecallfunction: does not taint caller", function()
-    securecallfunction(function() forceinsecure(); assert(not issecure()); end)
+    securecallfunction(function()
+        forceinsecure()
+        assert(not issecure())
+    end)
     assert(issecure())
 end)
 
 -- Verifies that taint does not propagate back to the caller through its returns.
 case("securecallfunction: return values do not taint caller", function()
-    local a, b, c = securecallfunction(function() forceinsecure(); return 1, 2, 3; end)
+    local a, b, c = securecallfunction(function()
+        forceinsecure()
+        return 1, 2, 3
+    end)
     local _, _, _ = a, b, c
     assert(issecure())
 end)
@@ -1059,7 +1090,9 @@ end)
 -- Verifies that no global lookups are performed if the given func is a string.
 case("securecallfunction: does not perform global lookup", function()
     local errors = 0
-    seterrorhandler(function() errors = errors + 1; end)
+    seterrorhandler(function()
+        errors = errors + 1
+    end)
     securecall("goodfunction")
     assert(errors == 1)
 end)
@@ -1067,19 +1100,30 @@ end)
 -- Verifies that taint is retained by the callee.
 case("securecallfunction: caller taint propagates to callee", function()
     forceinsecure()
-    securecallfunction(function() assert(not issecure()) end)
+    securecallfunction(function()
+        assert(not issecure())
+    end)
 end)
 
 -- Verifies that return values are passed through to the caller properly.
 case("securecall: returns values to caller", function()
-    local a, b, c = securecall(function() return 1, 2, 3; end)
+    local a, b, c = securecall(function()
+        return 1, 2, 3
+    end)
     assert(a == 1 and b == 2 and c == 3)
-    assert(select("#", securecall(function() return 1, 2, 3; end)) == 3)
+    assert(select(
+        "#",
+        securecall(function()
+            return 1, 2, 3
+        end)
+    ) == 3)
 end)
 
 -- Verifies that arguments are passed through to the callee properly.
 case("securecall: arguments passed to callee", function()
-    assert(securecall(function(...) return select("#", ...) end, "a", "b", "c") == 3)
+    assert(securecall(function(...)
+        return select("#", ...)
+    end, "a", "b", "c") == 3)
 end)
 
 -- Verifies that errors do not bubble back through the securecall boundary and
@@ -1088,7 +1132,10 @@ case("securecall: errors forwarded to error handler", function()
     local oldhandler = geterrorhandler()
     local numerrors = 0
     local lasterror = nil
-    seterrorhandler(function(...) numerrors = numerrors + 1; lasterror = ...; end)
+    seterrorhandler(function(...)
+        numerrors = numerrors + 1
+        lasterror = ...
+    end)
 
     local numreturns = select("#", securecallfunction(error, "error message"))
     seterrorhandler(oldhandler)
@@ -1100,13 +1147,19 @@ end)
 
 -- Verifies that taint does not propagate back to the caller.
 case("securecall: does not taint caller", function()
-    securecall(function() forceinsecure(); assert(not issecure()); end)
+    securecall(function()
+        forceinsecure()
+        assert(not issecure())
+    end)
     assert(issecure())
 end)
 
 -- Verifies that taint does not propagate back to the caller through its returns.
 case("securecall: return values do not taint caller", function()
-    local a, b, c = securecall(function() forceinsecure(); return 1, 2, 3; end)
+    local a, b, c = securecall(function()
+        forceinsecure()
+        return 1, 2, 3
+    end)
     local _, _, _ = a, b, c
     assert(issecure())
 end)
@@ -1115,7 +1168,9 @@ end)
 -- call that function instead.
 case("securecall: perform global lookup", function()
     local testcalls = 0
-    _G.goodfunction = function() testcalls = testcalls + 1 end
+    _G.goodfunction = function()
+        testcalls = testcalls + 1
+    end
 
     securecall("goodfunction")
     assert(testcalls == 1)
@@ -1123,7 +1178,10 @@ end)
 
 -- Verifies that taint on a global lookup doesn't propagate back to the caller.
 case("securecall: global lookups do not taint caller", function()
-    securecall(function() forceinsecure(); _G.evilfunction = function() end; end)
+    securecall(function()
+        forceinsecure()
+        _G.evilfunction = function() end
+    end)
     securecall("evilfunction")
 
     assert(not issecurevariable("evilfunction"))
@@ -1135,15 +1193,22 @@ end)
 case("securecall: tainted global propagates to calleee", function()
     local _ENV = {}
 
-    securecall(function() forceinsecure(); _G.evilfunction = function(a) _ENV.a = a; end; end)
+    securecall(function()
+        forceinsecure()
+        _G.evilfunction = function(a)
+            _ENV.a = a
+        end
+    end)
     securecall("evilfunction")
-    assert(not issecurevariable(_ENV, "a"));
+    assert(not issecurevariable(_ENV, "a"))
 end)
 
 -- Verifies that taint is retained by the callee.
 case("securecall: caller taint propagates to callee", function()
     forceinsecure()
-    securecall(function() assert(not issecure()) end)
+    securecall(function()
+        assert(not issecure())
+    end)
 end)
 
 case("secureexecuterange: calls function for each entry in table", function()
@@ -1164,8 +1229,13 @@ case("secureexecuterange: continues if function errors", function()
     local nerrs = 0
 
     local oldhandler = geterrorhandler()
-    seterrorhandler(function() nerrs = nerrs + 1; end)
-    secureexecuterange({ 1, 2, 3, 4, 5 }, function() ncalls = ncalls + 1; error("foo") end)
+    seterrorhandler(function()
+        nerrs = nerrs + 1
+    end)
+    secureexecuterange({ 1, 2, 3, 4, 5 }, function()
+        ncalls = ncalls + 1
+        error("foo")
+    end)
     seterrorhandler(oldhandler)
     assert(ncalls == 5)
     assert(nerrs == ncalls)
@@ -1209,7 +1279,7 @@ end)
 
 case("secureexecuterange: cannot return values", function()
     local function exec()
-        return 1, 2, 3;
+        return 1, 2, 3
     end
 
     assert(select("#", secureexecuterange({ 1, 2, 3 }, exec) == 0))
@@ -1219,10 +1289,16 @@ end)
 -- order; original first, then posthook.
 case("hooksecurefunc: calls both functions in-order", function()
     local ncalls = 0
-    _G.hookfunc = function() assert(ncalls == 0); ncalls = ncalls + 1; end
-    hooksecurefunc("hookfunc", function() assert(ncalls == 1); ncalls = ncalls + 1; end)
+    _G.hookfunc = function()
+        assert(ncalls == 0)
+        ncalls = ncalls + 1
+    end
+    hooksecurefunc("hookfunc", function()
+        assert(ncalls == 1)
+        ncalls = ncalls + 1
+    end)
 
-    _G.hookfunc();
+    _G.hookfunc()
     assert(ncalls == 2)
 end)
 
@@ -1232,8 +1308,12 @@ case("hooksecurefunc: arguments supplied to both prefunc and posthook", function
     local preargs
     local posargs
 
-    _G.hookfunc = function(...) preargs = { n = select("#", ...), ... }; end
-    hooksecurefunc("hookfunc", function(...) posargs = { n = select("#", ...), ... }; end)
+    _G.hookfunc = function(...)
+        preargs = { n = select("#", ...), ... }
+    end
+    hooksecurefunc("hookfunc", function(...)
+        posargs = { n = select("#", ...), ... }
+    end)
 
     _G.hookfunc("a", "b", "c")
 
@@ -1251,8 +1331,12 @@ end)
 -- This test verifies that values returned from the posthook never get passed
 -- back to the caller.
 case("hooksecurefunc: return values come from prefunc", function()
-    _G.hookfunc = function() return "a", "b", "c" end
-    hooksecurefunc("hookfunc", function() return 1, 2, 3 end)
+    _G.hookfunc = function()
+        return "a", "b", "c"
+    end
+    hooksecurefunc("hookfunc", function()
+        return 1, 2, 3
+    end)
 
     local results = { _G.hookfunc() }
     assert(#results == 3)
@@ -1265,7 +1349,9 @@ end)
 -- does not propagate to the caller.
 case("hooksecurefunc: posthook taint does not taint caller", function()
     _G.hookfunc = function() end
-    hooksecurefunc("hookfunc", function() forceinsecure() end)
+    hooksecurefunc("hookfunc", function()
+        forceinsecure()
+    end)
     _G.hookfunc()
 
     assert(issecure())
@@ -1275,7 +1361,12 @@ end)
 -- a tainted closure, executing it does not spread that taint to the caller.
 case("hooksecurefunc: tainted posthook does not taint caller", function()
     _G.hookfunc = function() end
-    securecall(function() forceinsecure(); hooksecurefunc("hookfunc", function() forceinsecure() end); end)
+    securecall(function()
+        forceinsecure()
+        hooksecurefunc("hookfunc", function()
+            forceinsecure()
+        end)
+    end)
     _G.hookfunc()
 
     assert(issecure())
@@ -1289,10 +1380,17 @@ case("hooksecurefunc: posthook errors do not propagate", function()
     local errhandlercalled = false
     local origerrorhandler = geterrorhandler()
 
-    _G.hookfunc = function() prehookcalled = true; end
-    hooksecurefunc("hookfunc", function() poshookcalled = true; error("test error"); end)
+    _G.hookfunc = function()
+        prehookcalled = true
+    end
+    hooksecurefunc("hookfunc", function()
+        poshookcalled = true
+        error("test error")
+    end)
 
-    seterrorhandler(function() errhandlercalled = true; end)
+    seterrorhandler(function()
+        errhandlercalled = true
+    end)
     pcall(_G.hookfunc)
     seterrorhandler(origerrorhandler)
 
@@ -1306,8 +1404,12 @@ end)
 -- execution then it will propagate that taint to both the posthook and the
 -- caller.
 case("hooksecurefunc: prefunc taint propagates to posthook and caller", function()
-    _G.hookfunc = function() forceinsecure() end
-    hooksecurefunc("hookfunc", function() assert(not issecure()) end)
+    _G.hookfunc = function()
+        forceinsecure()
+    end
+    hooksecurefunc("hookfunc", function()
+        assert(not issecure())
+    end)
     _G.hookfunc()
     assert(not issecure())
 end)
@@ -1315,8 +1417,13 @@ end)
 -- This test verifies that if the original function is a tainted global closure
 -- then calling it will taint execution of both the posthook and the caller.
 case("hooksecurefunc: tainted prefunc propagates to posthook and caller", function()
-    securecall(function() forceinsecure(); _G.hookfunc = function() end; end)
-    hooksecurefunc("hookfunc", function() assert(not issecure()) end)
+    securecall(function()
+        forceinsecure()
+        _G.hookfunc = function() end
+    end)
+    hooksecurefunc("hookfunc", function()
+        assert(not issecure())
+    end)
     _G.hookfunc()
     assert(not issecure())
 end)
@@ -1327,8 +1434,13 @@ case("hooksecurefunc: prefunc errors propagate", function()
     local prehookcalled = false
     local poshookcalled = false
 
-    _G.hookfunc = function() prehookcalled = true; error("test error") end
-    hooksecurefunc("hookfunc", function() poshookcalled = true; end)
+    _G.hookfunc = function()
+        prehookcalled = true
+        error("test error")
+    end
+    hooksecurefunc("hookfunc", function()
+        poshookcalled = true
+    end)
 
     assert(not pcall(_G.hookfunc))
     assert(prehookcalled)
@@ -1369,7 +1481,9 @@ case("seterrorhandler: converts non-string errors", function()
     local origerrorhandler = geterrorhandler()
     local lasterror
 
-    seterrorhandler(function(err) lasterror = err; end)
+    seterrorhandler(function(err)
+        lasterror = err
+    end)
     error({})
     seterrorhandler(origerrorhandler)
 
@@ -1381,13 +1495,20 @@ case("seterrorhandler: replaces '*' source with object names", function()
     local lasterror
 
     local fakeframe = { [0] = newproxy(true) }
-    getmetatable(fakeframe[0]).__name = function() return "FakeFrame" end
+    getmetatable(fakeframe[0]).__name = function()
+        return "FakeFrame"
+    end
 
-    seterrorhandler(function(err) lasterror = err; end)
+    seterrorhandler(function(err)
+        lasterror = err
+    end)
     securecall(loadstring("local _ = ...; ImmediateError = ImmediateError + 1", "*:OnBanana"), fakeframe)
     seterrorhandler(origerrorhandler)
 
-    assert(lasterror == [=[[string "FakeFrame:OnBanana"]:1: attempt to perform arithmetic on global 'ImmediateError' (a nil value)]=])
+    assert(
+        lasterror
+            == [=[[string "FakeFrame:OnBanana"]:1: attempt to perform arithmetic on global 'ImmediateError' (a nil value)]=]
+    )
 end)
 
 case("seterrorhandler: replaces '*' source with defaulted object names", function()
@@ -1395,13 +1516,20 @@ case("seterrorhandler: replaces '*' source with defaulted object names", functio
     local lasterror
 
     local fakeframe = { [0] = newproxy(true) }
-    getmetatable(fakeframe[0]).__name = function() return nil end
+    getmetatable(fakeframe[0]).__name = function()
+        return nil
+    end
 
-    seterrorhandler(function(err) lasterror = err; end)
+    seterrorhandler(function(err)
+        lasterror = err
+    end)
     securecall(loadstring("local _ = ...; ImmediateError = ImmediateError + 1", "*:OnBanana"), fakeframe)
     seterrorhandler(origerrorhandler)
 
-    assert(lasterror == [=[[string "<unnamed>:OnBanana"]:1: attempt to perform arithmetic on global 'ImmediateError' (a nil value)]=])
+    assert(
+        lasterror
+            == [=[[string "<unnamed>:OnBanana"]:1: attempt to perform arithmetic on global 'ImmediateError' (a nil value)]=]
+    )
 end)
 
 case("seterrorhandler: ignores '*' source if first local is not a named object", function()
@@ -1411,11 +1539,16 @@ case("seterrorhandler: ignores '*' source if first local is not a named object",
     local fakeframe = { [0] = newproxy(true) }
     getmetatable(fakeframe[0]).__name = nil
 
-    seterrorhandler(function(err) lasterror = err; end)
+    seterrorhandler(function(err)
+        lasterror = err
+    end)
     securecall(loadstring("local _ = ...; ImmediateError = ImmediateError + 1", "*:OnBanana"), fakeframe)
     seterrorhandler(origerrorhandler)
 
-    assert(lasterror == [=[[string "*:OnBanana"]:1: attempt to perform arithmetic on global 'ImmediateError' (a nil value)]=])
+    assert(
+        lasterror
+            == [=[[string "*:OnBanana"]:1: attempt to perform arithmetic on global 'ImmediateError' (a nil value)]=]
+    )
 end)
 
 case("strsplit: splits strings", function()
