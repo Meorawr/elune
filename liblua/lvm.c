@@ -137,7 +137,7 @@ void luaV_settable (lua_State *L, const TValue *t, TValue *key, StkId val) {
         } else if (ttisnil(tm = luaT_gettmbyobj(L, t, TM_NEWINDEX))) {
             luaG_typeerror(L, t, "index");
         }
-        luaE_taintstack(L, tm->taint); /* propagate 'tm' taint to stack */
+        luaR_taintstack(L, tm->taint); /* propagate 'tm' taint to stack */
         if (ttisfunction(tm)) {
             callTM(L, tm, t, key, val);
             return;
@@ -439,9 +439,9 @@ reentry: /* entry point */
     k = cl->p->k;
 
     /* propagate closure taint upon (re)entering a lua stack frame */
-    L->ts.vmexecmask = LUA_TAINTALLOWED;
-    luaE_taintstack(L, cl->taint);
-    L->ts.vmexecmask = ((cl->taint != NULL) ? LUA_TAINTBLOCKED : LUA_TAINTALLOWED);
+    L->fixedtaint = NULL;
+    luaR_taintstack(L, cl->taint);
+    L->fixedtaint = cl->taint;
 
     luaG_profileenter(L);
 

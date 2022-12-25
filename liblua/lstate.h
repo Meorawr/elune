@@ -99,27 +99,17 @@ typedef struct global_State {
 } global_State;
 
 /*
-** per-thread taint state
-*/
-typedef struct TaintState {
-    uintptr_t readmask; /* user-controlled mask applied to taint on reads */
-    uintptr_t vmexecmask; /* read-mask enabled only when executing an insecure Lua closure */
-    uintptr_t writemask; /* user-controlled mask applied to taint on writes */
-    TString *stacktaint; /* current stack taint */
-    TString *newgctaint; /* taint applied to newly allocated objects */
-    TString *newcltaint; /* taint applied to newly allocated closures */
-} TaintState;
-
-#define LUA_TAINTALLOWED UINTPTR_MAX
-#define LUA_TAINTBLOCKED 0
-
-/*
 ** `per thread' state
 */
 struct lua_State {
     CommonHeader;
     lu_byte status;
-    TaintState ts;
+    lu_byte taintflags; /* user-controlled taint propagation mode flags */
+    TString *stacktaint; /* current stack taint */
+    TString *writetaint; /* taint applied to values on stack writes */
+    TString *fixedtaint; /* taint applied from currently executing Lua closure */
+    TString *newgctaint; /* taint applied to newly allocated objects */
+    TString *newcltaint; /* taint applied to newly allocated closures */
     StkId top; /* first free slot in the stack */
     StkId base; /* base of current function */
     global_State *l_G;
@@ -183,56 +173,5 @@ union GCObject {
 
 LUAI_FUNC lua_State *luaE_newthread (lua_State *L);
 LUAI_FUNC void luaE_freethread (lua_State *L, lua_State *L1);
-
-inline TString *luaE_maskreadtaint (lua_State *L, TString *taint) {
-    return cast(TString *, (cast(uintptr_t, taint) & (L->ts.readmask | L->ts.vmexecmask)));
-}
-
-inline TString *luaE_maskwritetaint (lua_State *L) {
-    return cast(TString *, (cast(uintptr_t, L->ts.stacktaint) & (L->ts.writemask)));
-}
-
-inline TString *luaE_maskalloctaint (lua_State *L, int tt) {
-    TString *taint = NULL;
-
-    if (L->ts.newgctaint != NULL) {
-        taint = L->ts.newgctaint;
-    } else if (L->ts.stacktaint != NULL) {
-        taint = L->ts.stacktaint;
-    } else if (tt == LUA_TFUNCTION) {
-        taint = L->ts.newcltaint;
-    }
-
-    return cast(TString *, (cast(uintptr_t, taint) & (L->ts.writemask)));
-}
-
-inline void luaE_taintstack (lua_State *L, TString *taint) {
-    taint = luaE_maskreadtaint(L, taint);
-
-    if (taint != NULL) {
-        L->ts.stacktaint = taint;
-    }
-}
-
-inline void luaE_taintvalue (lua_State *L, TValue *o) {
-    TString *taint = luaE_maskwritetaint(L);
-
-    if (taint != NULL) {
-        o->taint = taint;
-    }
-}
-
-inline void luaE_taintobject (lua_State *L, GCObject *o) {
-    TString *taint = luaE_maskwritetaint(L);
-
-    if (taint != NULL) {
-        o->gch.taint = taint;
-    }
-}
-
-inline void luaE_taintthread (lua_State *L, const lua_State *from) {
-    lua_assert(from->ts.vmexecmask == LUA_TAINTALLOWED);
-    L->ts = from->ts;
-}
 
 #endif

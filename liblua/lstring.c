@@ -10,6 +10,7 @@
 
 #include "lmem.h"
 #include "lobject.h"
+#include "lsec.h"
 #include "lstate.h"
 #include "lstring.h"
 
@@ -54,8 +55,8 @@ static TString *newlstr (lua_State *L, const char *str, size_t l, unsigned int h
     ts->tsv.hash = h;
     ts->tsv.marked = luaC_white(G(L));
     ts->tsv.tt = LUA_TSTRING;
-    ts->tsv.taint = luaE_maskalloctaint(L, ts->tsv.tt);
     ts->tsv.reserved = 0;
+    luaR_taintalloc(L, obj2gco(ts));
     memcpy(ts + 1, str, l * sizeof(char));
     ((char *) (ts + 1))[l] = '\0'; /* ending 0 */
     tb = &G(L)->strt;
@@ -98,10 +99,10 @@ Udata *luaS_newudata (lua_State *L, size_t s, Table *e) {
     u = cast(Udata *, luaM_malloc(L, s + sizeof(Udata)));
     u->uv.marked = luaC_white(G(L)); /* is not finalized */
     u->uv.tt = LUA_TUSERDATA;
-    u->uv.taint = luaE_maskalloctaint(L, u->uv.tt);
     u->uv.len = s;
     u->uv.metatable = NULL;
     u->uv.env = e;
+    luaR_taintalloc(L, obj2gco(u));
     /* chain it on udata list (after main thread) */
     u->uv.next = G(L)->mainthread->next;
     G(L)->mainthread->next = obj2gco(u);

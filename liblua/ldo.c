@@ -147,7 +147,7 @@ CallInfo *luaD_unwindci (lua_State *L, CallInfo *newci, CallInfo *oldci) {
         cl->c.nopencalls--;
     }
 
-    L->ts.vmexecmask = LUA_TAINTALLOWED;
+    L->fixedtaint = NULL;
     return newci;
 }
 
@@ -236,7 +236,7 @@ void luaD_callhook (lua_State *L, int event, int line) {
     if (hook && L->allowhook) {
         ptrdiff_t top = savestack(L, L->top);
         ptrdiff_t ci_top = savestack(L, L->ci->top);
-        uintptr_t vmexecmask = L->ts.vmexecmask;
+        TString *fixedtaint = L->fixedtaint;
         lua_Debug ar;
         ar.event = event;
         ar.currentline = line;
@@ -249,12 +249,12 @@ void luaD_callhook (lua_State *L, int event, int line) {
         L->ci->top = L->top + LUA_MINSTACK;
         lua_assert(L->ci->top <= L->stack_last);
         L->allowhook = 0; /* cannot call hooks inside a hook */
-        L->ts.vmexecmask = LUA_TAINTALLOWED; /* about to call into C */
+        L->fixedtaint = NULL; /* about to call into C */
         lua_unlock(L);
         (*hook)(L, &ar);
         lua_lock(L);
         lua_assert(!L->allowhook);
-        L->ts.vmexecmask = vmexecmask;
+        L->fixedtaint = fixedtaint;
         L->allowhook = 1;
         L->ci->top = restorestack(L, ci_top);
         L->top = restorestack(L, top);
@@ -313,8 +313,8 @@ int luaD_precall (lua_State *L, StkId func, int nresults) {
     funcr = savestack(L, func);
     cl = &clvalue(func)->l;
     L->ci->savedpc = L->savedpc;
-    L->ci->savedtaint = L->ts.stacktaint;
-    L->ts.vmexecmask = LUA_TAINTALLOWED;
+    L->ci->savedtaint = L->stacktaint;
+    L->fixedtaint = NULL;
     if (!cl->isC) { /* Lua function? prepare its call */
         CallInfo *ci;
         StkId st;
@@ -492,11 +492,11 @@ LUA_API int lua_resumefrom (lua_State *L, lua_State *from, int nargs) {
     }
     L->baseCcalls = ++L->nCcalls;
     if (from) {
-        luaE_taintthread(L, from);
+        luaR_taintthread(L, from);
     }
     status = luaD_rawrunprotected(L, resume, L->top - nargs);
     if (from) {
-        luaE_taintthread(from, L);
+        luaR_taintthread(from, L);
     }
     if (status != 0) { /* error? */
         luaD_unwindci(L, L->base_ci, L->ci);

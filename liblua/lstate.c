@@ -105,12 +105,12 @@ static void preinit_state (lua_State *L, global_State *g) {
     L->base_ci = L->ci = NULL;
     L->savedpc = NULL;
     L->errfunc = 0;
-    L->ts.readmask = LUA_TAINTBLOCKED;
-    L->ts.vmexecmask = LUA_TAINTALLOWED;
-    L->ts.writemask = LUA_TAINTBLOCKED;
-    L->ts.stacktaint = NULL;
-    L->ts.newgctaint = NULL;
-    L->ts.newcltaint = NULL;
+    L->taintflags = 0;
+    L->stacktaint = NULL;
+    L->writetaint = NULL;
+    L->fixedtaint = NULL;
+    L->newgctaint = NULL;
+    L->newcltaint = NULL;
     setnilvalue(L, gt(L));
 }
 
@@ -150,7 +150,7 @@ lua_State *luaE_newthread (lua_State *L) {
     L1->baseexeclimit = L->baseexeclimit;
     L1->baseexeccount = L->baseexeccount;
     L1->hook = L->hook;
-    luaE_taintthread(L1, L);
+    luaR_taintthread(L1, L);
     resethookcount(L1);
     lua_assert(iswhite(obj2gco(L1)));
     return L1;
@@ -243,11 +243,3 @@ LUA_API void lua_close (lua_State *L) {
     luai_userstateclose(L);
     close_state(L);
 }
-
-extern inline TString *luaE_maskreadtaint (lua_State *L, TString *taint);
-extern inline TString *luaE_maskwritetaint (lua_State *L);
-extern inline TString *luaE_maskalloctaint (lua_State *L, int tt);
-extern inline void luaE_taintstack (lua_State *L, TString *taint);
-extern inline void luaE_taintvalue (lua_State *L, TValue *o);
-extern inline void luaE_taintobject (lua_State *L, GCObject *o);
-extern inline void luaE_taintthread (lua_State *L, const lua_State *from);

@@ -69,6 +69,7 @@ target_sources(
     lobject.c         lobject.h
     lopcodes.c        lopcodes.h
     lparser.c         lparser.h
+    lsec.c            lsec.h
     lstate.c          lstate.h
     lstring.c         lstring.h
     lsysapi.c

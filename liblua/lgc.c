@@ -722,15 +722,16 @@ void luaC_link (lua_State *L, GCObject *o, lu_byte tt) {
     g->rootgc = o;
     o->gch.marked = luaC_white(g);
     o->gch.tt = tt;
-    o->gch.taint = luaE_maskalloctaint(L, tt);
+    luaR_taintalloc(L, o);
 }
 
 void luaC_linkupval (lua_State *L, UpVal *uv) {
     global_State *g = G(L);
     GCObject *o = obj2gco(uv);
-    o->gch.taint = luaE_maskalloctaint(L, LUA_TUPVAL);
+    lua_assert(o->gch.tt == LUA_TUPVAL);
     o->gch.next = g->rootgc; /* link upvalue into `rootgc' list */
     g->rootgc = o;
+    luaR_taintalloc(L, o);
     if (isgray(o)) {
         if (g->gcstate == GCSpropagate) {
             gray2black(o); /* closed upvalues need barrier */
