@@ -24,6 +24,7 @@
 #include <stdarg.h>
 #include <stddef.h>
 #include <string.h>
+#include <time.h>
 
 #if defined(LUA_USE_WINDOWS)
 #include <windows.h>
