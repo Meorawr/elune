@@ -12,6 +12,7 @@
 
 #if defined(LUA_USE_READLINE)
 #include <readline/history.h>
+#include <readline/readline.h>
 #endif
 
 LUALIB_API int luaL_readline (lua_State *L, const char *prompt) {
