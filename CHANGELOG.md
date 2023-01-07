@@ -6,6 +6,7 @@
 - Added a new `n` parameter to `lua_cleartaint` which will clear the taint off the top `n` stack variables.
 - Added a backport of `luaL_tolstring` from Lua 5.2.
 ### Changed
+- Fixed a few issues with the `bit.*` library functions.
 - Required CMake version is now 3.24.
 - CMake will now consult find_package modules to search for dependency libraries before falling back to acquiring them via FetchContent.
 ### Removed

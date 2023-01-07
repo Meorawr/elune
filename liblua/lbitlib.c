@@ -18,7 +18,7 @@ static int bit_band (lua_State *L) {
     uint32_t result = bit_checkunsigned(L, 1);
 
     for (; pos <= top; ++pos) {
-        result &= bit_checksigned(L, pos);
+        result &= bit_checkunsigned(L, pos);
     }
 
     lua_pushinteger(L, (lua_Integer) result);
@@ -31,7 +31,7 @@ static int bit_bor (lua_State *L) {
     uint32_t result = bit_checkunsigned(L, 1);
 
     for (; pos <= top; ++pos) {
-        result |= bit_checksigned(L, pos);
+        result |= bit_checkunsigned(L, pos);
     }
 
     lua_pushinteger(L, (lua_Integer) result);
@@ -44,7 +44,7 @@ static int bit_bxor (lua_State *L) {
     uint32_t result = bit_checkunsigned(L, 1);
 
     for (; pos <= top; ++pos) {
-        result ^= bit_checksigned(L, pos);
+        result ^= bit_checkunsigned(L, pos);
     }
 
     lua_pushinteger(L, (lua_Integer) result);
@@ -52,7 +52,7 @@ static int bit_bxor (lua_State *L) {
 }
 
 static int bit_bnot (lua_State *L) {
-    uint32_t result = bit_checkunsigned(L, 1);
+    uint32_t result = ~bit_checkunsigned(L, 1);
     lua_pushinteger(L, (lua_Integer) result);
     return 1;
 }
