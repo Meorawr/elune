@@ -1,3 +1,29 @@
+add_library(liblua-headers INTERFACE)
+add_library(elune::liblua-headers ALIAS liblua-headers)
+
+target_include_directories(
+  liblua-headers
+  INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
+target_sources(
+  liblua-headers
+  PUBLIC
+    FILE_SET HEADERS
+    BASE_DIRS
+      ${CMAKE_CURRENT_BINARY_DIR}/include
+      ${CMAKE_CURRENT_SOURCE_DIR}/include
+    FILES
+      ${CMAKE_CURRENT_BINARY_DIR}/include/luaconf.h
+      ${CMAKE_CURRENT_SOURCE_DIR}/include/lauxlib.h
+      ${CMAKE_CURRENT_SOURCE_DIR}/include/lua.h
+      ${CMAKE_CURRENT_SOURCE_DIR}/include/lua.hpp
+      ${CMAKE_CURRENT_SOURCE_DIR}/include/lualib.h
+)
+
 add_library(liblua)
 add_library(elune::liblua ALIAS liblua)
 elune_configure_target(liblua)
@@ -18,16 +44,14 @@ target_compile_definitions(
 
 target_include_directories(
   liblua
-  PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 target_link_libraries(
   liblua
+  PUBLIC
+    elune::liblua-headers
   PRIVATE
     # TODO: Bump CMake requirement to 3.26 and change this to BUILD_LOCAL_INTERFACE.
     $<BUILD_INTERFACE:sheredom::utf8h>
@@ -35,21 +59,6 @@ target_link_libraries(
     $<$<PLATFORM_ID:Windows>:bcrypt>
     $<$<BOOL:${LUA_USE_POSIX}>:${CMAKE_DL_LIBS}>
     $<$<BOOL:${LUA_USE_READLINE}>:readline::readline>
-)
-
-target_sources(
-  liblua
-  PUBLIC
-    FILE_SET HEADERS
-    BASE_DIRS
-      ${CMAKE_CURRENT_BINARY_DIR}/include
-      ${CMAKE_CURRENT_SOURCE_DIR}/include
-    FILES
-      ${CMAKE_CURRENT_BINARY_DIR}/include/luaconf.h
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/lauxlib.h
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/lua.h
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/lua.hpp
-      ${CMAKE_CURRENT_SOURCE_DIR}/include/lualib.h
 )
 
 target_sources(
@@ -106,7 +115,7 @@ endif()
 
 if(BUILD_INSTALL)
   install(
-    TARGETS liblua
+    TARGETS liblua liblua-headers
     EXPORT elune-liblua-targets
     RUNTIME
       DESTINATION ${CMAKE_INSTALL_BINDIR}
