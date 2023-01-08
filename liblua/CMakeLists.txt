@@ -29,7 +29,8 @@ target_include_directories(
 target_link_libraries(
   liblua
   PRIVATE
-    sheredom::utf8h
+    # TODO: Bump CMake requirement to 3.26 and change this to BUILD_LOCAL_INTERFACE.
+    $<BUILD_INTERFACE:sheredom::utf8h>
     $<$<PLATFORM_ID:Darwin,Linux>:m>
     $<$<PLATFORM_ID:Windows>:bcrypt>
     $<$<BOOL:${LUA_USE_POSIX}>:${CMAKE_DL_LIBS}>

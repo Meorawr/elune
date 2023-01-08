@@ -8,7 +8,8 @@ target_link_libraries(
   luatest
   PRIVATE
     elune::liblua
-    mity::acutest
+    # TODO: Bump CMake requirement to 3.26 and change this to BUILD_LOCAL_INTERFACE.
+    $<BUILD_INTERFACE:mity::acutest>
 )
 
 target_sources(
