@@ -82,7 +82,7 @@
 /* Speed at which garbage collection works relative to allocations as a percentage. */
 #define LUAI_GCMUL 200
 /* Pause between cycles as a percentage of memory growth. */
-#define LUAI_GCPAUSE 200
+#define LUAI_GCPAUSE 110
 
 /* Taint source configuration */
 
