@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [v3.0]
 ### Added
 - Added a build option (`LUA_USE_FAST_MATH`) to toggle the addition of floating point optimization compiler flags, which have been removed from the presets. This is enabled by default.
 - Added a new `n` parameter to `lua_cleartaint` which will clear the taint off the top `n` stack variables.
@@ -74,7 +74,8 @@
 - Added all math library extensions present in the in-game environment as well as their global aliases.
 - Added all global aliases to the OS libary functions as present in the in-game environment.
 
-[Unreleased]: https://github.com/Meorawr/elune/compare/v2.2...HEAD
+[Unreleased]: https://github.com/Meorawr/elune/compare/v3.0...HEAD
+[v3.0]: https://github.com/Meorawr/elune/compare/v3.0...v2.2
 [v2.2]: https://github.com/Meorawr/elune/compare/v2.1...v2.2
 [v2.1]: https://github.com/Meorawr/elune/compare/v2.0...v2.0
 [v2.0]: https://github.com/Meorawr/elune/compare/v1...v2.0
