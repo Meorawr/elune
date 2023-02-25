@@ -1,5 +1,8 @@
 # Changelog
 
+## [Unreleased]
+- No changes so far!
+
 ## [v3.0]
 ### Added
 - Added a build option (`LUA_USE_FAST_MATH`) to toggle the addition of floating point optimization compiler flags, which have been removed from the presets. This is enabled by default.
