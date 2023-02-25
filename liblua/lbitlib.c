@@ -9,8 +9,8 @@
 #include "lauxlib.h"
 #include "lualib.h"
 
-#define bit_checksigned(L, i) ((int32_t) luaL_checknumber(L, i))
-#define bit_checkunsigned(L, i) ((uint32_t) luaL_checknumber(L, i))
+#define bit_checksigned(L, i) ((int32_t) luaL_checkinteger(L, i))
+#define bit_checkunsigned(L, i) ((uint32_t) luaL_checkinteger(L, i))
 
 static int bit_band (lua_State *L) {
     const int top = lua_gettop(L);
