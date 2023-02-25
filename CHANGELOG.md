@@ -78,7 +78,7 @@
 - Added all global aliases to the OS libary functions as present in the in-game environment.
 
 [Unreleased]: https://github.com/Meorawr/elune/compare/v3.0...HEAD
-[v3.0]: https://github.com/Meorawr/elune/compare/v3.0...v2.2
+[v3.0]: https://github.com/Meorawr/elune/compare/v2.2...v3.0
 [v2.2]: https://github.com/Meorawr/elune/compare/v2.1...v2.2
 [v2.1]: https://github.com/Meorawr/elune/compare/v2.0...v2.0
 [v2.0]: https://github.com/Meorawr/elune/compare/v1...v2.0
