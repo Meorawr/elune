@@ -1,7 +1,8 @@
 # Changelog
 
 ## [Unreleased]
-- No changes so far!
+### Changed
+- Fixed linker errors with inlined security functions in unoptimimzed builds on non-Windows systems.
 
 ## [v3.0]
 ### Added
