@@ -6,6 +6,8 @@
 
 #include "lsec.h"
 
+extern lu_byte luaR_gettaintmode (lua_State *L);
+extern void luaR_settaintmode (lua_State *L, lu_byte mode);
 extern void luaR_setstacktaint (lua_State *L, TString *taint);
 extern void luaR_setnewgctaint (lua_State *L, TString *taint);
 extern void luaR_setnewcltaint (lua_State *L, TString *taint);
