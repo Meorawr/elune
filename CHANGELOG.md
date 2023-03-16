@@ -1,6 +1,12 @@
 # Changelog
 
 ## [Unreleased]
+### Added
+- Added experimental `lua_copyvalue(lua_State*, int idx)` C API.
+  - This performs a recursive copy of the requested value, placing the copy at the top of the stack.
+  - Function values only have their upvalues recursively copied. Environments are not copied and will remain as shallow links, as these typically reference the global environment.
+  - Threads and full userdata values are not recursively copied.
+  - This function is available from Lua as `debug.copy(value[, ...])`.
 ### Changed
 - Fixed linker errors with inlined security functions in unoptimimzed builds on non-Windows systems.
 

@@ -709,11 +709,25 @@ static int db_locals (lua_State *L) {
     return 1;
 }
 
+static int db_copy (lua_State *L) {
+    int nargs = lua_gettop(L);
+
+    luaL_checkany(L, 1);
+    lua_checkstack(L, nargs);
+
+    for (int i = 1; i <= nargs; ++i) {
+        lua_copyvalue(L, i);
+    }
+
+    return nargs;
+}
+
 /**
  * Debug library registration
  */
 
 static const luaL_Reg dblib_lua[] = {
+    { "copy", db_copy },
     { "debug", db_debug },
     { "geterrorhandler", db_geterrorhandler },
     { "getexceptmask", db_getexceptmask },

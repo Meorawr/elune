@@ -1065,6 +1065,135 @@ LUA_API void lua_copy (lua_State *L, int fromidx, int toidx) {
     lua_unlock(L);
 }
 
+struct CopyState {
+    Table *visited;
+};
+
+static void aux_copyfunction (lua_State *L, struct CopyState *state, TValue *dst, const TValue *src);
+static void aux_copytable (lua_State *L, struct CopyState *state, TValue *dst, const TValue *src);
+static void aux_copyvalue (lua_State *L, struct CopyState *state, TValue *dst, const TValue *src);
+
+static void aux_copytable (lua_State *L, struct CopyState *state, TValue *dst, const TValue *src) {
+    lua_assert(ttistable(src));
+
+    Table *srctbl = hvalue(src);
+    Table *dsttbl = luaH_new(L, srctbl->sizearray, sizenode(srctbl));
+
+    /* Link src => dsttbl prior to recursion through the metatable and/or nodes. */
+    TValue *dstnode = luaH_set(L, state->visited, src);
+    dstnode->value.gc = obj2gco(dsttbl);
+    dstnode->tt = LUA_TTABLE;
+    dstnode->taint = src->taint;
+
+    /* Recursively copy metatable if present. */
+    if (srctbl->metatable) {
+        TValue srcmeta;
+        TValue dstmeta;
+        sethvalue(L, &srcmeta, srctbl->metatable);
+        aux_copyvalue(L, state, &dstmeta, &srcmeta);
+        dsttbl->metatable = hvalue(&dstmeta);
+    }
+
+    /* Recursively copy all table nodes. */
+    TValue tmp[2]; /* Pair of (key, value) for luaH_next. */
+    rawsetnilvalue(&tmp[0]);
+    rawsetnilvalue(&tmp[1]);
+
+    while (luaH_next(L, srctbl, &tmp[0])) {
+        TValue nkey;
+        aux_copyvalue(L, state, &nkey, &tmp[0]);
+        TValue *nval = luaH_set(L, dsttbl, &nkey);
+        aux_copyvalue(L, state, nval, &tmp[1]);
+    }
+
+    sethvalue(L, dst, dsttbl);
+}
+
+static void aux_copyfunction (lua_State *L, struct CopyState *state, TValue *dst, const TValue *src) {
+    lua_assert(ttisfunction(src));
+
+    const Closure *srccl = clvalue(src);
+    Closure *dstcl;
+
+    if (srccl->c.isC) {
+        dstcl = luaF_newCclosure(L, srccl->c.nupvalues, srccl->c.env);
+    } else {
+        /* Lua closures need to additionally copy taint if present. */
+        dstcl = luaF_newLclosure(L, srccl->l.p, srccl->l.env);
+        dstcl->l.taint = (dstcl->l.taint) ? dstcl->l.taint : srccl->l.taint;
+    }
+
+    /* Link src => dstcl prior to recursion through upvalues. */
+    TValue *dstnode = luaH_set(L, state->visited, src);
+    dstnode->value.gc = obj2gco(dstcl);
+    dstnode->tt = LUA_TFUNCTION;
+    dstnode->taint = src->taint;
+
+    for (int i = 0; i < srccl->c.nupvalues; ++i) {
+        if (srccl->c.isC) {
+            const TValue *srcuv = &srccl->c.upvalue[i];
+            TValue *dstuv = &dstcl->c.upvalue[i];
+            aux_copyvalue(L, state, dstuv, srcuv);
+        } else {
+            const UpVal *srcuv = srccl->l.upvals[i];
+            UpVal *dstuv = luaF_newupval(L);
+            dstcl->l.upvals[i] = dstuv;
+            aux_copyvalue(L, state, dstuv->v, srcuv->v);
+        }
+    }
+
+    setclvalue(L, dst, dstcl);
+}
+
+static void aux_copyvalue (lua_State *L, struct CopyState *state, TValue *dst, const TValue *src) {
+    TValue *copy;
+
+    if ((copy = luaH_get(state->visited, src)) != luaO_nilobject) {
+        setobj(L, dst, copy);
+        return;
+    }
+
+    switch (ttype(src)) {
+        case LUA_TNONE:
+        case LUA_TNIL:
+        case LUA_TBOOLEAN:
+        case LUA_TLIGHTUSERDATA:
+        case LUA_TNUMBER:
+        case LUA_TSTRING: {
+            setobj(L, dst, src);
+            break;
+        }
+        case LUA_TTABLE: {
+            aux_copytable(L, state, dst, src);
+            break;
+        }
+        case LUA_TFUNCTION: {
+            aux_copyfunction(L, state, dst, src);
+            break;
+        }
+        /* Full userdata and threads are complex and will just be shallow copied. */
+        case LUA_TUSERDATA:
+        case LUA_TTHREAD: {
+            setobj(L, dst, src);
+            break;
+        }
+    }
+}
+
+LUA_API void lua_copyvalue (lua_State *L, int idx) {
+    struct CopyState state;
+    StkId val;
+
+    lua_lock(L);
+    luaC_checkGC(L);
+    val = index2adr(L, idx);
+    api_checkvalidindex(L, val);
+    state.visited = luaH_new(L, 0, 4);
+    aux_copyvalue(L, &state, L->top, val);
+    api_incr_top(L);
+    lua_unlock(L);
+}
+
 LUA_API size_t lua_objsize (lua_State *L, int idx) {
     StkId o;
     size_t s;

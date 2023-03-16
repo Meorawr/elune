@@ -342,6 +342,7 @@ struct lua_Debug {
 
 LUA_API int lua_absindex (lua_State *L, int idx);
 LUA_API void lua_copy (lua_State *L, int fromidx, int toidx);
+LUA_API void lua_copyvalue (lua_State *L, int idx);
 LUA_API size_t lua_objsize (lua_State *L, int idx);
 LUA_API int lua_resumefrom (lua_State *L, lua_State *from, int nargs);
 LUA_API int lua_toint (lua_State *L, int idx);
