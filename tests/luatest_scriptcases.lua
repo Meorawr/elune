@@ -855,13 +855,13 @@ case("getfenv: Read secure environment with tainted metatable", function()
 end)
 
 -- This test verifies that 'getfenv' honors the custom '__environment' field
--- present on function environment metatables.
+-- present on function environment metatables and that 'setfenv' cannnot
+-- later replace the environment on the function.
 case("getfenv: Read function environment with '__environment' metatable key", function()
     local func = function() end
     setfenv(func, setmetatable({}, { __environment = false }))
     assert(getfenv(func) == false, "expected getfenv on 'func' to return 'false'")
-    setfenv(func, _G)
-    assert(getfenv(func) == _G, "expected getfenv on 'func to return '_G'")
+    assert(not pcall(setfenv, func, _G), "expected setfenv on 'func' to fail")
 end)
 
 -- This test verifies that when a function has a custom environment with a

@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 ### Changed
+- `setfenv` will no longer allow replacing function environments that have a metatable with an `__environment` key in-line with changes made in patch 10.1.
 - Fixed linker errors with inlined security functions in unoptimimzed builds on non-Windows systems.
 
 ## [v3.0]
