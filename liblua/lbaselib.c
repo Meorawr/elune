@@ -378,6 +378,56 @@ static int luaB_pcall (lua_State *L) {
     return lua_gettop(L); /* return status + all results */
 }
 
+static int luaB_pcallwithenv (lua_State *L) {
+    int narg = lua_gettop(L) - 2;
+    int nret;
+    int status;
+
+    if (!lua_isfunction(L, 1) || !lua_istable(L, 2)) {
+        luaL_error(L, "Usage: local success, ... = pcallwithenv(f, env, [args...])");
+    }
+
+    /* Some stack trickery is needed here due to the argument order being
+     * somewhat suboptimal.
+     *
+     * First we need to put a reference to the function before the arguments;
+     * unfortunately this needs to be a copy + insert because we need a ref
+     * to the function later to restore its environment which would otherwise
+     * be consumed by the call.
+     *
+     * For environments we need to store the current environment; we do so
+     * by pushing it onto the stack and swapping it with the desired
+     * environment at stack index 2.
+     *
+     * The closure also needs to be tainted, but this is a bit less clear -
+     * it's assumed for now that we need to attempt to taint it on both
+     * swaps of the environment. */
+
+    lua_pushvalue(L, 1); /* push copy of function... */
+    lua_insert(L, 3); /* ...and insert it before the arguments */
+    lua_pushvalue(L, 2); /* push copy of desired environment */
+    lua_getfenv(L, 1); /* push existing function environment... */
+    lua_replace(L, 2); /* ...and replace the desired one */
+
+    if (luaL_getmetafield(L, 2, "__environment")) {
+        luaL_error(L, "cannot use pcallwithenv on a function with a protected environment");
+    }
+
+    lua_taintobject(L, 1);
+    lua_setfenv(L, 1); /* replace existing environment on the function */
+
+    status = lua_pcall(L, narg, LUA_MULTRET, 0);
+    lua_pushboolean(L, (status == 0));
+    lua_insert(L, 3);
+    nret = lua_gettop(L) - 2;
+
+    lua_pushvalue(L, 2); /* push original environment... */
+    lua_setfenv(L, 1); /* ...and restore it onto the function */
+    lua_taintobject(L, 1);
+
+    return nret;
+}
+
 static int luaB_xpcall (lua_State *L) {
     int status;
     int n = lua_gettop(L);
@@ -677,6 +727,7 @@ static const luaL_Reg baselib_shared[] = {
     { "loadstring_untainted", luaB_loadstringuntainted },
     { "next", luaB_next },
     { "pcall", luaB_pcall },
+    { "pcallwithenv", luaB_pcallwithenv },
     { "print", luaB_print },
     { "rawequal", luaB_rawequal },
     { "rawget", luaB_rawget },

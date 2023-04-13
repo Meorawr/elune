@@ -1602,3 +1602,117 @@ case("strsplit: ignores empty delimiter string", function()
     assert(select("#", strsplit("", "a b c d e", 1) == 1))
     assert(select("#", strsplit("", "a b c d e", 2) == 1))
 end)
+
+case("pcallwithenv: calls function with custom environment", function()
+    local wantedenv = { getfenv = getfenv }
+    local actualenv
+
+    local function foo(v)
+        actualenv = getfenv(1)
+    end
+
+    assert(getfenv(foo) == _G, "expected 'foo' to have '_G' as its environment pre-call")
+
+    local ok = pcallwithenv(foo, wantedenv, 100)
+
+    assert(ok, "expected 'pcallwithenv' to execute successfully")
+    assert(wantedenv == actualenv, "expected 'foo' to be called with custom environment")
+    assert(getfenv(foo) == _G, "expected 'foo' to have '_G' as its environment post-call")
+end)
+
+case("pcallwithenv: calls erroring function with custom environment", function()
+    local wantedenv = { getfenv = getfenv }
+    local actualenv
+
+    local function foo(v)
+        actualenv = getfenv(1)
+        error("!")
+    end
+
+    assert(getfenv(foo) == _G, "expected 'foo' to have '_G' as its environment pre-call")
+
+    local ok = pcallwithenv(foo, wantedenv, 100)
+
+    assert(not ok, "expected 'pcallwithenv' to execute unsuccessfully")
+    assert(wantedenv == actualenv, "expected 'foo' to be called with custom environment")
+    assert(getfenv(foo) == _G, "expected 'foo' to have '_G' as its environment post-call")
+end)
+
+case("pcallwithenv: disallows calls to functions with protected environments", function()
+    local foo = setfenv(function() end, setmetatable({}, { __environment = false }))
+
+    local ok, err = pcall(pcallwithenv, foo, {})
+
+    assert(not ok, "expected 'pcallwithenv' to immediately error")
+    assert(string.find(err, "protected environment"), "expected 'pcallwithenv' to complain about environments")
+end)
+
+case("pcallwithenv: taints secure closures if called insecurely", function()
+    local foo = function() end
+
+    securecall(function()
+        forceinsecure()
+        pcallwithenv(foo, {})
+    end)
+
+    assert(issecure(), "expected execution to be initially secure")
+    foo()
+    assert(not issecure(), "expected execution to taint after executing tainted closure")
+end)
+
+case("pcallwithenv: calls function with single parameter and return", function()
+    local function f(v)
+        return v * 2
+    end
+
+    local function foo(v)
+        return bar(v)
+    end
+
+    local function pack(...)
+        return { n = select("#", ...), ... }
+    end
+
+    local res = pack(pcallwithenv(foo, { bar = f }, 100))
+
+    assert(res.n == 2, "expected 'pcallwithenv' to return two values")
+    assert(res[1], "expected 'pcallwithenv' to execute successfully")
+    assert(res[2] == 200, "expected 'pcallwithenv' to return doubled value")
+end)
+
+case("pcallwithenv: calls function with multiple parameters and returns", function()
+    local function f(a, b, c)
+        return c, b, a
+    end
+
+    local function foo(a, b, c)
+        return bar(a, b, c)
+    end
+
+    local function pack(...)
+        return { n = select("#", ...), ... }
+    end
+
+    local a, b, c = 100, 200, 300
+    local res = pack(pcallwithenv(foo, { bar = f }, 100, 200, 300))
+
+    assert(res.n == 4, "expected 'pcallwithenv' to return four values")
+    assert(res[1], "expected 'pcallwithenv' to execute successfully")
+    assert(res[2] == c, res[3] == b, res[4] == a, "expected 'pcallwithenv' to return reversed values")
+end)
+
+case("pcallwithenv: calls erroring function and returns error", function()
+    local function foo()
+        return error("test error")
+    end
+
+    local function pack(...)
+        return { n = select("#", ...), ... }
+    end
+
+    local res = pack(pcallwithenv(foo, { error = error }))
+
+    assert(res.n == 2, "expected 'pcallwithenv' to return two values")
+    assert(not res[1], "expected 'pcallwithenv' to execute unsuccessfully")
+    assert(string.find(res[2], "test error"), "expected 'pcallwithenv' to return an error string")
+end)
