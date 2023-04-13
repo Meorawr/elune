@@ -1,7 +1,7 @@
 # Changelog
 
 ## [Unreleased]
-###
+### Added
 - Added the `pcallwithenv(f, env, [args...])` base library function.
 ### Changed
 - The `setfenv` function will no longer allow replacing function environments that have a metatable with an `__environment` key to match new reference client behavior.
