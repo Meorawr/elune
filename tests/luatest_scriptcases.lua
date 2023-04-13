@@ -796,9 +796,8 @@ case("Metatables: Write secure value through tainted '__newindex'", function()
     assert(store.foo == 1, "expected 'store.foo' to be '1'")
 end)
 
--- This test verifies bug-compatibility with the reference environment whereby
--- any taint that occurs during execution of a '__gc' metamethod can taint
--- completely unrelated and otherwise secure code.
+-- This test verifies compatibility with changes in patch 10.1 whereby taint
+-- can no longer propagate outside of the execution of a '__gc' metamethod.
 case("Metatables: Taint during '__gc' metamethod", function()
     local object = newproxy(true)
     local collected = false
@@ -811,7 +810,7 @@ case("Metatables: Taint during '__gc' metamethod", function()
     object = nil
     collectgarbage("collect")
     assert(collected, "expected userdata to be garbage collected")
-    assert(not issecure(), "expected execution to taint after garbage collection")
+    assert(issecure(), "expected execution to not taint after garbage collection")
 end)
 
 -- This test verifies that replacing the environment of a secure function
