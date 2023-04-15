@@ -134,12 +134,14 @@ static int luaB_setfenv (lua_State *L) {
     luaL_checktype(L, 2, LUA_TTABLE);
     getfunc(L, 0);
 
-    lua_getfenv(L, -1);
+    if (!lua_getcompatopt(L, LUA_COMPATSETFENV)) {
+        lua_getfenv(L, -1);
 
-    if (luaL_getmetafield(L, -1, "__environment")) {
-        luaL_error(L, "cannot change a protected environment");
-    } else {
-        lua_pop(L, 1);
+        if (luaL_getmetafield(L, -1, "__environment")) {
+            luaL_error(L, "cannot change a protected environment");
+        } else {
+            lua_pop(L, 1); /* pop fenv */
+        }
     }
 
     lua_taintobject(L, -1);

@@ -97,6 +97,7 @@ static void preinit_state (lua_State *L, global_State *g) {
     L->execcount = 0;
     L->allowhook = 1;
     resethookcount(L);
+    L->compatmask = 0;
     L->exceptmask = 0;
     L->openupval = NULL;
     L->size_ci = 0;
@@ -144,6 +145,7 @@ lua_State *luaE_newthread (lua_State *L) {
     preinit_state(L1, G(L));
     stack_init(L1, L); /* init stack */
     setobj2n(L, gt(L1), gt(L)); /* share table of globals */
+    L1->compatmask = L->compatmask;
     L1->exceptmask = L->exceptmask;
     L1->hookmask = L->hookmask;
     L1->basehookcount = L->basehookcount;

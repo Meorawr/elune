@@ -455,6 +455,18 @@ LUA_API void lua_setexceptmask (lua_State *L, int mask);
 LUA_API void lua_getscripttimeout (lua_State *L, lua_ScriptTimeout *timeout);
 LUA_API void lua_setscripttimeout (lua_State *L, const lua_ScriptTimeout *timeout);
 
+/**
+ * Runtime Compatibility Options APIs
+ */
+
+enum lua_CompatOption {
+    LUA_COMPATSETFENV, /* Allow replacement of protected function environments? */
+    LUA_COMPATGCTAINT, /* Invoke '__gc' metamethods without a taint barrier? */
+};
+
+LUA_API int lua_getcompatopt (lua_State *L, int opt);
+LUA_API void lua_setcompatopt (lua_State *L, int opt, int val);
+
 /* }====================================================================== */
 
 /******************************************************************************

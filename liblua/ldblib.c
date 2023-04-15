@@ -381,6 +381,36 @@ static int db_unref (lua_State *L) {
     return 0;
 }
 
+static const char *db_compatopts[] = { "setfenv", "gctaint" };
+
+static int db_getcompatopt (lua_State *L) {
+    lua_State *L1;
+    int opt;
+    int val;
+    int arg;
+
+    L1 = getthread(L, &arg);
+    opt = luaL_checkoption(L1, arg + 1, NULL, db_compatopts);
+    val = lua_getcompatopt(L, opt);
+
+    lua_pushinteger(L1, val);
+    return 1;
+}
+
+static int db_setcompatopt (lua_State *L) {
+    lua_State *L1;
+    int opt;
+    int val;
+    int arg;
+
+    L1 = getthread(L, &arg);
+    opt = luaL_checkoption(L1, arg + 1, NULL, db_compatopts);
+    val = luaL_checkint(L1, arg + 2);
+
+    lua_setcompatopt(L1, opt, val);
+    return 0;
+}
+
 static int db_getexceptmask (lua_State *L) {
     lua_State *L1;
     int arg;
@@ -715,6 +745,7 @@ static int db_locals (lua_State *L) {
 
 static const luaL_Reg dblib_lua[] = {
     { "debug", db_debug },
+    { "getcompatopt", db_getcompatopt },
     { "geterrorhandler", db_geterrorhandler },
     { "getexceptmask", db_getexceptmask },
     { "getfenv", db_getfenv },
@@ -729,6 +760,7 @@ static const luaL_Reg dblib_lua[] = {
     { "iscfunction", db_iscfunction },
     { "newcfunction", db_newcfunction },
     { "ref", db_ref },
+    { "setcompatopt", db_setcompatopt },
     { "seterrorhandler", db_seterrorhandler },
     { "setexceptmask", db_setexceptmask },
     { "setfenv", db_setfenv },
