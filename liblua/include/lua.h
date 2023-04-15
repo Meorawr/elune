@@ -460,8 +460,8 @@ LUA_API void lua_setscripttimeout (lua_State *L, const lua_ScriptTimeout *timeou
  */
 
 enum lua_CompatOption {
-    LUA_COMPATSETFENV, /* Allow replacement of protected function environments? */
-    LUA_COMPATGCTAINT, /* Invoke '__gc' metamethods without a taint barrier? */
+    LUA_COMPATSETFENV, /* Allow replacement of protected function environments? (boolean) */
+    LUA_COMPATGCTAINT, /* Invoke '__gc' metamethods without a taint barrier? (boolean) */
 };
 
 LUA_API int lua_getcompatopt (lua_State *L, int opt);
