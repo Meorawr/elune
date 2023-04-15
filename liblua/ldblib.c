@@ -393,7 +393,7 @@ static int db_getcompatopt (lua_State *L) {
     opt = luaL_checkoption(L1, arg + 1, NULL, db_compatopts);
     val = lua_getcompatopt(L1, opt);
 
-    lua_pushinteger(L1, val);
+    lua_pushinteger(L, val);
     return 1;
 }
 
