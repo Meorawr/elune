@@ -390,7 +390,7 @@ static int db_getcompatopt (lua_State *L) {
     int arg;
 
     L1 = getthread(L, &arg);
-    opt = luaL_checkoption(L1, arg + 1, NULL, db_compatopts);
+    opt = luaL_checkoption(L, arg + 1, NULL, db_compatopts);
     val = lua_getcompatopt(L1, opt);
 
     lua_pushinteger(L, val);
@@ -404,8 +404,8 @@ static int db_setcompatopt (lua_State *L) {
     int arg;
 
     L1 = getthread(L, &arg);
-    opt = luaL_checkoption(L1, arg + 1, NULL, db_compatopts);
-    val = luaL_checkint(L1, arg + 2);
+    opt = luaL_checkoption(L, arg + 1, NULL, db_compatopts);
+    val = luaL_checkint(L, arg + 2);
 
     lua_setcompatopt(L1, opt, val);
     return 0;
