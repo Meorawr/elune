@@ -9,7 +9,7 @@
 ### Changed
 - The `setfenv` function will no longer allow replacing function environments that have a metatable with an `__environment` key to match new reference client behavior.
 - `__gc` metamethods are now invoked with a taint barrier to match new reference client behavior.
-- Fixed linker errors with inlined security functions in unoptimimzed builds on non-Windows systems.
+- Fixed linker errors with inlined security functions in unoptimized builds on non-Windows systems.
 
 ## [v3.0]
 ### Added
