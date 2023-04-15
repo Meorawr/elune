@@ -391,7 +391,7 @@ static int db_getcompatopt (lua_State *L) {
 
     L1 = getthread(L, &arg);
     opt = luaL_checkoption(L1, arg + 1, NULL, db_compatopts);
-    val = lua_getcompatopt(L, opt);
+    val = lua_getcompatopt(L1, opt);
 
     lua_pushinteger(L1, val);
     return 1;
