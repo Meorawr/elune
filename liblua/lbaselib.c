@@ -622,14 +622,21 @@ static int f_errorhandler (lua_State *L) {
         }
     }
 
-    lua_pushboolean(L, 1);
-    lua_rawseti(L, LUA_REGISTRYINDEX, LUA_RIDX_INERRORHANDLER);
+    if (!lua_getcompatopt(L, LUA_COMPATINERRORHANDLER)) {
+        lua_pushboolean(L, 1);
+        lua_rawseti(L, LUA_REGISTRYINDEX, LUA_RIDX_INERRORHANDLER);
+    }
+
     lua_settop(L, 1);
     lua_pushvalue(L, lua_upvalueindex(1));
     lua_insert(L, 1);
     lua_call(L, 1, 1);
-    lua_pushboolean(L, 0);
-    lua_rawseti(L, LUA_REGISTRYINDEX, LUA_RIDX_INERRORHANDLER);
+
+    if (!lua_getcompatopt(L, LUA_COMPATINERRORHANDLER)) {
+        lua_pushboolean(L, 0);
+        lua_rawseti(L, LUA_REGISTRYINDEX, LUA_RIDX_INERRORHANDLER);
+    }
+
     return 1;
 }
 

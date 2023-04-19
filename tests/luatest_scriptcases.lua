@@ -1737,3 +1737,9 @@ case("pcallwithenv: calls erroring function and returns error", function()
     assert(not res[1], "expected 'pcallwithenv' to execute unsuccessfully")
     assert(string.find(res[2], "test error"), "expected 'pcallwithenv' to return an error string")
 end)
+
+-- This test verifies recent changes made in 10.1 that allow 'debuglocals'
+-- to be called anywhere outside of a global error handler (yay!).
+case("debuglocals: can be called anywhere", function()
+    assert(select("#", debuglocals()) > 0)
+end)

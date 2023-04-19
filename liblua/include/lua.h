@@ -465,6 +465,7 @@ enum lua_CompatOption {
     LUA_COMPATSETFENV, /* Allow replacement of protected function environments? (boolean) */
     LUA_COMPATGCTAINT, /* Invoke '__gc' metamethods without a taint barrier? (boolean) */
     LUA_COMPATGCDEBUG, /* Allow collection of debug info from '__gc' metamethods? (boolean) */
+    LUA_COMPATINERRORHANDLER, /* Disable 'debuglocals' if called outside an error handler? (boolean) */
 };
 
 LUA_API int lua_getcompatopt (lua_State *L, int opt);

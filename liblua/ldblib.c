@@ -381,7 +381,7 @@ static int db_unref (lua_State *L) {
     return 0;
 }
 
-static const char *db_compatopts[] = { "setfenv", "gctaint", "gcdebug" };
+static const char *db_compatopts[] = { "setfenv", "gctaint", "gcdebug", "inerrorhandler" };
 
 static int db_getcompatopt (lua_State *L) {
     lua_State *L1;
@@ -703,9 +703,13 @@ static int db_locals (lua_State *L) {
     luaL_Buffer B;
     lua_Debug ar;
 
-    lua_rawgeti(L, LUA_REGISTRYINDEX, LUA_RIDX_INERRORHANDLER);
-    enabled = lua_toboolean(L, -1);
-    lua_pop(L, 1);
+    if (!lua_getcompatopt(L, LUA_COMPATINERRORHANDLER)) {
+        enabled = 1; /* 'debuglocals' can be called outside error handler in recent versions. */
+    } else {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, LUA_RIDX_INERRORHANDLER);
+        enabled = lua_toboolean(L, -1);
+        lua_pop(L, 1);
+    }
 
     if (!enabled) {
         return 0; /* called outside of the global error handler. */

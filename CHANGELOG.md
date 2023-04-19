@@ -5,11 +5,12 @@
 - Added the `pcallwithenv(f, env, [args...])` base library function.
 - Added compatibility option interface. This allows toggling any potentially incompatible changes made for reference client compatibility.
   - This is exposed via the debug library as `debug.getcompatopt(name)` and `debug.setcompatopt(name, value)`.
-  - Supported option names are currently "setfenv", "gctaint", and "gcdebug" which - if set to 1 - will revert the changes documented below.
+  - Supported option names are currently "setfenv", "gctaint", "gcdebug", and "inerrorhandler" which - if set to 1 - will revert the changes documented below.
 ### Changed
 - The `setfenv` function will no longer allow replacing function environments that have a metatable with an `__environment` key to match new reference client behavior.
 - `__gc` metamethods are now invoked with a taint barrier to match new reference client behavior.
 - The `debugstack` and `debuglocals` will now return no results if called by `__gc` metamethods.
+- The `debuglocals` function can now be called outside of an error handler.
 - Fixed linker errors with inlined security functions in unoptimized builds on non-Windows systems.
 
 ## [v3.0]

@@ -1658,6 +1658,7 @@ LUA_API int lua_getcompatopt (lua_State *L, int opt) {
         case LUA_COMPATSETFENV:
         case LUA_COMPATGCTAINT:
         case LUA_COMPATGCDEBUG:
+        case LUA_COMPATINERRORHANDLER:
             return testbit(L->compatmask, opt) >> opt;
         default:
             return 0;
@@ -1669,6 +1670,7 @@ LUA_API void lua_setcompatopt (lua_State *L, int opt, int val) {
         case LUA_COMPATSETFENV:
         case LUA_COMPATGCTAINT:
         case LUA_COMPATGCDEBUG:
+        case LUA_COMPATINERRORHANDLER:
             L->compatmask = cast_byte((L->compatmask & ~bitmask(opt)) | ((val & 0x1) << opt));
             return;
         default:
