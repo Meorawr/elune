@@ -813,6 +813,27 @@ case("Metatables: Taint during '__gc' metamethod", function()
     assert(issecure(), "expected execution to not taint after garbage collection")
 end)
 
+-- This test verifies compatibility with changes in patch 10.1 whereby '__gc'
+-- metamethods can no longer call debuglocals/debugstack.
+case("Metatables: Debug collection during '__gc' metamethod", function()
+    local object = newproxy(true)
+    local collected = false
+    local stack
+    local locals
+
+    getmetatable(object).__gc = function()
+        collected = true
+        stack = debugstack()
+        locals = debuglocals()
+    end
+
+    object = nil
+    collectgarbage("collect")
+    assert(collected, "expected userdata to be garbage collected")
+    assert(stack == nil, "expected stack trace to be nil")
+    assert(locals == nil, "expected locals dump to be nil")
+end)
+
 -- This test verifies that replacing the environment of a secure function
 -- from a tainted context will taint the function, causing future queries
 -- for the function environment to then taint their accessors.

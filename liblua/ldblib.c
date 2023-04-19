@@ -381,7 +381,7 @@ static int db_unref (lua_State *L) {
     return 0;
 }
 
-static const char *db_compatopts[] = { "setfenv", "gctaint" };
+static const char *db_compatopts[] = { "setfenv", "gctaint", "gcdebug" };
 
 static int db_getcompatopt (lua_State *L) {
     lua_State *L1;
@@ -510,6 +510,10 @@ static int db_stack (lua_State *L) {
          * reference so... */
         L1 = lua_tothread(L, 1);
         lua_remove(L, 1);
+    }
+
+    if (!lua_ishookallowed(L1) && !lua_getcompatopt(L1, LUA_COMPATGCDEBUG)) {
+        return 0; /* '__gc' metamethod is executing. */
     }
 
     if (lua_isnumber(L, 1)) {
@@ -704,7 +708,9 @@ static int db_locals (lua_State *L) {
     lua_pop(L, 1);
 
     if (!enabled) {
-        return 0;
+        return 0; /* called outside of the global error handler. */
+    } else if (!lua_ishookallowed(L) && !lua_getcompatopt(L, LUA_COMPATGCDEBUG)) {
+        return 0; /* '__gc' metamethod is executing. */
     } else if (level < 1) {
         level = 1;
     }

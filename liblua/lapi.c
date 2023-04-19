@@ -1645,6 +1645,10 @@ LUA_API void lua_setscripttimeout (lua_State *L, const lua_ScriptTimeout *timeou
     lua_unlock(L);
 }
 
+LUA_API int lua_ishookallowed (lua_State *L) {
+    return cast_int(L->allowhook);
+}
+
 /**
  * Runtime Compatibility Options APIs
  */
@@ -1653,6 +1657,7 @@ LUA_API int lua_getcompatopt (lua_State *L, int opt) {
     switch (opt) {
         case LUA_COMPATSETFENV:
         case LUA_COMPATGCTAINT:
+        case LUA_COMPATGCDEBUG:
             return testbit(L->compatmask, opt) >> opt;
         default:
             return 0;
@@ -1663,6 +1668,7 @@ LUA_API void lua_setcompatopt (lua_State *L, int opt, int val) {
     switch (opt) {
         case LUA_COMPATSETFENV:
         case LUA_COMPATGCTAINT:
+        case LUA_COMPATGCDEBUG:
             L->compatmask = cast_byte((L->compatmask & ~bitmask(opt)) | ((val & 0x1) << opt));
             return;
         default:
