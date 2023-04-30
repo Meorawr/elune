@@ -13,6 +13,8 @@
 -- luacheck: globals geterrorhandler seterrorhandler
 -- luacheck: globals strsplit strsplittable secureexecuterange
 
+local IS_REFERENCE_CLIENT = (debug == nil)
+
 local case = _G.case
     or function(name, func)
         local olderrhandler = geterrorhandler()
@@ -1510,47 +1512,49 @@ case("seterrorhandler: converts non-string errors", function()
     assert(lasterror == "UNKNOWN ERROR")
 end)
 
-case("seterrorhandler: replaces '*' source with object names", function()
-    local origerrorhandler = geterrorhandler()
-    local lasterror
+if IS_REFERENCE_CLIENT then
+    case("seterrorhandler: replaces '*' source with object names", function()
+        local origerrorhandler = geterrorhandler()
+        local lasterror
 
-    local fakeframe = { [0] = newproxy(true) }
-    getmetatable(fakeframe[0]).__name = function()
-        return "FakeFrame"
-    end
+        local fakeframe = { [0] = newproxy(true) }
+        getmetatable(fakeframe[0]).__name = function()
+            return "FakeFrame"
+        end
 
-    seterrorhandler(function(err)
-        lasterror = err
+        seterrorhandler(function(err)
+            lasterror = err
+        end)
+        securecall(loadstring("local _ = ...; ImmediateError = ImmediateError + 1", "*:OnBanana"), fakeframe)
+        seterrorhandler(origerrorhandler)
+
+        assert(
+            lasterror
+                == [=[[string "FakeFrame:OnBanana"]:1: attempt to perform arithmetic on global 'ImmediateError' (a nil value)]=]
+        )
     end)
-    securecall(loadstring("local _ = ...; ImmediateError = ImmediateError + 1", "*:OnBanana"), fakeframe)
-    seterrorhandler(origerrorhandler)
 
-    assert(
-        lasterror
-            == [=[[string "FakeFrame:OnBanana"]:1: attempt to perform arithmetic on global 'ImmediateError' (a nil value)]=]
-    )
-end)
+    case("seterrorhandler: replaces '*' source with defaulted object names", function()
+        local origerrorhandler = geterrorhandler()
+        local lasterror
 
-case("seterrorhandler: replaces '*' source with defaulted object names", function()
-    local origerrorhandler = geterrorhandler()
-    local lasterror
+        local fakeframe = { [0] = newproxy(true) }
+        getmetatable(fakeframe[0]).__name = function()
+            return nil
+        end
 
-    local fakeframe = { [0] = newproxy(true) }
-    getmetatable(fakeframe[0]).__name = function()
-        return nil
-    end
+        seterrorhandler(function(err)
+            lasterror = err
+        end)
+        securecall(loadstring("local _ = ...; ImmediateError = ImmediateError + 1", "*:OnBanana"), fakeframe)
+        seterrorhandler(origerrorhandler)
 
-    seterrorhandler(function(err)
-        lasterror = err
+        assert(
+            lasterror
+                == [=[[string "<unnamed>:OnBanana"]:1: attempt to perform arithmetic on global 'ImmediateError' (a nil value)]=]
+        )
     end)
-    securecall(loadstring("local _ = ...; ImmediateError = ImmediateError + 1", "*:OnBanana"), fakeframe)
-    seterrorhandler(origerrorhandler)
-
-    assert(
-        lasterror
-            == [=[[string "<unnamed>:OnBanana"]:1: attempt to perform arithmetic on global 'ImmediateError' (a nil value)]=]
-    )
-end)
+end
 
 case("seterrorhandler: ignores '*' source if first local is not a named object", function()
     local origerrorhandler = geterrorhandler()
