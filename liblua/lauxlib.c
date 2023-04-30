@@ -902,7 +902,10 @@ LUALIB_API void luaL_secureforeach (lua_State *L, int idx, int nargs, int errfun
             lua_pushvalue(L, funcidx + i);
         }
 
-        lua_pcall(L, nargs + 2, 0, errfunc);
+        if (lua_pcall(L, nargs + 2, 0, errfunc) != LUA_OK) {
+            lua_pop(L, 1); /* pop error value */
+        }
+
         lua_pop(L, 1); /* pop value; retain key for next */
         lua_restoretaint(L, &savedts);
     }
