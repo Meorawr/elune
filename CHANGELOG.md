@@ -12,6 +12,7 @@
 - The `debugstack` and `debuglocals` will now return no results if called by `__gc` metamethods.
 - The `debuglocals` function can now be called outside of an error handler.
 - Fixed linker errors with inlined security functions in unoptimized builds on non-Windows systems.
+- Fixed a correctness issue with `secureexecuterange` - errors in the supplied callback are not forwarded to the global error handler.
 
 ## [v3.0]
 ### Added

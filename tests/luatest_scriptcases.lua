@@ -1258,7 +1258,7 @@ case("secureexecuterange: continues if function errors", function()
     end)
     seterrorhandler(oldhandler)
     assert(ncalls == 5)
-    assert(nerrs == ncalls)
+    assert(nerrs == 0)
 end)
 
 case("secureexecuterange: does not propagate taint from calls", function()
