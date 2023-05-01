@@ -45,6 +45,8 @@
 
 /* Type used for numbers in Lua. */
 #define LUA_NUMBER double
+/* Signal to C libraries that LUA_NUMBER is double. */
+#define LUA_NUMBER_DOUBLE
 /* Type used for integers in the Lua C API. */
 #define LUA_INTEGER ptrdiff_t
 /* Result of a `usual argument conversion' over lua_Number. */
