@@ -499,9 +499,7 @@ static void GCTM (lua_State *L) {
         size_t oldt = g->GCthreshold;
         L->allowhook = 0; /* stop debug hooks during GC tag method */
         g->GCthreshold = 2 * g->totalbytes; /* avoid GC steps */
-        if (!testbit(L->compatmask, LUA_COMPATGCTAINT)) {
-            luaR_savetaint(L, &savedts);
-        }
+        luaR_savetaint(L, &savedts);
         setobj2s(L, L->top, tm);
         setuvalue(L, L->top + 1, udata);
         L->top += 2;
