@@ -928,6 +928,24 @@ case("getfenv: Read secure environment with tainted '__environment' key", functi
     end)
 end)
 
+-- This test verifies compatibility with changes in patch 10.1 whereby '__gc'
+-- metamethods can no longer call debuglocals/debugstack.
+case("getfenv: Returns nil inside '__gc' metamethods", function()
+    local object = newproxy(true)
+    local collected = false
+    local env
+
+    getmetatable(object).__gc = function()
+        collected = true
+        env = getfenv(1)
+    end
+
+    object = nil
+    collectgarbage("collect")
+    assert(collected, "expected userdata to be garbage collected")
+    assert(env == nil, "expected queried environment to be nil")
+end)
+
 -- This test verifies that changing the environment of a secure caller from
 -- a tainted context doesn't propagate taint back to any callers.
 case("setfenv: Taint caller environment", function()

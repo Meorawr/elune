@@ -116,6 +116,10 @@ static void getfunc (lua_State *L, int opt) {
 }
 
 static int luaB_getfenv (lua_State *L) {
+    if (!lua_getcompatopt(L, LUA_COMPATGCDEBUG) && !lua_ishookallowed(L)) {
+        return 0; /* getfenv calls not allowed in '__gc' execution. */
+    }
+
     getfunc(L, 1);
     if (lua_iscfunction(L, -1)) { /* is a C function? */
         lua_pushvalue(L, LUA_GLOBALSINDEX); /* return the thread's global env. */

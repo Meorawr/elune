@@ -9,7 +9,7 @@
 ### Changed
 - The `setfenv` function will no longer allow replacing function environments that have a metatable with an `__environment` key to match new reference client behavior.
 - `__gc` metamethods are now invoked with a taint barrier to match new reference client behavior.
-- The `debugstack` and `debuglocals` will now return no results if called by `__gc` metamethods.
+- The `debugstack`, `debuglocals`, and `getfenv` functions will now return no results if called by `__gc` metamethods.
 - The `debuglocals` function can now be called outside of an error handler.
 - Fixed linker errors with inlined security functions in unoptimized builds on non-Windows systems.
 - Fixed a correctness issue with `secureexecuterange` where errors in the supplied callback were incorrectly forwarded to the global error handler.
