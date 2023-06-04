@@ -33,7 +33,7 @@
       "name": "windows-amd64-debug",
       "configurePreset": "windows-amd64",
       "configuration": "Debug"
-    }
+    },
     {
       "name": "macos-debug",
       "configurePreset": "macos",
