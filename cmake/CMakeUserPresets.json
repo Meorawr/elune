@@ -16,18 +16,6 @@
         "strategy": "external",
         "value": "x64"
       }
-    },
-    {
-      "name": "windows-x86",
-      "inherits": "windows",
-      "toolset": {
-        "strategy": "external",
-        "value": "host=x86"
-      },
-      "architecture": {
-        "strategy": "external",
-        "value": "x86"
-      }
     }
   ],
   "buildPresets": [
@@ -45,17 +33,7 @@
       "name": "windows-amd64-debug",
       "configurePreset": "windows-amd64",
       "configuration": "Debug"
-    },
-    {
-      "name": "windows-x86",
-      "configurePreset": "windows-x86",
-      "configuration": "Release"
-    },
-    {
-      "name": "windows-x86-debug",
-      "configurePreset": "windows-x86",
-      "configuration": "Debug"
-    },
+    }
     {
       "name": "macos-debug",
       "configurePreset": "macos",

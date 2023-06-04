@@ -12,16 +12,10 @@ jobs:
 
       matrix:
         config:
-          - name: Windows (amd64)
+          - name: Windows
             os: windows-latest
             preset: windows
             arch: x64
-            executable-suffix: .exe
-
-          - name: Windows (x86)
-            os: windows-latest
-            preset: windows
-            arch: x86
             executable-suffix: .exe
 
           - name: Linux
