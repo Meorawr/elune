@@ -40,6 +40,7 @@
 #cmakedefine LUA_USE_LONGLONG
 #cmakedefine LUA_USE_SHARED
 #cmakedefine LUA_USE_READLINE
+#cmakedefine LUA_DISABLE_LOADLIB
 
 /* Type configuration */
 

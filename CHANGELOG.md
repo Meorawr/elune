@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+### Added
+- Added `LUA_DISABLE_LOADLIB` build option to disable the runtime dynamic module loader.
 
 ## [v3.1]
 ### Added
