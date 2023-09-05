@@ -190,7 +190,8 @@ static void LoadHeader (LoadState *S) {
     char h[LUAC_HEADERSIZE];
     char s[LUAC_HEADERSIZE];
     luaU_header(h);
-    LoadBlock(S, s, LUAC_HEADERSIZE);
+    memcpy(s, h, sizeof(char)); /* first char already read */
+    LoadBlock(S, s + 1, LUAC_HEADERSIZE - 1);
     IF(memcmp(h, s, LUAC_HEADERSIZE) != 0, "bad header");
 }
 

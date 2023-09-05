@@ -271,20 +271,29 @@ static int luaB_loadstring (lua_State *L) {
     size_t l;
     const char *s = luaL_checklstring(L, 1, &l);
     const char *chunkname = luaL_optstring(L, 2, s);
+    const char *mode = luaL_optstring(L, 3, "bt");
+    return load_aux(L, luaL_loadbufferx(L, s, l, chunkname, mode));
+}
+
+static int luaB_loadstringtainted (lua_State *L) {
+    size_t l;
+    const char *s = luaL_checklstring(L, 1, &l);
+    const char *chunkname = luaL_optstring(L, 2, s);
     lua_setstacktaint(L, LUA_LOADSTRING_TAINT);
-    return load_aux(L, luaL_loadbuffer(L, s, l, chunkname));
+    return load_aux(L, luaL_loadbufferx(L, s, l, chunkname, "T"));
 }
 
 static int luaB_loadstringuntainted (lua_State *L) {
     size_t l;
     const char *s = luaL_checklstring(L, 1, &l);
     const char *chunkname = luaL_optstring(L, 2, s);
-    return load_aux(L, luaL_loadbuffer(L, s, l, chunkname));
+    return load_aux(L, luaL_loadbufferx(L, s, l, chunkname, "T"));
 }
 
 static int luaB_loadfile (lua_State *L) {
     const char *fname = luaL_optstring(L, 1, NULL);
-    return load_aux(L, luaL_loadfile(L, fname));
+    const char *mode = luaL_optstring(L, 2, "bt");
+    return load_aux(L, luaL_loadfilex(L, fname, mode));
 }
 
 /*
@@ -313,9 +322,10 @@ static const char *generic_reader (lua_State *L, void *ud, size_t *size) {
 static int luaB_load (lua_State *L) {
     int status;
     const char *cname = luaL_optstring(L, 2, "=(load)");
+    const char *mode = luaL_optstring(L, 3, "bt");
     luaL_checktype(L, 1, LUA_TFUNCTION);
-    lua_settop(L, 3); /* function, eventual name, plus one reserved slot */
-    status = lua_load(L, generic_reader, NULL, cname);
+    lua_settop(L, 4); /* function, eventual name, mode, plus one reserved slot */
+    status = lua_load2(L, generic_reader, NULL, cname, mode);
     return load_aux(L, status);
 }
 
@@ -767,14 +777,14 @@ static const luaL_Reg baselib_lua[] = {
     { "dofile", luaB_dofile },
     { "load", luaB_load },
     { "loadfile", luaB_loadfile },
-    { "loadstring", luaB_loadstringuntainted },
+    { "loadstring", luaB_loadstring },
     /* clang-format off */
     { NULL, NULL },
     /* clang-format on */
 };
 
 static const luaL_Reg baselib_elune[] = {
-    { "loadstring", luaB_loadstring },
+    { "loadstring", luaB_loadstringtainted },
     /* clang-format off */
     { NULL, NULL },
     /* clang-format on */

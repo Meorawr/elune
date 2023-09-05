@@ -23,6 +23,7 @@
 #include "lstring.h"
 #include "ltable.h"
 #include "ltm.h"
+#include "lundump.h"
 #include "lvm.h"
 #include "lzio.h"
 
@@ -554,7 +555,15 @@ struct SParser { /* data to `f_parser' */
     ZIO *z;
     Mbuffer buff; /* buffer to be used by the scanner */
     const char *name;
+    const char *mode;
 };
+
+static void checkmode (lua_State *L, const char *mode, const char *x) {
+    if (mode && strchr(mode, x[0]) == NULL) {
+        luaO_pushfstring(L, "attempt to load a %s chunk (mode is " LUA_QS ")", x, mode);
+        luaD_throw(L, LUA_ERRSYNTAX);
+    }
+}
 
 static void f_parser (lua_State *L, void *ud) {
     int i;
@@ -562,8 +571,18 @@ static void f_parser (lua_State *L, void *ud) {
     Closure *cl;
     struct SParser *p = cast(struct SParser *, ud);
     luaC_checkGC(L);
-    tf = luaY_parser(L, p->z, &p->buff, p->name);
+    int c = zgetc(p->z); /* read first character */
+    if (p->mode != NULL && strchr(p->mode, 'T')) {
+        tf = luaY_parser(L, p->z, &p->buff, p->name, c);
+    } else if (c == LUA_SIGNATURE[0]) {
+        checkmode(L, p->mode, "binary");
+        tf = luaU_undump(L, p->z, &p->buff, p->name);
+    } else {
+        checkmode(L, p->mode, "text");
+        tf = luaY_parser(L, p->z, &p->buff, p->name, c);
+    }
     cl = luaF_newLclosure(L, tf, hvalue(gt(L)));
+    lua_assert(cl->l.nupvalues == cl->l.p->sizeupvalues);
     for (i = 0; i < tf->nups; i++) { /* initialize eventual upvalues */
         cl->l.upvals[i] = luaF_newupval(L);
     }
@@ -571,11 +590,12 @@ static void f_parser (lua_State *L, void *ud) {
     incr_top(L);
 }
 
-int luaD_protectedparser (lua_State *L, ZIO *z, const char *name) {
+int luaD_protectedparser (lua_State *L, ZIO *z, const char *name, const char *mode) {
     struct SParser p;
     int status;
     p.z = z;
     p.name = name;
+    p.mode = mode;
     luaZ_initbuffer(L, &p.buff);
     status = luaD_pcall(L, f_parser, &p, savestack(L, L->top), L->errfunc);
     luaZ_freebuffer(L, &p.buff);

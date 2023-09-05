@@ -413,9 +413,9 @@ static int libargs (lua_State *L, char **argv, int n) {
     }
 
     if (!loaded) {
-        /* Load both libraries with standard taking priority by default. */
-        luaL_openlibsx(L, LUALIB_ELUNE);
+        /* Load both libraries with elune taking priority by default. */
         luaL_openlibsx(L, LUALIB_STANDARD);
+        luaL_openlibsx(L, LUALIB_ELUNE);
     }
 
     return 1;

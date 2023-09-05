@@ -365,11 +365,11 @@ static void close_func (LexState *ls) {
     L->top -= 2; /* remove table and prototype from the stack */
 }
 
-Proto *luaY_parser (lua_State *L, ZIO *z, Mbuffer *buff, const char *name) {
+Proto *luaY_parser (lua_State *L, ZIO *z, Mbuffer *buff, const char *name, int firstchar) {
     struct LexState lexstate;
     struct FuncState funcstate;
     lexstate.buff = buff;
-    luaX_setinput(L, &lexstate, z, luaS_new(L, name));
+    luaX_setinput(L, &lexstate, z, luaS_new(L, name), firstchar);
     open_func(&lexstate, &funcstate);
     funcstate.f->is_vararg = VARARG_ISVARARG; /* main func. is always vararg */
     luaX_next(&lexstate); /* read first token */

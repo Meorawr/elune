@@ -822,6 +822,10 @@ LUA_API int lua_cpcall (lua_State *L, lua_CFunction func, void *ud) {
 }
 
 LUA_API int lua_load (lua_State *L, lua_Reader reader, void *data, const char *chunkname) {
+    return lua_load2(L, reader, data, chunkname, NULL);
+}
+
+LUA_API int lua_load2 (lua_State *L, lua_Reader reader, void *data, const char *chunkname, const char *mode) {
     ZIO z;
     int status;
     lua_lock(L);
@@ -829,7 +833,7 @@ LUA_API int lua_load (lua_State *L, lua_Reader reader, void *data, const char *c
         chunkname = "?";
     }
     luaZ_init(L, &z, reader, data);
-    status = luaD_protectedparser(L, &z, chunkname);
+    status = luaD_protectedparser(L, &z, chunkname, mode);
     lua_unlock(L);
     return status;
 }

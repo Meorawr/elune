@@ -1501,6 +1501,48 @@ case("loadstring_untainted: does not taint caller", function()
     assert(issecure())
 end)
 
+case("loadstring: does not load binary chunks", function()
+    local result, err = loadstring("\027Lua", "chunk name")
+    local plain = true
+    assert(result == nil)
+    assert(string.find(err, "unexpected symbol near 'char(27)'", 1, plain))
+end)
+
+case("loadstring: does not accept a text mode override", function()
+    local result, err = loadstring("\027Lua", "chunk name", "t")
+    local plain = true
+    assert(result == nil)
+    assert(string.find(err, "unexpected symbol near 'char(27)'", 1, plain))
+end)
+
+case("loadstring: does not accept a binary mode override", function()
+    local result, err = loadstring("\027Lua", "chunk name", "b")
+    local plain = true
+    assert(result == nil)
+    assert(string.find(err, "unexpected symbol near 'char(27)'", 1, plain))
+end)
+
+case("loadstring_untainted: does not load binary chunks", function()
+    local result, err = loadstring_untainted("\027Lua", "chunk name")
+    local plain = true
+    assert(result == nil)
+    assert(string.find(err, "unexpected symbol near 'char(27)'", 1, plain))
+end)
+
+case("loadstring_untainted: does not accept a text mode override", function()
+    local result, err = loadstring_untainted("\027Lua", "chunk name", "t")
+    local plain = true
+    assert(result == nil)
+    assert(string.find(err, "unexpected symbol near 'char(27)'", 1, plain))
+end)
+
+case("loadstring_untainted: does not accept a binary mode override", function()
+    local result, err = loadstring_untainted("\027Lua", "chunk name", "b")
+    local plain = true
+    assert(result == nil)
+    assert(string.find(err, "unexpected symbol near 'char(27)'", 1, plain))
+end)
+
 -- This test verifies that the error handler installed via seterrorhandler can
 -- be retrieved correctly.
 case("geterrorhandler: returns user-installed error handler", function()
