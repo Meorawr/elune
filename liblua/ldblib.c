@@ -381,7 +381,7 @@ static int db_unref (lua_State *L) {
     return 0;
 }
 
-static const char *db_compatopts[] = { "setfenv", "gctaint", "gcdebug", "inerrorhandler" };
+static const char *db_compatopts[] = { "setfenv", "gctaint", "gcdebug", "inerrorhandler", NULL };
 
 static int db_getcompatopt (lua_State *L) {
     lua_State *L1;
