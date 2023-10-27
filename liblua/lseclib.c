@@ -19,7 +19,7 @@ static lua_State *optthread (lua_State *L, int *arg) {
     }
 }
 
-static const char *seclib_taintmodes[] = { "disabled", "r", "w", "rw" };
+static const char *seclib_taintmodes[] = { "disabled", "r", "w", "rw", NULL };
 
 static int seclib_gettaintmode (lua_State *L) {
     int mode = lua_gettaintmode(L);
