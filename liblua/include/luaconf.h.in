@@ -216,15 +216,13 @@
 
 /* Attribute declarations */
 
-#if defined(__has_c_attribute)
-#define LUA_HAS_ATTRIBUTE(x) __has_c_attribute(x)
-#elif defined(__has_cpp_attribute) && defined(__cplusplus)
+#if defined(__has_cpp_attribute) && defined(__cplusplus)
 #define LUA_HAS_ATTRIBUTE(x) __has_cpp_attribute(x)
 #else
 #define LUA_HAS_ATTRIBUTE(x) 0
 #endif
 
-#if LUA_HAS_ATTRIBUTE(noreturn) || defined(__cplusplus)
+#if LUA_HAS_ATTRIBUTE(noreturn)
 #define LUA_NORETURN [[noreturn]]
 #else
 #define LUA_NORETURN _Noreturn
