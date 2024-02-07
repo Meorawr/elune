@@ -38,6 +38,7 @@ set_target_properties(
 target_compile_definitions(
   liblua
   PRIVATE
+    $<$<NOT:$<PLATFORM_ID:Windows>>:_GNU_SOURCE>
     $<$<IN_LIST:$<CONFIG>,${LUA_ASSERT_CONFIGS}>:LUA_USE_ASSERT>
     $<$<IN_LIST:$<CONFIG>,${LUA_APICHECK_CONFIGS}>:LUA_USE_APICHECK>
 )

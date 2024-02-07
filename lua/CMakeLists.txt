@@ -8,6 +8,12 @@ set_target_properties(
     OUTPUT_NAME ${LUA_OUTPUT_NAME}
 )
 
+target_compile_definitions(
+  lua
+  PRIVATE
+    $<$<NOT:$<PLATFORM_ID:Windows>>:_GNU_SOURCE>
+)
+
 target_link_libraries(
   lua
   PRIVATE
