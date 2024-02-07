@@ -53,7 +53,7 @@ typedef uint_least32_t Instruction;
 #define luai_numeq(a, b) ((a) == (b))
 #define luai_numlt(a, b) ((a) < (b))
 #define luai_numle(a, b) ((a) <= (b))
-#define luai_numisnan(a) (!luai_numeq((a), (a)))
+#define luai_numisnan(a) (fpclassify(a) == FP_NAN)
 
 /* Lua state synchronization */
 
