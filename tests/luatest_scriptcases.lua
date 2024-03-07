@@ -1461,9 +1461,11 @@ case("hooksecurefunc: tainted prefunc propagates to posthook and caller", functi
         forceinsecure()
         _G.hookfunc = function() end
     end)
+    assert(issecure())
     hooksecurefunc("hookfunc", function()
         assert(not issecure())
     end)
+    assert(issecure())
     _G.hookfunc()
     assert(not issecure())
 end)

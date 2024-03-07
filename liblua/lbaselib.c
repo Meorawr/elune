@@ -674,6 +674,7 @@ static void aux_getorigfunc_untainted (lua_State *L, void *ud) {
 }
 
 static int luaB_hooksecurefunc (lua_State *L) {
+    lua_TaintState entryts;
     lua_TaintState savedts;
 
     if (!lua_istable(L, 1)) {
@@ -686,17 +687,20 @@ static int luaB_hooksecurefunc (lua_State *L) {
     }
 
     lua_settop(L, 3);
-    lua_savetaint(L, &savedts);
+    lua_savetaint(L, &entryts); /* save initial entry taint */
     lua_pushvalue(L, 2); /* [4] = "function" */
     lua_protecttaint(L, aux_getorigfunc_untainted, NULL); /* [4] = origfunc */
-    lua_exchangetaint(L, &savedts);
+    lua_savetaint(L, &savedts); /* save lookup taint */
+    lua_restoretaint(L, &entryts); /* restore initial entry taint in case of error */
 
     if (!lua_isfunction(L, 4)) {
         return luaL_error(L, "hooksecurefunc(): %s is not a function", lua_tostring(L, 2));
     }
 
     lua_insert(L, 3); /* [3] = origfunc, [4] = hookfunc */
-    lua_setvaluetaint(L, 3, savedts.stacktaint); /* lua_insert may taint origfunc */
+    lua_setvaluetaint(L, 3, savedts.stacktaint); /* origfunc should have lookup taint */
+    lua_setvaluetaint(L, 4, entryts.stacktaint); /* hookfunc should have entry taint */
+    lua_restoretaint(L, &entryts); /* restore initial entry taint again */
     luaL_createsecurehook(L); /* [3] = securehook */
     lua_setvaluetaint(L, 3, NULL);
     lua_rawset(L, 1); /* table["function"] = securehook */
