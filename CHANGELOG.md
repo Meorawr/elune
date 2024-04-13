@@ -4,6 +4,9 @@
 ### Added
 - Added `LUA_DISABLE_LOADLIB` build option to disable the runtime dynamic module loader.
 
+### Changed
+- Fixed a correctness issue where the insertion of new table entries did not remove taint from the assigned key.
+
 ## [v3.1]
 ### Added
 - Added the `pcallwithenv(f, env, [args...])` base library function.

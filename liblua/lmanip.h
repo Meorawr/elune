@@ -165,6 +165,14 @@ inline void setsvalue2s (lua_State *L, StkId dst, TString *src) {
     setsvalue(L, dst, src);
 }
 
+/* set value without taint */
+inline void rawsetobj (lua_State *L, TValue *dst, const TValue *src) {
+    dst->value = src->value;
+    dst->tt = src->tt;
+    dst->taint = NULL;
+    checkliveness(G(L), dst);
+}
+
 /* set nil value (untainted) */
 inline void rawsetnilvalue (TValue *dst) {
     dst->tt = LUA_TNIL;

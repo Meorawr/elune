@@ -736,6 +736,26 @@ case("Coroutines: Resume secure coroutine with tainted closure", function()
     assert(coroutine.status(thread) == "dead", "expected coroutine thread to be dead")
 end)
 
+-- This test verifies that the insecure insertion of a new entry into the
+-- table results in the assigned key being cleansed of taint, and thus secure.
+case("Tables: Keys are always secure", function()
+    local t = {}
+    local k = "foo"
+
+    local function setinsecure()
+        forceinsecure()
+        t[k] = true
+    end
+
+    securecall(setinsecure)
+
+    assert(issecure())
+    assert(issecurevariable(t, k))
+    assert(t[k] ~= nil)
+    assert(next(t) ~= nil)
+    assert(issecure())
+end)
+
 -- This test verifies that table accesses which go through a tainted '__index'
 -- metatable field don't taint the caller.
 case("Metatables: Read secure value through tainted '__index'", function()

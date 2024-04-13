@@ -31,3 +31,4 @@ extern void setsvalue2n (lua_State *L, TValue *dst, TString *src);
 extern void setsvalue2s (lua_State *L, StkId dst, TString *src);
 extern void rawsetnilvalue (TValue *dst);
 extern void rawsetnvalue (TValue *dst, lua_Number n);
+extern void rawsetobj (lua_State *L, TValue *dst, const TValue *src);

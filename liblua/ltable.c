@@ -409,7 +409,7 @@ static TValue *newkey (lua_State *L, Table *t, const TValue *key) {
             mp = n;
         }
     }
-    setobjt2t(L, key2tval(mp), key);
+    rawsetobj(L, key2tval(mp), key);
     luaC_barriert(L, t, key);
     lua_assert(ttisnil(gval(mp)));
     return gval(mp);
